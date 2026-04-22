@@ -1,0 +1,2474 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Data Infrastructure · Частина 2 — Обробка &amp; платформи</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0b; --bg-2:#111113; --bg-3:#17171a; --bg-card:#131316;
+  --border:#26262b; --border-soft:#1e1e22;
+  --fg:#f4f4f2; --fg-muted:#9a9a95; --fg-dim:#6a6a66;
+  --accent:#4ecdc4; --accent-2:#b794f6; --accent-soft:rgba(78,205,196,.12);
+  --pro:#7fdba5; --con:#ef6b6b; --amber:#ffb627;
+  --serif:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono','Courier New',monospace;
+  --sans:'Inter Tight',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--fg); font-family:var(--sans);
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(78,205,196,.08), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(183,148,246,.06), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 10% 60%, rgba(78,205,196,.04), transparent 60%);
+  background-attachment: fixed;
+  min-height:100vh;
+}
+::selection{background:var(--accent);color:#000}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(78,205,196,.3);transition:all .2s}
+a:hover{color:var(--accent-2);border-color:var(--accent-2)}
+code,.mono{font-family:var(--mono)}
+
+nav.top{position:sticky;top:0;z-index:50;background:rgba(10,10,11,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-soft)}
+nav.top .inner{max-width:1240px;margin:0 auto;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-weight:600;font-size:18px;letter-spacing:-.01em}
+.brand-dot{width:10px;height:10px;background:var(--accent);border-radius:50%;box-shadow:0 0 12px var(--accent)}
+.nav-links{display:flex;gap:28px;font-size:13px;font-weight:500}
+.nav-links a{color:var(--fg-muted);border:none;letter-spacing:.02em}
+.nav-links a:hover{color:var(--accent)}
+.part-pill{font-family:var(--mono);font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:100px;color:var(--fg-muted);letter-spacing:.1em;text-transform:uppercase}
+
+.container{max-width:1240px;margin:0 auto;padding:0 32px}
+
+.hero{padding:120px 0 80px;position:relative}
+.hero-label{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.hero-label::before{content:'';width:32px;height:1px;background:var(--accent)}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(48px,8vw,112px);line-height:.95;letter-spacing:-.03em;margin-bottom:32px}
+.hero h1 em{font-style:italic;color:var(--accent);font-weight:300}
+.hero h1 .violet{color:var(--accent-2);font-style:italic;font-weight:300}
+.hero-sub{font-size:20px;color:var(--fg-muted);max-width:720px;line-height:1.5;margin-bottom:48px}
+.hero-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:64px;border-top:1px solid var(--border-soft);padding-top:40px}
+.meta-item .num{font-family:var(--serif);font-size:56px;font-weight:300;color:var(--fg);line-height:1;letter-spacing:-.02em}
+.meta-item .num em{color:var(--accent);font-style:italic}
+.meta-item .lbl{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--fg-dim);margin-top:12px}
+
+section{padding:96px 0;border-top:1px solid var(--border-soft)}
+.section-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.section-title{font-family:var(--serif);font-size:clamp(36px,5vw,64px);font-weight:400;letter-spacing:-.02em;line-height:1.05;margin-bottom:32px;max-width:900px}
+.section-title em{font-style:italic;color:var(--accent);font-weight:300}
+.section-intro{font-size:18px;color:var(--fg-muted);max-width:720px;margin-bottom:56px;line-height:1.6}
+
+.timeline-3parts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+.tl-part{padding:28px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);position:relative;transition:all .3s}
+.tl-part.current{border-color:var(--accent);background:linear-gradient(180deg,rgba(78,205,196,.08),transparent)}
+.tl-part.done{border-color:var(--border);opacity:.65}
+.tl-part.done .pnum{color:var(--amber)}
+.tl-part .pnum{font-family:var(--mono);font-size:12px;color:var(--fg-dim);letter-spacing:.1em}
+.tl-part.current .pnum{color:var(--accent)}
+.tl-part h3{font-family:var(--serif);font-size:24px;margin:12px 0 8px;font-weight:500}
+.tl-part .weeks{font-family:var(--mono);font-size:12px;color:var(--fg-muted);margin-bottom:14px}
+.tl-part .desc{font-size:14px;color:var(--fg-muted);line-height:1.5}
+.tl-part .current-badge{position:absolute;top:-10px;right:20px;background:var(--accent);color:#000;font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;letter-spacing:.15em;text-transform:uppercase;font-weight:700}
+.tl-part .done-badge{position:absolute;top:-10px;right:20px;background:var(--amber);color:#000;font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;letter-spacing:.15em;text-transform:uppercase;font-weight:700}
+
+.project-hero{border:1px solid var(--border);border-radius:16px;padding:48px;background:linear-gradient(135deg,rgba(78,205,196,.05),rgba(183,148,246,.03));margin-bottom:40px;position:relative;overflow:hidden}
+.project-hero::before{content:'ShopWave';position:absolute;right:-20px;bottom:-40px;font-family:var(--serif);font-size:240px;font-style:italic;font-weight:300;color:rgba(78,205,196,.05);letter-spacing:-.05em;pointer-events:none}
+.project-tag{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.project-hero h3{font-family:var(--serif);font-size:40px;font-weight:500;margin-bottom:16px;letter-spacing:-.02em}
+.project-hero p{color:var(--fg-muted);max-width:700px;font-size:16px;line-height:1.6;position:relative;z-index:1}
+
+.module{padding:120px 0;border-top:1px solid var(--border-soft);position:relative}
+.module-header{display:grid;grid-template-columns:140px 1fr;gap:40px;margin-bottom:64px;align-items:start}
+.mod-num{font-family:var(--serif);font-size:120px;font-weight:300;font-style:italic;color:var(--accent);line-height:.9;letter-spacing:-.04em}
+.module:nth-of-type(even) .mod-num{color:var(--accent-2)}
+.mod-meta{padding-top:16px}
+.mod-week{font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-bottom:16px}
+.mod-title{font-family:var(--serif);font-size:clamp(36px,4.5vw,56px);font-weight:400;line-height:1.05;letter-spacing:-.02em;margin-bottom:20px}
+.mod-title em{font-style:italic;color:var(--accent);font-weight:300}
+.mod-title .violet{font-style:italic;color:var(--accent-2);font-weight:300}
+.mod-lead{font-size:18px;color:var(--fg-muted);line-height:1.6;max-width:760px}
+
+.mod-content h4{font-family:var(--serif);font-size:32px;font-weight:500;font-style:italic;margin:56px 0 24px;letter-spacing:-.01em;color:var(--fg)}
+.mod-content h5{font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:40px 0 16px}
+.mod-content p{margin-bottom:16px;color:var(--fg);max-width:860px}
+.mod-content p.muted{color:var(--fg-muted)}
+.mod-content ul{margin:16px 0 24px 24px;max-width:860px}
+.mod-content ul li{margin-bottom:10px;color:var(--fg)}
+.mod-content ul li::marker{color:var(--accent)}
+.mod-content ol{margin:16px 0 24px 24px;max-width:860px}
+.mod-content ol li{margin-bottom:10px;color:var(--fg)}
+.mod-content ol li::marker{color:var(--accent);font-weight:700}
+.mod-content strong{color:var(--fg);font-weight:600}
+.mod-content code{background:var(--bg-3);padding:2px 8px;border-radius:4px;font-size:.9em;color:var(--accent);border:1px solid var(--border-soft)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:32px 0}
+.card{padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);transition:all .3s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card h6{font-family:var(--serif);font-size:20px;margin-bottom:10px;font-weight:500}
+.card p{font-size:14px;color:var(--fg-muted);line-height:1.5;margin:0}
+.card .ic{width:32px;height:32px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-family:var(--mono);font-weight:700;font-size:14px}
+.card.violet .ic{background:rgba(183,148,246,.12);color:var(--accent-2)}
+.card.violet:hover{border-color:var(--accent-2)}
+
+.proscons{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px 0;max-width:900px}
+.pc-box{padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card)}
+.pc-box.pros{border-left:3px solid var(--pro)}
+.pc-box.cons{border-left:3px solid var(--con)}
+.pc-box h6{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px}
+.pc-box.pros h6{color:var(--pro)}
+.pc-box.cons h6{color:var(--con)}
+.pc-box ul{margin:0;list-style:none}
+.pc-box ul li{position:relative;padding-left:22px;margin-bottom:10px;font-size:14px;color:var(--fg);line-height:1.5}
+.pc-box.pros ul li::before{content:'+';position:absolute;left:0;top:0;color:var(--pro);font-weight:700}
+.pc-box.cons ul li::before{content:'−';position:absolute;left:0;top:0;color:var(--con);font-weight:700}
+
+.table-wrap{margin:32px 0;border:1px solid var(--border);border-radius:12px;overflow:auto;background:var(--bg-card)}
+table.compare{width:100%;border-collapse:collapse;font-size:14px;min-width:600px}
+table.compare thead{background:var(--bg-3)}
+table.compare th{text-align:left;padding:16px 20px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-muted);font-weight:500;border-bottom:1px solid var(--border)}
+table.compare td{padding:16px 20px;border-bottom:1px solid var(--border-soft);vertical-align:top;color:var(--fg)}
+table.compare tr:last-child td{border-bottom:none}
+table.compare tr:hover td{background:rgba(78,205,196,.03)}
+table.compare td:first-child{font-weight:600;color:var(--fg)}
+table.compare .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:10px;letter-spacing:.05em}
+table.compare .badge.good{background:rgba(127,219,165,.15);color:var(--pro)}
+table.compare .badge.bad{background:rgba(239,107,107,.15);color:var(--con)}
+table.compare .badge.mid{background:rgba(78,205,196,.15);color:var(--accent)}
+table.compare .badge.violet{background:rgba(183,148,246,.15);color:var(--accent-2)}
+
+.diagram{margin:40px 0;padding:32px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);text-align:center}
+.diagram svg{max-width:100%;height:auto}
+.diagram-caption{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-top:20px}
+
+.resources{background:linear-gradient(180deg,rgba(78,205,196,.03),transparent);border:1px solid var(--border);border-radius:12px;padding:32px;margin:40px 0}
+.resources h5{margin-top:0!important}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:20px}
+.res-item{display:block;padding:16px 20px;border:1px solid var(--border);border-radius:8px;background:var(--bg);transition:all .2s;border-left:none}
+.res-item:hover{border-color:var(--accent);background:var(--bg-card);transform:translateX(2px)}
+.res-item .res-type{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;display:block}
+.res-item .res-title{display:block;color:var(--fg);font-size:14px;line-height:1.4;font-weight:500;margin-bottom:4px;border:none}
+.res-item .res-meta{font-size:12px;color:var(--fg-dim);font-family:var(--mono)}
+
+.assignment{margin:48px 0;padding:32px 40px;border:1px solid var(--accent);border-radius:12px;background:linear-gradient(135deg,rgba(78,205,196,.08),rgba(183,148,246,.03));position:relative}
+.assignment .a-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.assignment h5{color:var(--fg)!important;margin:0 0 20px!important;font-family:var(--serif)!important;font-size:24px!important;text-transform:none!important;letter-spacing:-.01em!important;font-weight:500!important}
+.assignment ol{margin:16px 0 16px 24px;max-width:720px}
+.assignment ol li{margin-bottom:10px;color:var(--fg)}
+.assignment ol li::marker{color:var(--accent);font-weight:700}
+.assignment .deliverable{margin-top:24px;padding:16px;background:rgba(0,0,0,.3);border-radius:8px;font-family:var(--mono);font-size:13px;color:var(--fg-muted);border-left:2px solid var(--accent)}
+.assignment .deliverable strong{color:var(--accent)}
+
+.milestone{margin:48px 0;padding:32px 40px;border-radius:12px;background:linear-gradient(135deg,rgba(183,148,246,.1),rgba(78,205,196,.04));border:1px solid rgba(183,148,246,.3)}
+.milestone .m-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-2);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.milestone .m-label::before{content:'◆';color:var(--accent-2)}
+.milestone h5{color:var(--fg)!important;margin:0 0 16px!important;font-family:var(--serif)!important;font-size:24px!important;text-transform:none!important;letter-spacing:-.01em!important;font-weight:500!important}
+.milestone ul{max-width:760px;margin:12px 0 0 24px}
+.milestone ul li::marker{color:var(--accent-2)}
+
+.next-cta{padding:120px 0;text-align:center;border-top:1px solid var(--border-soft)}
+.next-cta .section-label{color:var(--accent-2)}
+.next-cta h2{font-family:var(--serif);font-size:clamp(40px,6vw,80px);font-weight:400;line-height:1;letter-spacing:-.03em;margin-bottom:24px}
+.next-cta h2 em{font-style:italic;color:var(--accent-2)}
+.next-cta p{color:var(--fg-muted);font-size:18px;max-width:640px;margin:0 auto 40px}
+.next-cta .btn{display:inline-flex;align-items:center;gap:12px;padding:18px 32px;background:var(--accent-2);color:#000;font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:100px;border:none;transition:all .2s}
+.next-cta .btn:hover{background:var(--accent);transform:translateY(-2px);box-shadow:0 12px 40px rgba(78,205,196,.3)}
+footer{padding:48px 0;border-top:1px solid var(--border-soft);text-align:center;font-family:var(--mono);font-size:12px;color:var(--fg-dim)}
+footer a{color:var(--fg-muted)}
+
+@media (max-width:768px){
+  nav.top .inner{padding:12px 20px}
+  .nav-links{display:none}
+  .container{padding:0 20px}
+  .hero{padding:80px 0 60px}
+  .hero-meta{grid-template-columns:repeat(2,1fr);gap:16px}
+  .module-header{grid-template-columns:1fr;gap:16px}
+  .mod-num{font-size:80px}
+  .proscons{grid-template-columns:1fr}
+  .timeline-3parts{grid-template-columns:1fr}
+  .project-hero{padding:28px}
+  .project-hero::before{font-size:120px}
+  .assignment,.milestone{padding:24px}
+}
+
+/* Reading progress bar */
+#reading-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:200;width:0;transition:width .1s linear;pointer-events:none}
+
+/* Copy button */
+.pre-wrap{position:relative;margin:20px 0;max-width:860px}
+.copy-btn{position:absolute;top:10px;right:10px;padding:4px 10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.3);border-radius:4px;color:var(--accent);font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;transition:all .2s;z-index:5}
+.copy-btn:hover{background:rgba(78,205,196,.2);border-color:var(--accent)}
+.copy-btn.copied{background:rgba(127,219,165,.15);border-color:var(--pro);color:var(--pro)}
+
+/* Floating TOC */
+#toc-sidebar{position:fixed;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:100}
+.toc-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .3s;display:block;border:1px solid var(--border)}
+.toc-dot:hover{background:var(--accent-2);border-color:var(--accent-2);transform:scale(1.4)}
+.toc-dot.active{background:var(--accent-2);border-color:var(--accent-2);width:10px;height:10px}
+@media(max-width:1400px){#toc-sidebar{display:none}}
+
+/* Interview Q&A */
+.interview-qa{margin:56px 0 0;border:1px solid rgba(183,148,246,.3);border-radius:12px;padding:28px 32px;background:linear-gradient(135deg,rgba(183,148,246,.04),transparent)}
+.interview-qa h5{margin-top:0!important;color:var(--accent-2)!important;margin-bottom:20px!important}
+.qa-item{border-bottom:1px solid var(--border-soft);margin-bottom:0}
+.qa-item:last-child{border-bottom:none;margin-bottom:0}
+.qa-q{padding:16px 0;cursor:pointer;font-weight:600;color:var(--fg);font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:16px;user-select:none;transition:color .2s}
+.qa-q::after{content:'＋';font-family:var(--mono);font-size:18px;color:var(--accent-2);flex-shrink:0;transition:transform .2s}
+.qa-q:hover{color:var(--accent-2)}
+.qa-q.active{color:var(--accent-2)}
+.qa-q.active::after{transform:rotate(45deg)}
+.qa-a{display:none;padding:0 0 20px;font-size:14px;color:var(--fg-muted);line-height:1.7;max-width:800px}
+.qa-a.open{display:block}
+.qa-a code{background:var(--bg-3);padding:1px 6px;border-radius:3px;color:var(--accent);font-size:.9em}
+
+/* Analogy box */
+.analogy{margin:24px 0;padding:20px 24px;background:rgba(78,205,196,.06);border-radius:8px;border-left:3px solid var(--accent);font-size:15px;color:var(--fg);max-width:860px}
+.analogy strong{color:var(--accent)}
+
+/* Pitfall box */
+.pitfall{margin:24px 0;padding:20px 24px;background:rgba(239,107,107,.06);border-radius:8px;border-left:3px solid var(--con);max-width:860px}
+.pitfall h6{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--con);margin-bottom:12px}
+.pitfall ul{margin:0 0 0 20px}
+.pitfall ul li{font-size:14px;color:var(--fg-muted);margin-bottom:8px;line-height:1.6}
+
+/* Reading time badge */
+.reading-time{display:inline-block;font-family:var(--mono);font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:100px;color:var(--fg-dim);letter-spacing:.08em;margin-bottom:16px}
+
+/* Part navigation */
+.part-nav{display:flex;gap:8px;flex-wrap:wrap}
+.part-nav a{font-family:var(--mono);font-size:11px;padding:4px 12px;border:1px solid var(--border);border-radius:100px;color:var(--fg-muted);letter-spacing:.08em;border-bottom:none}
+.part-nav a.active{border-color:var(--accent-2);color:var(--accent-2)}
+.part-nav a:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Kafka/Flink styling */
+.pipeline-flow{display:flex;align-items:center;gap:8px;margin:24px 0;flex-wrap:wrap;padding:20px 24px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;max-width:860px}
+.pipe-node{padding:8px 16px;border-radius:6px;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.05em}
+.pipe-node.source{background:rgba(78,205,196,.15);color:var(--accent);border:1px solid rgba(78,205,196,.3)}
+.pipe-node.process{background:rgba(183,148,246,.15);color:var(--accent-2);border:1px solid rgba(183,148,246,.3)}
+.pipe-node.sink{background:rgba(127,219,165,.15);color:var(--pro);border:1px solid rgba(127,219,165,.3)}
+.pipe-arrow{color:var(--fg-dim);font-size:18px}
+
+/* dbt section */
+.dbt-model{background:var(--bg-card);border:1px solid rgba(183,148,246,.25);border-radius:10px;padding:24px;margin:16px 0;max-width:860px}
+.dbt-model h6{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent-2);margin-bottom:12px}
+.mat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:16px 0}
+.mat-card{padding:16px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.mat-card .name{font-family:var(--mono);font-size:13px;color:var(--accent-2);font-weight:600;margin-bottom:6px}
+.mat-card p{font-size:13px;color:var(--fg-muted);margin:0;line-height:1.5}
+</style>
+</head>
+<body>
+<div id="reading-progress"></div>
+<div id="toc-sidebar"></div>
+<nav class="top">
+  <div class="inner">
+    <div class="brand"><span class="brand-dot"></span> Big Data Infrastructure</div>
+    <div class="nav-links">
+      <a href="#module-5">М5</a>
+      <a href="#module-6">М6</a>
+      <a href="#module-7">М7</a>
+      <a href="#module-8">М8</a>
+    </div>
+    <div class="part-nav">
+      <a href="bigdata_part1_foundations.html">Part 01</a>
+      <a href="bigdata_part2_processing.html" class="active">Part 02</a>
+      <a href="bigdata_part3_production.html">Part 03</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-label">Частина 2 з 3 · Обробка &amp; платформи</div>
+    <h1>Streaming, <em>Lakehouse,</em><br><span class="violet">Warehouses.</span></h1>
+    <p class="hero-sub">Частина 1 заклала фундамент. Тепер додаємо real-time через Kafka + Flink, ACID-транзакції у Data Lake через Iceberg/Delta, повноцінний DWH (Snowflake/BigQuery/ClickHouse) та оркестрацію через Airflow. Це етап, де ShopWave перестає бути «batch-звітами раз на ніч» і стає повноцінною аналітичною платформою.</p>
+    <div class="hero-meta">
+      <div class="meta-item"><div class="num"><em>7</em></div><div class="lbl">тижнів у цій частині</div></div>
+      <div class="meta-item"><div class="num"><em>4</em></div><div class="lbl">модулі</div></div>
+      <div class="meta-item"><div class="num"><em>12+</em></div><div class="lbl">технологій</div></div>
+      <div class="meta-item"><div class="num"><em>70+</em></div><div class="lbl">ресурсів (укр/англ)</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- 3-PARTS OVERVIEW -->
+<section id="overview">
+  <div class="container">
+    <div class="section-label">◆ Де ми у курсі</div>
+    <h2 class="section-title">Від фундаменту — <em>до платформи.</em></h2>
+    <p class="section-intro">Ви вже вміли зберігати дані у S3, конвертувати JSON у Parquet та ганяти Spark-джоби. Цього недостатньо для продакшну — бракує real-time, ACID-гарантій, BI-зручного шару, автоматизації pipelines. Саме цим займаємось у Частині 2.</p>
+
+    <div class="timeline-3parts">
+      <div class="tl-part done">
+        <div class="done-badge">Пройдено</div>
+        <div class="pnum">PART 01</div>
+        <h3 class="serif">Основи</h3>
+        <div class="weeks mono">тижні 1 – 6 · 4 модулі</div>
+        <p class="desc">Big Data концепції. Storage (HDFS, S3). Формати (Parquet/ORC/Avro). Batch-обробка через Apache Spark.</p>
+      </div>
+      <div class="tl-part current">
+        <div class="current-badge">Зараз</div>
+        <div class="pnum">PART 02</div>
+        <h3 class="serif">Обробка &amp; платформи</h3>
+        <div class="weeks mono">тижні 7 – 13 · 4 модулі</div>
+        <p class="desc">Stream processing (Kafka + Flink). Lakehouse (Delta/Iceberg/Hudi). Data warehouses. Orchestration + NoSQL.</p>
+      </div>
+      <div class="tl-part">
+        <div class="pnum">PART 03</div>
+        <h3 class="serif">Production &amp; Cloud</h3>
+        <div class="weeks mono">тижні 14 – 20 · 4 модулі</div>
+        <p class="desc">Docker/K8s/Terraform. AWS vs GCP vs Azure з цінами. Data governance &amp; security. Capstone-проект.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECT CONTINUES -->
+<section id="project">
+  <div class="container">
+    <div class="section-label">◆ Проект продовжується</div>
+    <div class="project-hero">
+      <div class="project-tag">ShopWave · етап 2</div>
+      <h3 class="serif"><em>ShopWave</em> стає real-time</h3>
+      <p>До цього моменту ShopWave виглядав так: Spark-джоба читає раз на ніч сирі JSON з bronze-шару, очищує, агрегує, пише результат у gold. BI-команда бачить дані з учорашньою свіжістю. У частині 2 ми додаємо шість великих шматків: <strong>(1)</strong> Kafka як центральну шину подій і Flink для обробки у реальному часі; <strong>(2)</strong> переводимо curated-шар на Apache Iceberg заради ACID, time travel і коректних upsertів; <strong>(3)</strong> піднімаємо ClickHouse або BigQuery як аналітичний DWH з star-схемою і SCD2 для історії клієнтів; <strong>(4)</strong> оркеструємо усі batch-процеси через Airflow; <strong>(5)</strong> зберігаємо user-профайли у MongoDB; <strong>(6)</strong> додаємо перші дашборди для BI-користувачів.</p>
+    </div>
+
+    <h5 class="mono" style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:48px 0 16px">Що додається у Частині 2</h5>
+    <ul style="margin:0 0 0 24px;max-width:860px">
+      <li><strong>М5:</strong> Kafka cluster у docker-compose, producer-сервіс генерує <code>order_events</code>, Flink job рахує виторг у скляюче вікно 5 хв</li>
+      <li><strong>М6:</strong> міграція silver/gold шарів на <strong>Apache Iceberg</strong>: upsert-и, час-травел для аудиту, автоматична компакція</li>
+      <li><strong>М7:</strong> <strong>ClickHouse або BigQuery</strong> як DWH: star-schema (fact_orders + dim_customer/product/geo/time), SCD2 для customer</li>
+      <li><strong>М8:</strong> повний <strong>Airflow DAG</strong> оркеструє всі ETL, <strong>MongoDB</strong> зберігає user profiles з гнучкою схемою для рекомендацій</li>
+    </ul>
+  </div>
+</section>
+
+<!-- MODULE 5 -->
+<section class="module" id="module-5">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">05</div>
+      <div class="mod-meta">
+        <div class="mod-week">Тижні 7 – 8 · ~30 год</div>
+        <h2 class="mod-title">Stream Processing — <em>Kafka + Flink</em></h2>
+        <p class="mod-lead">Batch дає відповіді «як було вчора». Streaming дає відповіді «що відбувається прямо зараз» — антифрод, динамічне ціноутворення, live-дашборди, персоналізовані push-и. Це найбільший technological shift після Spark.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Batch vs Streaming — ментальна модель</h4>
+      <p>Batch — це «фотографія»: дані фіксовані, ми їх цілком обробляємо. Streaming — це «відео»: потік нескінченний, треба обробляти по мірі надходження, з обмеженими ресурсами пам'яті.</p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th></th><th>Batch</th><th>Streaming</th></tr></thead>
+          <tbody>
+            <tr><td>Дані</td><td>Обмежений набір (bounded)</td><td>Нескінченний потік (unbounded)</td></tr>
+            <tr><td>Латентність</td><td>Години, хвилини</td><td>Секунди, мілісекунди</td></tr>
+            <tr><td>Ментальна модель</td><td>«Таблиця»</td><td>«Журнал подій»</td></tr>
+            <tr><td>Time concept</td><td>Не критично</td><td>Критично (event time vs processing time)</td></tr>
+            <tr><td>Idempotency</td><td>Легко (переписати)</td><td>Складно (exactly-once семантика)</td></tr>
+            <tr><td>Приклади задач</td><td>Денні звіти, ML-тренування</td><td>Антифрод, live dashboards, IoT, ставки</td></tr>
+            <tr><td>Технології</td><td>Spark, Hive, Trino</td><td>Kafka + Flink/Spark Structured Streaming</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Apache Kafka — центральна нервова система даних</h4>
+      <p>Kafka з 2011 — де-факто стандарт для event streaming. Це не тільки message queue: це <strong>розподілений append-only журнал</strong>, з якого багато споживачів можуть читати події незалежно одне від одного. У великих компаніях Kafka — «центр усесвіту даних»: до нього підключені 100+ сервісів.</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+          <!-- Producers -->
+          <g>
+            <rect x="20" y="30" width="140" height="40" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="90" y="55" text-anchor="middle" fill="#9a9a95" font-size="11">Web service</text>
+            <rect x="20" y="80" width="140" height="40" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="90" y="105" text-anchor="middle" fill="#9a9a95" font-size="11">Mobile API</text>
+            <rect x="20" y="130" width="140" height="40" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="90" y="155" text-anchor="middle" fill="#9a9a95" font-size="11">Payment svc</text>
+            <text x="90" y="15" text-anchor="middle" fill="#4ecdc4" font-size="10" letter-spacing="1">PRODUCERS</text>
+          </g>
+
+          <!-- Kafka cluster -->
+          <g>
+            <rect x="220" y="30" width="440" height="320" fill="rgba(78,205,196,.04)" stroke="#4ecdc4" stroke-width="2" rx="10"/>
+            <text x="440" y="20" text-anchor="middle" fill="#4ecdc4" font-size="11" letter-spacing="1">KAFKA CLUSTER (3 BROKERS)</text>
+
+            <!-- topic: orders -->
+            <text x="240" y="60" fill="#f4f4f2" font-size="11" font-weight="700">topic: orders</text>
+            <g>
+              <rect x="240" y="70" width="120" height="24" fill="#131316" stroke="#4ecdc4"/><text x="300" y="86" text-anchor="middle" fill="#9a9a95" font-size="9">P0 · broker-1 (leader)</text>
+              <rect x="240" y="96" width="120" height="24" fill="#131316" stroke="#26262b"/><text x="300" y="112" text-anchor="middle" fill="#6a6a66" font-size="9">P0 · broker-2 (replica)</text>
+              <rect x="240" y="122" width="120" height="24" fill="#131316" stroke="#26262b"/><text x="300" y="138" text-anchor="middle" fill="#6a6a66" font-size="9">P0 · broker-3 (replica)</text>
+            </g>
+            <g>
+              <rect x="370" y="70" width="120" height="24" fill="#131316" stroke="#26262b"/><text x="430" y="86" text-anchor="middle" fill="#6a6a66" font-size="9">P1 · broker-1 (replica)</text>
+              <rect x="370" y="96" width="120" height="24" fill="#131316" stroke="#4ecdc4"/><text x="430" y="112" text-anchor="middle" fill="#9a9a95" font-size="9">P1 · broker-2 (leader)</text>
+              <rect x="370" y="122" width="120" height="24" fill="#131316" stroke="#26262b"/><text x="430" y="138" text-anchor="middle" fill="#6a6a66" font-size="9">P1 · broker-3 (replica)</text>
+            </g>
+            <g>
+              <rect x="500" y="70" width="120" height="24" fill="#131316" stroke="#26262b"/><text x="560" y="86" text-anchor="middle" fill="#6a6a66" font-size="9">P2 · broker-1 (replica)</text>
+              <rect x="500" y="96" width="120" height="24" fill="#131316" stroke="#26262b"/><text x="560" y="112" text-anchor="middle" fill="#6a6a66" font-size="9">P2 · broker-2 (replica)</text>
+              <rect x="500" y="122" width="120" height="24" fill="#131316" stroke="#4ecdc4"/><text x="560" y="138" text-anchor="middle" fill="#9a9a95" font-size="9">P2 · broker-3 (leader)</text>
+            </g>
+
+            <!-- topic: clicks -->
+            <text x="240" y="180" fill="#f4f4f2" font-size="11" font-weight="700">topic: clicks</text>
+            <g>
+              <rect x="240" y="190" width="120" height="24" fill="#131316" stroke="#4ecdc4"/><text x="300" y="206" text-anchor="middle" fill="#9a9a95" font-size="9">P0 · broker-1</text>
+              <rect x="370" y="190" width="120" height="24" fill="#131316" stroke="#b794f6"/><text x="430" y="206" text-anchor="middle" fill="#9a9a95" font-size="9">P1 · broker-2</text>
+              <rect x="500" y="190" width="120" height="24" fill="#131316" stroke="#b794f6"/><text x="560" y="206" text-anchor="middle" fill="#9a9a95" font-size="9">P2 · broker-3</text>
+            </g>
+
+            <!-- log visualization -->
+            <text x="240" y="260" fill="#6a6a66" font-size="10" letter-spacing="1">offset →</text>
+            <g>
+              <rect x="240" y="270" width="28" height="28" fill="rgba(78,205,196,.3)"/><text x="254" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">0</text>
+              <rect x="270" y="270" width="28" height="28" fill="rgba(78,205,196,.3)"/><text x="284" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">1</text>
+              <rect x="300" y="270" width="28" height="28" fill="rgba(78,205,196,.3)"/><text x="314" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">2</text>
+              <rect x="330" y="270" width="28" height="28" fill="rgba(78,205,196,.3)"/><text x="344" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">3</text>
+              <rect x="360" y="270" width="28" height="28" fill="rgba(78,205,196,.5)"/><text x="374" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">4</text>
+              <rect x="390" y="270" width="28" height="28" fill="rgba(78,205,196,.5)"/><text x="404" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">5</text>
+              <rect x="420" y="270" width="28" height="28" fill="rgba(78,205,196,.7)"/><text x="434" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">6</text>
+              <rect x="450" y="270" width="28" height="28" fill="rgba(78,205,196,.7)"/><text x="464" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">7</text>
+              <rect x="480" y="270" width="28" height="28" fill="rgba(78,205,196,1)"/><text x="494" y="288" text-anchor="middle" fill="#000" font-size="10">8</text>
+              <text x="510" y="288" fill="#6a6a66" font-size="12">· · ·</text>
+            </g>
+            <text x="240" y="325" fill="#9a9a95" font-size="10">append-only · immutable · retention: 7d</text>
+          </g>
+
+          <!-- Consumers -->
+          <g>
+            <text x="810" y="15" text-anchor="middle" fill="#b794f6" font-size="10" letter-spacing="1">CONSUMERS</text>
+            <rect x="720" y="30" width="170" height="40" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="805" y="48" text-anchor="middle" fill="#9a9a95" font-size="11">Flink job (real-time)</text>
+            <text x="805" y="62" text-anchor="middle" fill="#6a6a66" font-size="9">group: flink-analytics</text>
+            <rect x="720" y="80" width="170" height="40" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="805" y="98" text-anchor="middle" fill="#9a9a95" font-size="11">S3 Sink (archive)</text>
+            <text x="805" y="112" text-anchor="middle" fill="#6a6a66" font-size="9">group: s3-connector</text>
+            <rect x="720" y="130" width="170" height="40" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="805" y="148" text-anchor="middle" fill="#9a9a95" font-size="11">Fraud detector</text>
+            <text x="805" y="162" text-anchor="middle" fill="#6a6a66" font-size="9">group: fraud-ml</text>
+          </g>
+
+          <!-- arrows -->
+          <line x1="160" y1="50" x2="218" y2="85" stroke="#9a9a95" stroke-width="1"/>
+          <line x1="160" y1="100" x2="218" y2="100" stroke="#9a9a95" stroke-width="1"/>
+          <line x1="160" y1="150" x2="218" y2="120" stroke="#9a9a95" stroke-width="1"/>
+          <line x1="662" y1="90" x2="718" y2="50" stroke="#9a9a95" stroke-width="1"/>
+          <line x1="662" y1="100" x2="718" y2="100" stroke="#9a9a95" stroke-width="1"/>
+          <line x1="662" y1="115" x2="718" y2="150" stroke="#9a9a95" stroke-width="1"/>
+        </svg>
+        <div class="diagram-caption">Kafka · брокери, топіки, партиції з реплікацією, consumer groups</div>
+      </div>
+
+      <h4>Ключові концепції Kafka</h4>
+      <div class="cards">
+        <div class="card"><div class="ic">T</div><h6>Topic</h6><p>Логічне ім'я потоку подій. Наприклад, <code>orders</code>, <code>user_clicks</code>, <code>payment_events</code>. За аналогією — «таблиця».</p></div>
+        <div class="card"><div class="ic">P</div><h6>Partition</h6><p>Фізичний поділ топіка для масштабування. Кожна партиція — окремий append-only лог на одному брокері. Порядок гарантується в межах партиції.</p></div>
+        <div class="card"><div class="ic">R</div><h6>Replication</h6><p>Кожна партиція має <code>replication.factor</code> (типово 3) копій на різних брокерах. Одна — leader, решта — replicas.</p></div>
+        <div class="card"><div class="ic">O</div><h6>Offset</h6><p>Номер повідомлення у партиції. Монотонно зростає. Споживач сам трекає, де він зупинився.</p></div>
+        <div class="card"><div class="ic">CG</div><h6>Consumer Group</h6><p>Група споживачів-«клонів» ділить партиції між собою. Одна партиція — один активний consumer у групі (для порядку).</p></div>
+        <div class="card"><div class="ic">K</div><h6>Message Key</h6><p>Визначає, в яку партицію потрапить подія (hash(key) % partitions). Повідомлення з однаковим ключем завжди ідуть у ту саму партицію = в тому ж порядку.</p></div>
+      </div>
+
+      <h4>Kafka Connect і Schema Registry</h4>
+      <p>Сирий Kafka — це тільки брокер. Для production-стеку додають:</p>
+      <ul>
+        <li><strong>Kafka Connect</strong> — декларативний фреймворк для source/sink-конекторів. CDC з Postgres через <a href="https://debezium.io" target="_blank">Debezium</a>, sink у S3 через <code>S3Sink</code>, в Elasticsearch, Snowflake — все через JSON-конфіг, без коду.</li>
+        <li><strong>Schema Registry</strong> (Confluent) — централізоване сховище Avro/Protobuf-схем. Producer при надсиланні додає в повідомлення лише schema_id (4 байти) замість усієї схеми. Перевіряє compatibility: чи не зламаєте ви споживачів зміною схеми.</li>
+        <li><strong>ksqlDB</strong> — SQL поверх Kafka, для легких streaming-агрегацій без Flink.</li>
+      </ul>
+
+      <h4>Apache Flink vs Spark Structured Streaming</h4>
+      <p>Два головні кандидати для обробки потоків у 2026. Обидва працюють з Kafka, обидва вміють stateful processing.</p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th></th><th>Apache Flink</th><th>Spark Structured Streaming</th></tr></thead>
+          <tbody>
+            <tr><td>Модель</td><td>True streaming (подія за подією)</td><td>Micro-batch (пачками за 100 мс – секунди)</td></tr>
+            <tr><td>Латентність</td><td><span class="badge good">~мс, subsecond</span></td><td><span class="badge mid">~сек</span></td></tr>
+            <tr><td>Stateful processing</td><td><span class="badge good">Нативно, RocksDB state backend</span></td><td><span class="badge good">Так, через checkpointing</span></td></tr>
+            <tr><td>Event time / watermarks</td><td><span class="badge good">Зразковий</span></td><td><span class="badge good">Підтримує</span></td></tr>
+            <tr><td>Exactly-once</td><td><span class="badge good">End-to-end (з transactional sinks)</span></td><td><span class="badge good">З Kafka source/sink</span></td></tr>
+            <tr><td>Крива входу</td><td><span class="badge bad">Складніше</span></td><td><span class="badge good">Якщо знаєте Spark — просто</span></td></tr>
+            <tr><td>Екосистема</td><td>Java/Scala/Python API, SQL</td><td>Єдиний з batch Spark</td></tr>
+            <tr><td>Коли обирати</td><td>Latency critical (trading, fraud, IoT)</td><td>Вже є Spark-стек; латентність &gt; секунди ОК</td></tr>
+            <tr><td>Великі користувачі</td><td>Uber, Alibaba, Netflix, Stripe</td><td>Databricks-клієнти, enterprise</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Stateful processing, windows, watermarks</h4>
+      <p>Це три концепції, без яких streaming перетворюється на набір неправильних цифр. Вивчіть їх ґрунтовно.</p>
+
+      <h5>Stateful processing</h5>
+      <p>Чистий stateless-обробник: «отримав подію → трансформував → відправив далі». Stateful: «отримав подію → оновив якийсь накопичений стан (counter, агрегат, профіль користувача) → відправив результат». Kafka Streams і Flink зберігають state локально (RocksDB), роблять snapshot-и у S3 для відновлення після падіння.</p>
+
+      <h5>Event time vs processing time</h5>
+      <ul>
+        <li><strong>Event time</strong> — коли подія реально сталась (timestamp з самої події, який згенерував клієнт).</li>
+        <li><strong>Processing time</strong> — коли наш джоб побачив подію.</li>
+        <li>Ці два часи розходяться: клієнт був офлайн 2 години, батчем відправив 100 подій. Event time — давній, processing time — зараз.</li>
+        <li>Для бізнес-правильних агрегацій треба <strong>event time</strong>.</li>
+      </ul>
+
+      <h5>Windowing</h5>
+      <div class="cards">
+        <div class="card"><div class="ic">T</div><h6>Tumbling</h6><p>Фіксовані непересічні вікна: [12:00-12:05), [12:05-12:10). Для «виторг за кожні 5 хв».</p></div>
+        <div class="card"><div class="ic">S</div><h6>Sliding (Hopping)</h6><p>Розмір 10 хв, крок 1 хв — вікна перекриваються. Для «ковзного середнього останні 10 хв».</p></div>
+        <div class="card"><div class="ic">Se</div><h6>Session</h6><p>Гнучкі вікна з gap-ом. Коли gap між подіями &gt; 30 хв — нова сесія. Класично для user activity.</p></div>
+        <div class="card"><div class="ic">G</div><h6>Global</h6><p>Одне нескінченне вікно. Закривається тригером (custom logic).</p></div>
+      </div>
+
+      <h5>Watermarks — коли закривати вікно</h5>
+      <p>Якщо ми чекаємо «усі події за 12:00-12:05», то коли зупиняємо чекати? Подія з event-time 12:03 може прийти о 12:08 (запізнилась). Watermark — це «ми вважаємо, що подій з event-time раніше X більше не буде». Типово — max_event_time_seen − 5 хвилин. Після того, як watermark перетинає кінець вікна, воно закривається і тригерить обчислення. Пізніші події або відкидаються, або йдуть у side output (late data).</p>
+
+      <h4>Apache Flink — практичний код</h4>
+      <div class="analogy"><strong>Аналогія:</strong> Якщо Kafka — це конвеєр з коробками, то Flink — бригада, яка обробляє кожну коробку в реальному часі, пам'ятає скільки коробок пройшло (state), і може відновитись з будь-якої точки після аварії (checkpoint).</div>
+
+      <h5>PyFlink — tumbling window job (GMV по країнах)</h5>
+      <div class="pre-wrap"><pre><code># pip install apache-flink
+from pyflink.datastream import StreamExecutionEnvironment
+from pyflink.datastream.connectors.kafka import (
+    KafkaSource, KafkaSink, KafkaRecordSerializationSchema,
+    DeserializationSchema, KafkaOffsetsInitializer,
+)
+from pyflink.common import WatermarkStrategy, Duration, Types
+from pyflink.common.serialization import SimpleStringSchema
+from pyflink.datastream.window import TumblingEventTimeWindows
+from pyflink.datastream.functions import ReduceFunction, ProcessWindowFunction
+import json, time
+
+env = StreamExecutionEnvironment.get_execution_environment()
+env.set_parallelism(4)
+
+# Checkpoint кожні 30 сек → S3 для відновлення після падіння
+env.enable_checkpointing(30_000)
+env.get_checkpoint_config().set_checkpoint_storage("s3://shopwave-checkpoints/flink/")
+
+# Kafka source
+source = (
+    KafkaSource.builder()
+    .set_bootstrap_servers("kafka:9092")
+    .set_topics("shopwave.orders")
+    .set_group_id("flink-gmv-job")
+    .set_starting_offsets(KafkaOffsetsInitializer.earliest())
+    .set_value_only_deserializer(SimpleStringSchema())
+    .build()
+)
+
+# Watermark: toleruємо late events до 10 сек
+watermark_strategy = (
+    WatermarkStrategy
+    .for_bounded_out_of_orderness(Duration.of_seconds(10))
+    .with_timestamp_assigner(
+        lambda event, _: json.loads(event)["event_time"]
+    )
+)
+
+stream = env.from_source(source, watermark_strategy, "Kafka orders")
+
+# Parse + tumbling window 5 хв per country → GMV
+result = (
+    stream
+    .map(lambda s: json.loads(s), output_type=Types.PICKLED_BYTE_ARRAY())
+    .map(lambda o: (o["country"], o["total_amount"]),
+         output_type=Types.TUPLE([Types.STRING(), Types.DOUBLE()]))
+    .key_by(lambda x: x[0])                          # key = country
+    .window(TumblingEventTimeWindows.of(Duration.of_minutes(5)))
+    .reduce(lambda a, b: (a[0], a[1] + b[1]))        # sum amounts
+    .map(lambda x: json.dumps({
+        "country": x[0], "gmv": round(x[1], 2),
+        "window_ts": int(time.time() * 1000)
+    }))
+)
+
+# Sink → Kafka topic gmv_5min
+sink = (
+    KafkaSink.builder()
+    .set_bootstrap_servers("kafka:9092")
+    .set_record_serializer(
+        KafkaRecordSerializationSchema.builder()
+        .set_topic("shopwave.gmv_5min")
+        .set_value_serialization_schema(SimpleStringSchema())
+        .build()
+    )
+    .build()
+)
+
+result.sink_to(sink)
+env.execute("ShopWave GMV 5-min windows")</code></pre></div>
+
+      <h5>Stateful processing — fraud detection з keyed state</h5>
+      <div class="pre-wrap"><pre><code>from pyflink.datastream import StreamExecutionEnvironment
+from pyflink.datastream.state import ValueStateDescriptor
+from pyflink.datastream.functions import KeyedProcessFunction
+from pyflink.common import Types
+
+class FraudDetector(KeyedProcessFunction):
+    """Детектор: >5 замовлень від одного user_id за 2 хвилини → alert."""
+
+    def open(self, runtime_context):
+        # State зберігається локально (RocksDB) + у checkpoint (S3)
+        self.count_state = runtime_context.get_state(
+            ValueStateDescriptor("order_count", Types.INT())
+        )
+        self.window_start = runtime_context.get_state(
+            ValueStateDescriptor("window_start", Types.LONG())
+        )
+
+    def process_element(self, order, ctx):
+        now = order["event_time"]
+        count = self.count_state.value() or 0
+        win_start = self.window_start.value() or now
+
+        # Якщо вікно 2 хв вийшло → скинути лічильник
+        if now - win_start > 2 * 60 * 1000:
+            count = 0
+            self.window_start.update(now)
+
+        count += 1
+        self.count_state.update(count)
+
+        if count > 5:
+            # Emit fraud alert
+            yield {
+                "user_id": order["user_id"],
+                "count": count,
+                "alert_time": now,
+                "type": "RAPID_ORDERS"
+            }
+            # Зареєструвати cleanup timer через 10 хв
+            ctx.timer_service().register_event_time_timer(now + 600_000)
+
+    def on_timer(self, timestamp, ctx):
+        # Очистити state після таймера
+        self.count_state.clear()
+        self.window_start.clear()
+
+# Використання:
+fraud_stream = (
+    parsed_orders
+    .key_by(lambda o: o["user_id"])
+    .process(FraudDetector(), output_type=Types.PICKLED_BYTE_ARRAY())
+)</code></pre></div>
+
+      <h5>Checkpoint та Savepoint — відновлення після падіння</h5>
+      <div class="pre-wrap"><pre><code># Запуск з відновленням з savepoint
+flink run \
+  --python gmv_job.py \
+  -s s3://shopwave-checkpoints/flink/savepoints/savepoint-abc123
+
+# Зробити savepoint вручну (перед deploy нової версії)
+flink savepoint <job-id> s3://shopwave-checkpoints/flink/savepoints/
+
+# Checkpoint vs Savepoint:
+# Checkpoint — автоматичні, для fault-tolerance, тимчасові
+# Savepoint — ручні, для upgrades/migrations, постійні
+
+# RocksDB state backend (для великого state)
+env.set_state_backend(EmbeddedRocksDBStateBackend(incremental=True))
+# incremental=True → тільки нові/змінені SST файли йдуть у checkpoint
+# Зменшує розмір checkpoint з гигабайт до мегабайт</code></pre></div>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Параметр</th><th>Flink (true streaming)</th><th>Spark Structured Streaming</th></tr></thead>
+          <tbody>
+            <tr><td>Мінімальна latency</td><td>~1-10 мс</td><td>~100 мс–1 сек (micro-batch)</td></tr>
+            <tr><td>State backend</td><td>RocksDB (disk-spill)</td><td>Spark executor memory</td></tr>
+            <tr><td>Checkpoint overhead</td><td>~seconds (incremental)</td><td>Кожен micro-batch</td></tr>
+            <tr><td>Exactly-once sink</td><td>2PC з transactional Kafka</td><td>Kafka + foreachBatch</td></tr>
+            <tr><td>Python API</td><td>PyFlink (обгортка Java)</td><td>Native PySpark</td></tr>
+            <tr><td>SQL API</td><td>Flink SQL (повний)</td><td>Spark SQL (stream)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Exactly-once semantics</h4>
+      <p>Три рівні гарантій при обробці потоку:</p>
+      <ul>
+        <li><strong>At-most-once</strong> — подія може загубитись, але не подвоїтись. Дешево, рідко потрібно.</li>
+        <li><strong>At-least-once</strong> — подія не загубиться, але може прийти двічі. Дешево, але вимагає idempotent-обробку.</li>
+        <li><strong>Exactly-once</strong> — рівно один раз від початку до кінця (end-to-end). Найдорожче. Досягається через транзакційний commit у Kafka + checkpointing у Flink/Spark + idempotent sink.</li>
+      </ul>
+
+      <h4>Альтернативи Kafka</h4>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Платформа</th><th>Фішка</th><th>Коли обирати</th></tr></thead>
+          <tbody>
+            <tr><td>Apache Pulsar</td><td>Compute/storage separation, multi-tenancy, geo-replication</td><td>Мультирегіональні деплої, великий scale</td></tr>
+            <tr><td>Redpanda</td><td>Kafka API + C++ замість JVM — у 10× менше RAM</td><td>Kafka без JVM-болю, простіша операційна модель</td></tr>
+            <tr><td>AWS Kinesis</td><td>Managed, тісно з AWS-сервісами</td><td>Ви повністю у AWS, не хочете оперувати Kafka</td></tr>
+            <tr><td>GCP Pub/Sub</td><td>Serverless, autoscale</td><td>Ви у GCP; не треба строгих порядкових гарантій</td></tr>
+            <tr><td>Azure Event Hubs</td><td>Kafka-протокол сумісний</td><td>Azure-стек</td></tr>
+            <tr><td>NATS / NATS JetStream</td><td>Легкий, швидкий, C-ядро</td><td>Edge, IoT, мікросервіси з низькою затримкою</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Python Producer та Consumer — повний код</h4>
+      <div class="analogy"><strong>Аналогія:</strong> Kafka producer — як поштар, який кидає листи у поштову скриньку (partition). Consumer — як підписник, який регулярно виймає листи та обробляє їх. Consumer group — кілька підписників, що ділять ящик: кожен читає своє, разом охоплюють весь топік.</div>
+
+      <div class="pre-wrap"><pre><code># pip install confluent-kafka fastavro
+import json, time, random
+from confluent_kafka import Producer, KafkaError
+from confluent_kafka.schema_registry import SchemaRegistryClient
+from confluent_kafka.schema_registry.avro import AvroSerializer
+from confluent_kafka.serialization import StringSerializer, SerializationContext, MessageField
+
+SCHEMA_STR = """
+{
+  "type": "record",
+  "name": "OrderEvent",
+  "fields": [
+    {"name": "order_id",     "type": "string"},
+    {"name": "user_id",      "type": "string"},
+    {"name": "total_amount", "type": "double"},
+    {"name": "country",      "type": "string"},
+    {"name": "event_time",   "type": "long",   "logicalType": "timestamp-millis"}
+  ]
+}
+"""
+
+schema_registry_client = SchemaRegistryClient({"url": "http://localhost:8081"})
+avro_serializer = AvroSerializer(schema_registry_client, SCHEMA_STR)
+string_serializer = StringSerializer("utf_8")
+
+producer = Producer({
+    "bootstrap.servers": "localhost:9092",
+    "acks": "all",                   # чекаємо підтвердження від усіх ISR
+    "retries": 5,
+    "retry.backoff.ms": 500,
+    "enable.idempotence": True,      # exactly-once на рівні producer
+    "compression.type": "zstd",
+    "batch.size": 65536,
+    "linger.ms": 5,                  # збираємо мікро-батч 5 мс перед відправкою
+})
+
+COUNTRIES = ["UA", "PL", "DE", "FR", "US"]
+
+def delivery_report(err, msg):
+    if err is not None:
+        print(f"[ERROR] delivery failed: {err}")
+
+def produce_orders(topic: str, n: int = 10_000):
+    for i in range(n):
+        order = {
+            "order_id":     f"ord-{i:08d}",
+            "user_id":      f"usr-{random.randint(1, 10_000):06d}",
+            "total_amount": round(random.uniform(5.0, 500.0), 2),
+            "country":      random.choice(COUNTRIES),
+            "event_time":   int(time.time() * 1000),
+        }
+        producer.produce(
+            topic=topic,
+            key=string_serializer(order["user_id"]),   # ключ → детермінована партиція
+            value=avro_serializer(
+                order,
+                SerializationContext(topic, MessageField.VALUE)
+            ),
+            on_delivery=delivery_report,
+        )
+        if i % 1000 == 0:
+            producer.poll(0)          # обробити callbacks
+
+    producer.flush()                  # дочекатись доставки всіх повідомлень
+    print(f"Produced {n} events to '{topic}'")
+
+produce_orders("shopwave.orders", n=50_000)</code></pre></div>
+
+      <div class="pre-wrap"><pre><code># Consumer з Dead Letter Queue (DLQ)
+from confluent_kafka import Consumer, TopicPartition
+from confluent_kafka.schema_registry.avro import AvroDeserializer
+
+avro_deserializer = AvroDeserializer(schema_registry_client, SCHEMA_STR)
+
+consumer = Consumer({
+    "bootstrap.servers": "localhost:9092",
+    "group.id":           "shopwave-analytics-v1",
+    "auto.offset.reset":  "earliest",
+    "enable.auto.commit": False,      # manual commit після обробки
+    "max.poll.interval.ms": 300_000,
+    "session.timeout.ms":    45_000,
+})
+
+dlq_producer = Producer({"bootstrap.servers": "localhost:9092"})
+
+def process_order(order: dict) -> None:
+    if order["total_amount"] &lt; 0:
+        raise ValueError(f"Negative amount: {order}")
+    # ... бізнес-логіка ...
+
+consumer.subscribe(["shopwave.orders"])
+try:
+    while True:
+        msg = consumer.poll(timeout=1.0)
+        if msg is None:
+            continue
+        if msg.error():
+            if msg.error().code() == KafkaError._PARTITION_EOF:
+                continue
+            raise Exception(msg.error())
+
+        try:
+            order = avro_deserializer(
+                msg.value(),
+                SerializationContext(msg.topic(), MessageField.VALUE)
+            )
+            process_order(order)
+            consumer.commit(asynchronous=False)   # тільки після успішної обробки
+
+        except Exception as e:
+            # Dead Letter Queue — відправити проблемне повідомлення в окремий топік
+            dlq_producer.produce(
+                topic="shopwave.orders.dlq",
+                key=msg.key(),
+                value=msg.value(),
+                headers={"error": str(e), "original_topic": msg.topic()},
+            )
+            dlq_producer.flush()
+            consumer.commit(asynchronous=False)   # не застрягати на поганому повідомленні
+            print(f"[DLQ] Sent message to DLQ: {e}")
+
+finally:
+    consumer.close()</code></pre></div>
+
+      <h5>Kafka Monitoring — критичні метрики</h5>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Метрика</th><th>Що вимірює</th><th>Поріг тривоги</th></tr></thead>
+          <tbody>
+            <tr><td><code>consumer_lag</code></td><td>Кількість повідомлень, які consumer ще не обробив</td><td>&gt; 10k → consumer не встигає; &gt; 1M → критично</td></tr>
+            <tr><td><code>under_replicated_partitions</code></td><td>Партиції без повного набору ISR-реплік</td><td>&gt; 0 → ризик втрати даних при падінні брокера</td></tr>
+            <tr><td><code>isr_shrinks</code></td><td>Частота виходу реплік з ISR</td><td>Рост → мережа або диск брокера</td></tr>
+            <tr><td><code>active_controller_count</code></td><td>Кількість активних Kafka Controllers</td><td>Завжди повинно = 1</td></tr>
+            <tr><td><code>request_handler_avg_idle_%</code></td><td>CPU idle брокера</td><td>&lt; 20% → брокер перевантажений</td></tr>
+            <tr><td><code>network_processor_avg_idle_%</code></td><td>Idle мережевих потоків</td><td>&lt; 30% → мережевий bottleneck</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="interview-qa">
+        <h5>🎯 Interview Q&A — Модуль 5: Kafka + Flink</h5>
+        <div class="qa-item">
+          <div class="qa-q">Як Kafka досягає high throughput і low latency одночасно?</div>
+          <div class="qa-a">Кілька механізмів: 1) Sequential I/O — запис append-only, OS cache (page cache) робить sequential reads дуже швидкими, дискова латентність близька до мережевої. 2) Zero-copy — sendfile() syscall передає дані з page cache прямо в мережевий буфер без копіювання в user space. 3) Batching — producer збирає повідомлення в batch (linger.ms + batch.size) і відправляє разом. 4) Compression — ZSTD/LZ4/Snappy компресують batch, зменшуючи мережевий трафік. 5) Consumer parallelism — кожна партиція паралельно читається окремим consumer-ом у групі. Разом це дає 1M+ msg/sec на одному брокері.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке consumer lag і як з ним боротись?</div>
+          <div class="qa-a">Consumer lag = різниця між останнім offset-ом у партиції (high watermark) та committed offset consumer-а. Показує скільки повідомлень «в черзі» не оброблено. Причини: 1) Consumer повільний (важка обробка), 2) Retention — нові повідомлення надходять швидше, ніж consumer справляється, 3) Consumer завис (exception, OOM). Рішення: a) Збільшити parallelism — більше партицій + більше consumer-ів у групі, b) Оптимізувати processing logic (batch inserts замість по одному), c) Scale out consumer group, d) Перевірити DLQ — чи не застрягли повідомлення через recurring errors. Моніторинг: Kafka consumer lag alert у Grafana через JMX або Kafka Exporter для Prometheus.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Exactly-once в Kafka — як це реалізується?</div>
+          <div class="qa-a">Три компоненти: 1) Idempotent producer (enable.idempotence=true) — producer отримує PID і sequence number; брокер дедуплікує повторні відправки. 2) Transactions — producer.begin_transaction() / commit_transaction() — атомарний запис у кілька партицій/топіків. 3) Isolated consumers (isolation.level=read_committed) — consumer читає тільки committed транзакції, не uncommitted або aborted. Для end-to-end exactly-once (Kafka → обробка → Kafka) потрібні всі три. З Flink: Flink CheckpointedFunction + KafkaTransactionProducer забезпечують exactly-once через 2-phase commit між Flink checkpoint і Kafka transaction.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Event time vs processing time — чому це важливо?</div>
+          <div class="qa-a">Processing time — час, коли система обробила подію. Event time — час, коли подія реально сталась (мітка часу в самій події). Розходяться через: мережева затримка, мобільні пристрої офлайн, retry-механізми. Для бізнес-аналітики (GMV за вчора, conversion funnel) треба event time — інакше отримаємо "вчорашні" дані у сьогоднішніх звітах. Watermark вирішує проблему "коли закрити вікно": max(event_time) − allowed_lateness. Наприклад, watermark = max_event_time − 5хв означає "ми вважаємо, що всі події старші за watermark вже надійшли".</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як обрати кількість партицій у топіку?</div>
+          <div class="qa-a">Немає єдиної формули, але правила: 1) Кількість партицій = максимальний паралелізм consumer group. Якщо 6 партицій — максимум 6 активних consumer-ів. 2) Throughput: якщо потрібно 100 MB/s, а один broker може дати 50 MB/s на партицію — мінімум 2 партиції. 3) Не переборщувати: кожна партиція — файл на диску, file handle в OS. 10k+ партицій на брокері = проблеми. Хороший старт: 3-6 партицій для невеликого топіку, 12-24 для великого. Збільшити пізніше можна, але зміна кількості партицій змінює routing key → hash() mapping, що ламає порядок для ключів.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Flink vs Spark Structured Streaming — коли що обирати?</div>
+          <div class="qa-a">Flink: true streaming (подія за подією), latency ~мс, stateful processing з RocksDB, SQL API, зрілий event time / watermarks. Обирайте для: trading, fraud detection, IoT реального часу, будь-де де latency &lt; секунди критична. Spark Structured Streaming: micro-batch (пачки 100мс-секунди), простіший якщо вже є Spark-стек, єдиний API для batch+stream. Обирайте для: latency ≥ секунди ОК, команда знає Spark, треба єдиний рантайм. У 2026 Flink виграє у latency і stateful, Spark — у simple ETL stream з Databricks.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке Dead Letter Queue і навіщо він потрібен?</div>
+          <div class="qa-a">DLQ — окремий топік, куди відправляються повідомлення, які consumer не зміг обробити (parse error, validation failure, downstream timeout). Без DLQ: consumer застряє на "отруєному" повідомленні і lag зростає → весь pipeline стоїть. З DLQ: проблемне повідомлення відкладається, обробка продовжується. Потім DLQ аналізується: a) виправляємо баг і replay-имо повідомлення, b) відкидаємо як невалідні дані. Паттерн: зберігати в DLQ оригінальне повідомлення + headers з помилкою + метаданими (original_topic, original_partition, original_offset, error_message, timestamp). Моніторити consumer lag DLQ-топіка теж важливо — якщо він росте, щось системно зламалось.</div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h5>Додаткові ресурси — Модуль 5</h5>
+        <div class="res-grid">
+          <a class="res-item" href="https://kafka.apache.org/documentation/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Apache Kafka Documentation</span><span class="res-meta">kafka.apache.org</span></a>
+          <a class="res-item" href="https://www.oreilly.com/library/view/kafka-the-definitive/9781492043072/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Kafka: The Definitive Guide (2nd ed.)</span><span class="res-meta">Narkhede · Shapira · Palino</span></a>
+          <a class="res-item" href="https://developer.confluent.io/courses/" target="_blank"><span class="res-type">🎓 Course · EN</span><span class="res-title">Confluent Developer — безкоштовні курси Kafka</span><span class="res-meta">developer.confluent.io</span></a>
+          <a class="res-item" href="https://nightlies.apache.org/flink/flink-docs-stable/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Apache Flink Documentation</span><span class="res-meta">flink.apache.org</span></a>
+          <a class="res-item" href="https://www.oreilly.com/library/view/stream-processing-with/9781491974285/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Stream Processing with Apache Flink</span><span class="res-meta">Hueske · Kalavri · O'Reilly</span></a>
+          <a class="res-item" href="https://www.oreilly.com/library/view/streaming-systems/9781491983867/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Streaming Systems — Tyler Akidau</span><span class="res-meta">Google Dataflow team · O'Reilly</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=Jy16oquOaFk" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">Kafka 101 — Confluent повний курс</span><span class="res-meta">YouTube</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=vLLBcBMpW1I" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">Apache Flink for Stream &amp; Batch Processing</span><span class="res-meta">YouTube</span></a>
+          <a class="res-item" href="https://debezium.io/documentation/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Debezium — CDC через Kafka Connect</span><span class="res-meta">debezium.io</span></a>
+          <a class="res-item" href="https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying" target="_blank"><span class="res-type">📖 Article · EN</span><span class="res-title">The Log: What every software engineer should know</span><span class="res-meta">Jay Kreps · LinkedIn</span></a>
+        </div>
+      </div>
+
+      <div class="assignment">
+        <div class="a-label">📝 Завдання · Модуль 5</div>
+        <h5>Kafka + Flink real-time pipeline</h5>
+        <ol>
+          <li>Підняти <strong>Kafka + Schema Registry</strong> у <code>docker-compose</code> (<a href="https://github.com/confluentinc/cp-all-in-one" target="_blank">cp-all-in-one</a>)</li>
+          <li>Написати <strong>Python producer</strong>, який генерує ~1000 events/sec у топік <code>events</code> з Avro-схемою</li>
+          <li>Написати <strong>Python consumer</strong>, який читає events і логує їх (базовий smoke test)</li>
+          <li>Написати <strong>Flink job</strong> (Java/Scala/PyFlink): вікно 1 хв tumbling, рахує кількість events за кожну країну, пише в <code>agg_events</code> топік</li>
+          <li>Порівняти event time vs processing time на симульованих late-events (штучно додайте timestamp у минуле)</li>
+          <li>Задокументувати: схема топіків, ретенція, як запустити</li>
+        </ol>
+        <div class="deliverable"><strong>Deliverable:</strong> <code>docker-compose.yml</code>, producer/consumer скрипти, Flink job, README у <code>/assignments/m5/</code></div>
+      </div>
+
+      <div class="milestone">
+        <div class="m-label">Project Milestone · ShopWave</div>
+        <h5>М5: Real-time pipeline для order-events</h5>
+        <ul>
+          <li>Kafka + Schema Registry у <code>docker-compose.yml</code> проекту (3 брокери, replication=3)</li>
+          <li>Сервіс-генератор <code>shopwave/producers/orders_producer.py</code> симулює реалістичні замовлення (Faker + ваги по часу доби)</li>
+          <li>Avro-схема <code>schemas/order_event.avsc</code> з поліми <code>order_id, user_id, items[], total_amount, country, timestamp</code></li>
+          <li><strong>Flink job</strong> рахує <code>GMV / 5-хв вікно / країна</code> і пише в Kafka-топік <code>gmv_5min</code></li>
+          <li>Окремий Flink job детектує антифрод-сигнали (&gt;5 замовлень від одного user_id за 2 хв)</li>
+          <li>Додати <strong>Kafka Connect S3 Sink</strong>: усі <code>orders</code> автоматично копіюються в bronze-шар</li>
+          <li>ADR: <code>ADR-004-streaming-stack.md</code> (чому Kafka + Flink, а не Kinesis + Spark Streaming)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 6 -->
+<section class="module" id="module-6">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">06</div>
+      <div class="mod-meta">
+        <div class="mod-week">Тижні 9 – 10 · ~30 год</div>
+        <h2 class="mod-title">Data Lakehouse — <span class="violet">Delta · Iceberg · Hudi</span></h2>
+        <p class="mod-lead">Перевести Data Lake з «купи Parquet-файлів» у систему з ACID-транзакціями, upsert-ами, time travel і schema evolution. Це зміна, яка перетворює lake з дослідницького інструменту на надійну production-платформу.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Чому «просто Parquet у S3» — недостатньо</h4>
+      <p>У Частині 1 ми розкладали події по папках <code>year=2026/month=04/</code>. Це працює для грубого ETL, але на production ламається в кількох місцях:</p>
+
+      <div class="proscons">
+        <div class="pc-box cons">
+          <h6>Проблеми «голого» lake</h6>
+          <ul>
+            <li><strong>Немає ACID.</strong> Два Spark-джоби одночасно пишуть у ту саму партицію — дані можуть бути частково побачені читачем</li>
+            <li><strong>Немає UPDATE/DELETE.</strong> Треба переписати всю партицію, навіть якщо змінився 1 рядок. GDPR «видалити юзера 42» стає катастрофою</li>
+            <li><strong>Schema drift.</strong> Хтось додав колонку або змінив тип — читачі ламаються</li>
+            <li><strong>Малі файли.</strong> Стрім додає по 1 MB щохвилини — через тиждень у S3 мільйони файлів, запити ледь повзуть</li>
+            <li><strong>Немає time travel.</strong> «Покажи дані, як було 2 дні тому до багу» — ніяк</li>
+            <li><strong>Listing expensive.</strong> S3 LIST через тисячі партицій — повільно і дорого</li>
+          </ul>
+        </div>
+        <div class="pc-box pros">
+          <h6>Що вирішує lakehouse-формат</h6>
+          <ul>
+            <li>Транзакційний лог (metadata layer) поверх Parquet</li>
+            <li>ACID на рівні таблиці — у тому числі concurrent writes</li>
+            <li>Upsert (MERGE), DELETE, UPDATE — рядок рівня</li>
+            <li>Schema evolution — add/drop/rename колонок без міграцій</li>
+            <li>Time travel — запит на стан таблиці на дату/версію</li>
+            <li>Automatic compaction — склеювання маленьких файлів</li>
+            <li>Partition evolution — змінити схему партицій без переливки</li>
+          </ul>
+        </div>
+      </div>
+
+      <h4>Як це технічно працює — на прикладі Iceberg</h4>
+      <p>Iceberg тримає поверх Parquet-файлів метаслой з трьох рівнів:</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+          <!-- catalog -->
+          <rect x="40" y="30" width="180" height="60" fill="rgba(183,148,246,.1)" stroke="#b794f6" stroke-width="2" rx="8"/>
+          <text x="130" y="55" text-anchor="middle" fill="#b794f6" font-size="12" font-weight="700">CATALOG</text>
+          <text x="130" y="75" text-anchor="middle" fill="#9a9a95" font-size="10">Hive / Glue / REST</text>
+
+          <!-- metadata.json -->
+          <rect x="280" y="30" width="200" height="60" fill="rgba(78,205,196,.1)" stroke="#4ecdc4" stroke-width="2" rx="8"/>
+          <text x="380" y="50" text-anchor="middle" fill="#4ecdc4" font-size="12" font-weight="700">metadata.json</text>
+          <text x="380" y="70" text-anchor="middle" fill="#9a9a95" font-size="10">schema · partition spec</text>
+          <text x="380" y="83" text-anchor="middle" fill="#9a9a95" font-size="10">список snapshot-ів</text>
+
+          <!-- snapshots -->
+          <g>
+            <rect x="280" y="130" width="200" height="50" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="380" y="152" text-anchor="middle" fill="#f4f4f2" font-size="11">snapshot-1 (initial)</text>
+            <text x="380" y="168" text-anchor="middle" fill="#6a6a66" font-size="10">2026-04-18 · add 100 files</text>
+          </g>
+          <g>
+            <rect x="280" y="190" width="200" height="50" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="380" y="212" text-anchor="middle" fill="#f4f4f2" font-size="11">snapshot-2 (merge)</text>
+            <text x="380" y="228" text-anchor="middle" fill="#6a6a66" font-size="10">2026-04-19 · add 3, delete 2</text>
+          </g>
+          <g>
+            <rect x="280" y="250" width="200" height="50" fill="rgba(78,205,196,.15)" stroke="#4ecdc4" rx="6"/>
+            <text x="380" y="272" text-anchor="middle" fill="#4ecdc4" font-size="11" font-weight="700">snapshot-3 (CURRENT)</text>
+            <text x="380" y="288" text-anchor="middle" fill="#9a9a95" font-size="10">2026-04-21 · compact 50→8</text>
+          </g>
+
+          <!-- manifest lists -->
+          <text x="580" y="125" fill="#9a9a95" font-size="10" letter-spacing="1">MANIFEST LIST</text>
+          <rect x="540" y="130" width="160" height="50" fill="#131316" stroke="#26262b" rx="6"/>
+          <text x="620" y="152" text-anchor="middle" fill="#f4f4f2" font-size="10">manifest-list-1.avro</text>
+          <text x="620" y="168" text-anchor="middle" fill="#6a6a66" font-size="9">list of manifests</text>
+          <rect x="540" y="250" width="160" height="50" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" rx="6"/>
+          <text x="620" y="272" text-anchor="middle" fill="#f4f4f2" font-size="10">manifest-list-3.avro</text>
+
+          <!-- manifests -->
+          <text x="800" y="125" fill="#9a9a95" font-size="10" letter-spacing="1">MANIFESTS</text>
+          <rect x="740" y="130" width="140" height="40" fill="#131316" stroke="#26262b" rx="4"/>
+          <text x="810" y="155" text-anchor="middle" fill="#f4f4f2" font-size="10">m1.avro (50 files)</text>
+          <rect x="740" y="180" width="140" height="40" fill="#131316" stroke="#26262b" rx="4"/>
+          <text x="810" y="205" text-anchor="middle" fill="#f4f4f2" font-size="10">m2.avro (3 files)</text>
+          <rect x="740" y="250" width="140" height="40" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" rx="4"/>
+          <text x="810" y="275" text-anchor="middle" fill="#f4f4f2" font-size="10">m3.avro (8 files)</text>
+
+          <!-- parquet -->
+          <text x="450" y="333" fill="#6a6a66" font-size="10">→ 8× Parquet-файлів (data) у S3</text>
+
+          <!-- arrows -->
+          <line x1="220" y1="60" x2="278" y2="60" stroke="#9a9a95" stroke-width="1"/>
+          <line x1="380" y1="90" x2="380" y2="128" stroke="#9a9a95" stroke-width="1" opacity=".5"/>
+          <line x1="480" y1="275" x2="538" y2="275" stroke="#4ecdc4" stroke-width="1"/>
+          <line x1="700" y1="275" x2="738" y2="275" stroke="#4ecdc4" stroke-width="1"/>
+        </svg>
+        <div class="diagram-caption">Iceberg · catalog → metadata.json → snapshots → manifest lists → data files</div>
+      </div>
+
+      <ul>
+        <li><strong>Catalog</strong> тримає вказівник на актуальний <code>metadata.json</code> (Hive Metastore, AWS Glue, REST Catalog, <code>nessie</code>).</li>
+        <li><strong>metadata.json</strong> — схема, partition spec, історія всіх snapshots.</li>
+        <li><strong>Snapshot</strong> — один «стан таблиці». Кожна операція (INSERT/UPDATE/MERGE) створює новий snapshot. Старі лишаються на диску ⇒ time travel.</li>
+        <li><strong>Manifest list</strong> вказує на manifest-файли, <strong>manifest</strong> містить список data-файлів з min/max статистикою колонок.</li>
+        <li><strong>Data files</strong> — звичайні Parquet на S3. Жодних спеціальних форматів — тому Iceberg-таблицю може читати будь-який engine, який розуміє спеку.</li>
+      </ul>
+
+      <h4>Три кандидати — Delta vs Iceberg vs Hudi</h4>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th></th><th>Delta Lake</th><th>Apache Iceberg</th><th>Apache Hudi</th></tr></thead>
+          <tbody>
+            <tr><td>Автор</td><td>Databricks (2019)</td><td>Netflix (2018)</td><td>Uber (2016)</td></tr>
+            <tr><td>Фокус</td><td>Простота, інтеграція з Spark/Databricks</td><td>Універсальність, engine-agnostic</td><td>Upsert-важкі workloads, CDC</td></tr>
+            <tr><td>Engines</td><td><span class="badge mid">Spark, Trino, Flink (обмежено)</span></td><td><span class="badge good">Spark, Trino, Flink, Snowflake, BigQuery, DuckDB</span></td><td>Spark, Flink, Hive</td></tr>
+            <tr><td>Concurrent writers</td><td><span class="badge good">Optimistic concurrency</span></td><td><span class="badge good">Optimistic concurrency</span></td><td>Складніше (MOR vs COW)</td></tr>
+            <tr><td>Upsert performance</td><td><span class="badge mid">Добре</span></td><td><span class="badge mid">Добре</span></td><td><span class="badge good">Найкраще (нативно)</span></td></tr>
+            <tr><td>Time travel</td><td><span class="badge good">За версією / timestamp</span></td><td><span class="badge good">За snapshot ID / timestamp</span></td><td><span class="badge good">За instant time</span></td></tr>
+            <tr><td>Schema evolution</td><td>Add, rename обмежено</td><td><span class="badge good">Повна (add/drop/rename/reorder)</span></td><td>Add, drop</td></tr>
+            <tr><td>Partition evolution</td><td><span class="badge bad">Не підтримується</span></td><td><span class="badge good">Підтримується</span></td><td>Обмежено</td></tr>
+            <tr><td>Open-sourced</td><td>2019 → Linux Foundation</td><td>Apache top-level</td><td>Apache top-level</td></tr>
+            <tr><td>У 2026 обирати якщо</td><td>Ви Databricks-клієнт</td><td><strong>Дефолт для engine-agnostic</strong></td><td>CDC-важкі пайплайни, багато апдейтів</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="muted"><strong>Тренд 2024-2026:</strong> Iceberg виграє «формат-війни». Snowflake, BigQuery, Databricks (через UniForm), Starburst, AWS — усі додали нативну підтримку. Delta залишається сильним у Databricks-екосистемі. Hudi — нішевий для upsert-важких case-ів.</p>
+
+      <h4>Time travel — запит даних «як було»</h4>
+      <p>Класичний use case: вчора о 18:00 у продакшн викотили багований ETL, він затер частину даних. З lakehouse це fix на 30 секунд:</p>
+
+      <pre style="background:var(--bg-3);padding:20px;border-radius:8px;border:1px solid var(--border-soft);font-family:var(--mono);font-size:13px;overflow-x:auto;margin:20px 0;max-width:860px;color:var(--fg)">
+<span style="color:#6a6a66">-- Iceberg (Spark SQL)</span>
+SELECT * FROM shopwave.orders
+  FOR SYSTEM_TIME AS OF <span style="color:#4ecdc4">'2026-04-20 17:59:59'</span>;
+
+<span style="color:#6a6a66">-- Delta</span>
+SELECT * FROM delta.`/data/orders` VERSION AS OF <span style="color:#4ecdc4">42</span>;
+
+<span style="color:#6a6a66">-- Відновити таблицю до попередньої версії</span>
+RESTORE TABLE shopwave.orders TO VERSION AS OF <span style="color:#4ecdc4">42</span>;</pre>
+
+      <h4>Компакція та maintenance</h4>
+      <p>Лог транзакцій і маленькі файли накопичуються. Без періодичного cleanup-у з часом таблиця деградує. Операції, які треба робити регулярно (часто — автоматично або через Airflow DAG):</p>
+      <ul>
+        <li><strong>Compaction / Optimize</strong> — склеювати дрібні файли у великі (~256 MB). В Iceberg — <code>rewrite_data_files</code>, в Delta — <code>OPTIMIZE</code>.</li>
+        <li><strong>Expire snapshots</strong> — видаляти старі snapshot-и з метаданих (вони все одно на диску до vacuum). В Iceberg — <code>expire_snapshots</code>.</li>
+        <li><strong>Remove orphan files</strong> — файли, на які більше нема посилань у metadata (з невдалих commit-ів). <code>remove_orphan_files</code>.</li>
+        <li><strong>Vacuum / Physical delete</strong> — фізично видалити файли, які більше не потрібні навіть для time travel (Delta <code>VACUUM</code>, Iceberg — через expire).</li>
+        <li><strong>Z-ordering / Sort</strong> — перевпорядкувати рядки за hot-колонками для кращого pruning на читанні.</li>
+      </ul>
+
+      <h4>MERGE (upsert) — приклад коду</h4>
+      <pre style="background:var(--bg-3);padding:20px;border-radius:8px;border:1px solid var(--border-soft);font-family:var(--mono);font-size:13px;overflow-x:auto;margin:20px 0;max-width:860px;color:var(--fg)">
+<span style="color:#6a6a66">-- Класична задача: оновити curated з CDC-потоку</span>
+MERGE INTO shopwave.dim_customer AS target
+USING staging.customer_changes AS source
+ON target.customer_id = source.customer_id
+
+WHEN MATCHED AND source.op = <span style="color:#4ecdc4">'DELETE'</span> THEN DELETE
+
+WHEN MATCHED AND source.op = <span style="color:#4ecdc4">'UPDATE'</span> THEN
+  UPDATE SET
+    target.email    = source.email,
+    target.country  = source.country,
+    target.updated_at = source.event_time
+
+WHEN NOT MATCHED AND source.op IN (<span style="color:#4ecdc4">'INSERT'</span>, <span style="color:#4ecdc4">'UPDATE'</span>) THEN
+  INSERT (customer_id, email, country, created_at, updated_at)
+  VALUES (source.customer_id, source.email, source.country,
+          source.event_time, source.event_time);</pre>
+
+      <h4>Автоматичне обслуговування — Airflow DAG</h4>
+      <div class="pre-wrap"><pre><code># Airflow DAG для щоденного compaction + expire_snapshots на Iceberg
+from datetime import datetime, timedelta
+from airflow import DAG
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+from airflow.operators.python import PythonOperator
+
+default_args = {
+    "owner": "data-platform",
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
+    "email_on_failure": True,
+    "email": ["data-oncall@shopwave.com"],
+}
+
+with DAG(
+    dag_id="iceberg_daily_maintenance",
+    default_args=default_args,
+    schedule_interval="0 3 * * *",    # щодня о 3:00 UTC (після нічного батчу)
+    start_date=datetime(2026, 1, 1),
+    catchup=False,
+    tags=["iceberg", "maintenance"],
+) as dag:
+
+    # 1. Compaction — злити малі файли у великі (оптимальний розмір ~128MB)
+    compaction = SparkSubmitOperator(
+        task_id="iceberg_compaction",
+        application="/opt/spark_jobs/iceberg_maintenance.py",
+        application_args=["--action", "rewrite_data_files",
+                          "--table", "shopwave.silver.orders",
+                          "--target_file_size_bytes", "134217728"],
+        conf={"spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"},
+        executor_memory="4g",
+        num_executors=4,
+    )
+
+    # 2. Expire old snapshots — не зберігати snapshot-и старші 7 днів
+    expire_snapshots = SparkSubmitOperator(
+        task_id="expire_snapshots",
+        application="/opt/spark_jobs/iceberg_maintenance.py",
+        application_args=["--action", "expire_snapshots",
+                          "--table", "shopwave.silver.orders",
+                          "--older_than_days", "7"],
+        executor_memory="2g",
+        num_executors=2,
+    )
+
+    # 3. Remove orphan files — файли без snapshot-посилань
+    remove_orphans = SparkSubmitOperator(
+        task_id="remove_orphan_files",
+        application="/opt/spark_jobs/iceberg_maintenance.py",
+        application_args=["--action", "remove_orphan_files",
+                          "--table", "shopwave.silver.orders"],
+        executor_memory="2g",
+        num_executors=2,
+    )
+
+    # 4. Rewrite manifests — оптимізувати metadata файли
+    rewrite_manifests = SparkSubmitOperator(
+        task_id="rewrite_manifests",
+        application="/opt/spark_jobs/iceberg_maintenance.py",
+        application_args=["--action", "rewrite_manifests",
+                          "--table", "shopwave.silver.orders"],
+        executor_memory="2g",
+        num_executors=2,
+    )
+
+    compaction &gt;&gt; expire_snapshots &gt;&gt; remove_orphans &gt;&gt; rewrite_manifests</code></pre></div>
+
+      <h5>GDPR Right-to-be-Forgotten через Iceberg</h5>
+      <div class="pre-wrap"><pre><code># Видалення усіх записів користувача з Iceberg (GDPR compliance)
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .config("spark.sql.extensions",
+            "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
+    .getOrCreate()
+
+USER_ID_TO_DELETE = "usr-000042"
+
+# 1. DELETE row-level через Iceberg MERGE/DELETE
+spark.sql(f"""
+    DELETE FROM shopwave.silver.orders
+    WHERE user_id = '{USER_ID_TO_DELETE}'
+""")
+
+# 2. Vacuum: expire snapshots де ще були дані юзера
+spark.sql(f"""
+    CALL shopwave.system.expire_snapshots(
+        table => 'shopwave.silver.orders',
+        older_than => TIMESTAMP '{(datetime.now() - timedelta(seconds=1)).isoformat()}'
+    )
+""")
+
+# 3. Rewrite data files — щоб фізично перезаписати Parquet без рядків юзера
+spark.sql(f"""
+    CALL shopwave.system.rewrite_data_files(
+        table => 'shopwave.silver.orders',
+        where => 'user_id != ''{USER_ID_TO_DELETE}'''
+    )
+""")
+
+print(f"GDPR deletion complete for user {USER_ID_TO_DELETE}")</code></pre></div>
+
+      <div class="interview-qa">
+        <h5>🎯 Interview Q&A — Модуль 6: Data Lakehouse</h5>
+        <div class="qa-item">
+          <div class="qa-q">Чому Delta Lake, Apache Iceberg і Hudi — це не просто Parquet з extras?</div>
+          <div class="qa-a">Вони вирішують фундаментальну проблему: S3/HDFS — файлові системи без транзакцій. Parquet — формат файлу, а не таблиці. Lakehouse-формати додають metadata layer: Iceberg — metadata.json + manifest lists + manifests; Delta — _delta_log; Hudi — .hoodie. Цей шар забезпечує: 1) Atomicity — операція або повністю виконана або ні (ніяких «напів-записаних» партицій), 2) Isolation — читачі не бачать незавершені записи, 3) Time travel через незмінність snapshot-ів, 4) Concurrent writes з optimistic concurrency control. Iceberg і Delta — найпопулярніші у 2026; Hudi — ніша з сильним upsert CDC.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Iceberg vs Delta Lake — ключові відмінності?</div>
+          <div class="qa-a">Delta Lake: створений Databricks, OSS з 2019. Тісна інтеграція зі Spark та Databricks. Delta Sharing для cross-org обміну. Простіший у налаштуванні в Databricks-екосистемі. Apache Iceberg: Open standard, підтримується Apache Software Foundation. Незалежний від compute-движка: Spark, Trino, Flink, DuckDB, StarRocks всі читають нативно. Partition evolution — можна змінити схему партицій без переливки даних. Hidden partitioning — дані партиціонуються автоматично, запити не потребують знання схеми партицій. REST Catalog — стандартний API для будь-якого catalog (Polaris, Unity). Iceberg краще для multi-engine, Delta — для Databricks. На 2026 Iceberg виграє у нейтральності.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке compaction і чому він критичний для streaming workloads?</div>
+          <div class="qa-a">Streaming writes створюють малі файли: Flink пише в Iceberg кожні 60 секунд = 1 MB файл/хвилину = 1440 файлів/добу. Читання 1000 малих файлів набагато повільніше ніж читання 10 великих (overhead на S3 LIST, metadata, відкриття файлу). Compaction = перезапис багатьох маленьких файлів в кілька оптимальних (128-256 MB). Iceberg: CALL system.rewrite_data_files() з target_file_size_bytes. Delta: OPTIMIZE table. Hudi: clustering. Compaction потрібно запускати регулярно (Airflow щодня вночі) або тригерно (після N нових файлів). Без compaction запити деградують з часом: 7 хв → 45 хв за 3 місяці.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як реалізувати time travel запит в Iceberg?</div>
+          <div class="qa-a">Два способи: 1) За snapshot ID: SELECT * FROM table VERSION AS OF 12345678 або spark.read.option("snapshot-id", "12345678").table("table"). 2) За timestamp: SELECT * FROM table TIMESTAMP AS OF '2026-03-15 00:00:00' або spark.read.option("as-of-timestamp", timestamp_ms).table("table"). Use cases: аудит — "покажи що змінилось після batch-джобу", дебаг — "що було до помилкового UPDATE", regulatory — "стан бази на кінець місяця для звіту". Важливо: snapshot-и зберігаються тільки в межах retention. Expire snapshots видаляє їх — тому time travel обмежений. Зазвичай зберігають 7-30 днів.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як забезпечити GDPR right-to-be-forgotten у Data Lake?</div>
+          <div class="qa-a">В "голому" Parquet-lake це неможливо без повної переливки. З Iceberg: 1) DELETE FROM table WHERE user_id = X — row-level delete, Iceberg записує delete file (positional або equality delete), не одразу перезаписує Parquet. 2) CALL expire_snapshots() — видаляє старі snapshot-и де ще були дані. 3) CALL rewrite_data_files(where=...) — фізично перезаписує Parquet файли без рядків цього user_id. Тільки після всіх трьох кроків дані фізично видалені. Важливо також видалити з raw/bronze шару, з Kafka retention і з backup-ів. Документувати все у GDPR deletion log.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке schema evolution у lakehouse-форматах?</div>
+          <div class="qa-a">Schema evolution = можливість змінити схему таблиці без міграції і без поломки читачів. Iceberg підтримує: ADD COLUMN (нові рядки матимуть колонку, старі — null або default), DROP COLUMN (читачі отримають null), RENAME COLUMN (через ID-based mapping, а не по імені), REORDER COLUMNS, UPDATE TYPE (int → long, float → double — safe widening only). Ключова фішка Iceberg: колонки ідентифікуються за ID, а не ім'ям — перейменування не ламає планів запитів. Delta Lake аналогічно через schema merging. Порівняно з Hive: зміна схеми в Hive ламала читачів або потребувала ALTER TABLE + MSCK REPAIR.</div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h5>Додаткові ресурси — Модуль 6</h5>
+        <div class="res-grid">
+          <a class="res-item" href="https://iceberg.apache.org/docs/latest/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Apache Iceberg Documentation</span><span class="res-meta">iceberg.apache.org</span></a>
+          <a class="res-item" href="https://docs.delta.io/latest/delta-intro.html" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Delta Lake Documentation</span><span class="res-meta">delta.io</span></a>
+          <a class="res-item" href="https://hudi.apache.org/docs/overview" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Apache Hudi Documentation</span><span class="res-meta">hudi.apache.org</span></a>
+          <a class="res-item" href="https://www.dremio.com/resources/guides/apache-iceberg-an-architectural-look-under-the-covers/" target="_blank"><span class="res-type">📖 Article · EN</span><span class="res-title">Iceberg: Architectural Look Under the Covers</span><span class="res-meta">Dremio</span></a>
+          <a class="res-item" href="https://www.oreilly.com/library/view/apache-iceberg-the/9781098148614/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Apache Iceberg: The Definitive Guide</span><span class="res-meta">O'Reilly (безкоштовно від Dremio)</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=LTmlby6o7gU" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">Apache Iceberg — The Definitive Guide</span><span class="res-meta">Alex Merced · YouTube</span></a>
+          <a class="res-item" href="https://netflixtechblog.com/apache-iceberg-our-journey-to-open-source-ea29d0c5c98c" target="_blank"><span class="res-type">📖 Blog · EN</span><span class="res-title">Apache Iceberg — our journey to open source (Netflix)</span><span class="res-meta">Netflix Tech Blog</span></a>
+          <a class="res-item" href="https://eng.uber.com/apache-hudi-graduation/" target="_blank"><span class="res-type">📖 Blog · EN</span><span class="res-title">Apache Hudi graduates — the Uber story</span><span class="res-meta">Uber Engineering</span></a>
+          <a class="res-item" href="https://www.databricks.com/resources/ebook/big-book-of-data-engineering" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Big Book of Data Engineering (Databricks)</span><span class="res-meta">databricks.com</span></a>
+          <a class="res-item" href="https://www.starburst.io/blog/iceberg-vs-delta-lake-vs-hudi/" target="_blank"><span class="res-type">📖 Article · EN</span><span class="res-title">Iceberg vs Delta Lake vs Hudi — порівняння</span><span class="res-meta">Starburst</span></a>
+        </div>
+      </div>
+
+      <div class="assignment">
+        <div class="a-label">📝 Завдання · Модуль 6</div>
+        <h5>Upsert + Time Travel на Iceberg</h5>
+        <ol>
+          <li>Підняти Spark з <a href="https://iceberg.apache.org/spark-quickstart/" target="_blank">Iceberg runtime</a> локально (можна в docker-compose)</li>
+          <li>Створити Iceberg-таблицю <code>customers</code> з партиціонуванням по <code>country</code></li>
+          <li>Завантажити початкові 10к рядків (INSERT)</li>
+          <li>Запустити 3 окремі операції: INSERT 1000 нових, UPDATE email у 500 існуючих, DELETE 100 тих, що з <code>inactive=true</code>. Кожна — через SQL <code>MERGE INTO</code></li>
+          <li>Переглянути історію snapshot-ів: <code>SELECT * FROM customers.snapshots</code></li>
+          <li>Зробити <strong>time travel</strong>: виконати той самий SELECT на різних snapshot-ах, порівняти результати</li>
+          <li>Викликати <code>rewrite_data_files</code> (compaction), переглянути кількість файлів до/після</li>
+          <li>Змінити схему (додати нову колонку), переконатись що старі snapshot-и читаються коректно</li>
+        </ol>
+        <div class="deliverable"><strong>Deliverable:</strong> PySpark-ноутбук з усіма кроками + README пояснення у <code>/assignments/m6/</code></div>
+      </div>
+
+      <div class="milestone">
+        <div class="m-label">Project Milestone · ShopWave</div>
+        <h5>М6: Міграція curated-шару на Iceberg</h5>
+        <ul>
+          <li>Додати Iceberg runtime у Spark-конфіг проекту, REST catalog (можна <a href="https://projectnessie.org" target="_blank">Nessie</a> локально) або <a href="https://github.com/databricks/iceberg-kit" target="_blank">Hadoop catalog</a> на MinIO</li>
+          <li>Створити Iceberg-таблиці з curated-шару: <code>fct_orders</code>, <code>dim_customer</code>, <code>dim_product</code></li>
+          <li>Переписати Spark-джобу з М4: silver → gold тепер пише через <code>INSERT INTO / MERGE INTO</code> Iceberg, а не Parquet</li>
+          <li>Додати upsert-логіку: customer може оновити адресу — <code>MERGE INTO dim_customer</code></li>
+          <li>Написати maintenance DAG (поки вручну): щоночі компакція + expire_snapshots старше 7 днів</li>
+          <li>Перевірити time travel через Spark SQL <code>FOR SYSTEM_TIME AS OF ...</code></li>
+          <li>ADR: <code>ADR-005-lakehouse-choice.md</code> (Iceberg vs Delta vs Hudi — чому Iceberg)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 7 -->
+<section class="module" id="module-7">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">07</div>
+      <div class="mod-meta">
+        <div class="mod-week">Тижні 11 – 12 · ~30 год</div>
+        <h2 class="mod-title">Data <em>Warehouses</em></h2>
+        <p class="mod-lead">Lakehouse добре для data engineers і ML, але BI-аналітики і бізнес хочуть швидкий SQL з дашбордами. Тут на сцену виходять спеціалізовані DWH: Snowflake, BigQuery, Redshift, ClickHouse. Розбираємо як вони влаштовані і як правильно моделювати дані.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Коротка історія DWH</h4>
+      <ul>
+        <li><strong>1976-1990-і</strong> — Teradata: перша колонкова MPP-система на спеціалізованому залізі. Банки, телеком.</li>
+        <li><strong>1990-і</strong> — Bill Inmon і Ralph Kimball публікують книги про DWH-архітектуру і dimensional modeling. Ми досі живемо у їхній парадигмі.</li>
+        <li><strong>2000-і</strong> — Oracle Exadata, IBM Netezza, Vertica, Greenplum. MPP стає mainstream.</li>
+        <li><strong>2012</strong> — Amazon Redshift: перший cloud-native DWH. На порядок дешевше за legacy. Але compute і storage ще зчеплені.</li>
+        <li><strong>2014-15</strong> — <strong>Snowflake</strong>: розділили compute і storage. Можна паралельно запускати 10 virtual warehouses на одному datase без конкуренції за ресурси. Революція.</li>
+        <li><strong>2012-2019</strong> — <strong>BigQuery</strong>: повністю serverless. Платиш за обсяг оброблених байт, не за сервер.</li>
+        <li><strong>2016+</strong> — <strong>ClickHouse</strong>: open-source колонкова БД від Яндексу. Божевільна швидкість, self-hosted. Популярно в СНД/Європі.</li>
+        <li><strong>2022+</strong> — <strong>Databricks SQL</strong>, <strong>Firebolt</strong>, <strong>DuckDB</strong> як embedded-DWH.</li>
+      </ul>
+
+      <h4>Dimensional Modeling — star і snowflake схеми</h4>
+      <p>Ральф Кімбол сформував підхід ще у 1996 році, і він досі актуальний: замість однієї великої таблиці — <strong>fact</strong>-таблиця в центрі, навколо — <strong>dimension</strong>-таблиці. BI-інструменти (Tableau, Metabase, Looker) очікують саме такої структури.</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+          <!-- fact center -->
+          <g>
+            <rect x="350" y="170" width="220" height="80" fill="rgba(78,205,196,.15)" stroke="#4ecdc4" stroke-width="2" rx="8"/>
+            <text x="460" y="195" text-anchor="middle" fill="#4ecdc4" font-size="13" font-weight="700">fct_orders</text>
+            <text x="460" y="213" text-anchor="middle" fill="#9a9a95" font-size="10">order_id · order_date_key</text>
+            <text x="460" y="227" text-anchor="middle" fill="#9a9a95" font-size="10">customer_key · product_key</text>
+            <text x="460" y="241" text-anchor="middle" fill="#9a9a95" font-size="10">amount · quantity · discount</text>
+          </g>
+
+          <!-- dimensions -->
+          <g>
+            <rect x="40" y="30" width="180" height="75" fill="#131316" stroke="#b794f6" rx="8"/>
+            <text x="130" y="55" text-anchor="middle" fill="#b794f6" font-size="12" font-weight="700">dim_customer</text>
+            <text x="130" y="73" text-anchor="middle" fill="#9a9a95" font-size="10">customer_key (SK)</text>
+            <text x="130" y="87" text-anchor="middle" fill="#9a9a95" font-size="10">email · country</text>
+            <text x="130" y="101" text-anchor="middle" fill="#9a9a95" font-size="10">valid_from · valid_to (SCD2)</text>
+          </g>
+          <g>
+            <rect x="700" y="30" width="180" height="75" fill="#131316" stroke="#b794f6" rx="8"/>
+            <text x="790" y="55" text-anchor="middle" fill="#b794f6" font-size="12" font-weight="700">dim_product</text>
+            <text x="790" y="73" text-anchor="middle" fill="#9a9a95" font-size="10">product_key (SK)</text>
+            <text x="790" y="87" text-anchor="middle" fill="#9a9a95" font-size="10">sku · name</text>
+            <text x="790" y="101" text-anchor="middle" fill="#9a9a95" font-size="10">category · brand</text>
+          </g>
+          <g>
+            <rect x="40" y="320" width="180" height="75" fill="#131316" stroke="#b794f6" rx="8"/>
+            <text x="130" y="345" text-anchor="middle" fill="#b794f6" font-size="12" font-weight="700">dim_date</text>
+            <text x="130" y="363" text-anchor="middle" fill="#9a9a95" font-size="10">date_key (YYYYMMDD)</text>
+            <text x="130" y="377" text-anchor="middle" fill="#9a9a95" font-size="10">year · quarter · month</text>
+            <text x="130" y="391" text-anchor="middle" fill="#9a9a95" font-size="10">day_of_week · is_holiday</text>
+          </g>
+          <g>
+            <rect x="700" y="320" width="180" height="75" fill="#131316" stroke="#b794f6" rx="8"/>
+            <text x="790" y="345" text-anchor="middle" fill="#b794f6" font-size="12" font-weight="700">dim_geo</text>
+            <text x="790" y="363" text-anchor="middle" fill="#9a9a95" font-size="10">geo_key (SK)</text>
+            <text x="790" y="377" text-anchor="middle" fill="#9a9a95" font-size="10">country · region</text>
+            <text x="790" y="391" text-anchor="middle" fill="#9a9a95" font-size="10">timezone · currency</text>
+          </g>
+
+          <!-- lines -->
+          <line x1="220" y1="67" x2="360" y2="180" stroke="#b794f6" stroke-width="1.5" opacity=".6"/>
+          <line x1="700" y1="67" x2="560" y2="180" stroke="#b794f6" stroke-width="1.5" opacity=".6"/>
+          <line x1="220" y1="357" x2="360" y2="240" stroke="#b794f6" stroke-width="1.5" opacity=".6"/>
+          <line x1="700" y1="357" x2="560" y2="240" stroke="#b794f6" stroke-width="1.5" opacity=".6"/>
+
+          <text x="460" y="30" text-anchor="middle" fill="#6a6a66" font-size="11" letter-spacing="1">STAR SCHEMA</text>
+        </svg>
+        <div class="diagram-caption">Star schema · fct_orders у центрі, dimensions навколо</div>
+      </div>
+
+      <div class="cards">
+        <div class="card violet"><div class="ic">★</div><h6>Star schema</h6><p>Fact + денормалізовані dimensions. Dimension одного рівня. Швидко для SELECT, простіше для аналітиків. <strong>Дефолт у 95% випадків.</strong></p></div>
+        <div class="card violet"><div class="ic">❄</div><h6>Snowflake schema</h6><p>Dimensions нормалізовані — dim_product може посилатися на dim_category. Економія місця, але повільніше joins. Для дуже широких dim-ів.</p></div>
+        <div class="card violet"><div class="ic">∞</div><h6>Data Vault</h6><p>Hubs + Links + Satellites. Дуже гнучко до змін, але складно писати аналітичні запити. Для enterprise з багатьма source-системами.</p></div>
+        <div class="card violet"><div class="ic">W</div><h6>One Big Table (OBT)</h6><p>Усе денормалізовано в одну таблицю. Сучасні DWH добре жмуть повтори — диск не шкода. Зручно для BI, погано для update-ів.</p></div>
+      </div>
+
+      <h4>Slowly Changing Dimensions (SCD) — історія клієнтів</h4>
+      <p>Customer переїхав з Kyiv у Lviv. Що робити з <code>dim_customer</code>? Є кілька стратегій, між якими обирають залежно від бізнес-потреб:</p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Тип</th><th>Що робить</th><th>Плюси</th><th>Мінуси</th><th>Коли</th></tr></thead>
+          <tbody>
+            <tr><td>SCD Type 0</td><td>Нічого. Dimension never changes</td><td>Найпростіше</td><td>Ігнорує реальність</td><td>Для справді незмінних атрибутів (дата народження)</td></tr>
+            <tr><td>SCD Type 1</td><td>Overwrite старе значення</td><td>Просто, одна строка</td><td>Історія втрачена</td><td>Виправлення помилок, не важлива історія</td></tr>
+            <tr><td>SCD Type 2</td><td><strong>Додає новий рядок</strong> з valid_from/valid_to + is_current</td><td>Повна історія, joins по точному часу</td><td>Більший розмір, складніші запити</td><td><strong>Стандарт індустрії.</strong> Більшість кейсів</td></tr>
+            <tr><td>SCD Type 3</td><td>Окрема колонка для previous_value</td><td>Просто бачити одну попередню версію</td><td>Тільки 1 рівень історії</td><td>Рідкісне використання</td></tr>
+            <tr><td>SCD Type 4</td><td>Окрема history-таблиця</td><td>Основна таблиця чиста</td><td>Треба 2 joins</td><td>Коли історії дуже багато і вона не щоденна</td></tr>
+            <tr><td>SCD Type 6</td><td>Комбо 1+2+3</td><td>Макс гнучкість</td><td>Складно</td><td>Enterprise DWH з різноманітними потребами</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <pre style="background:var(--bg-3);padding:20px;border-radius:8px;border:1px solid var(--border-soft);font-family:var(--mono);font-size:13px;overflow-x:auto;margin:20px 0;max-width:860px;color:var(--fg)">
+<span style="color:#6a6a66">-- SCD Type 2 структура</span>
+CREATE TABLE dim_customer (
+    customer_key    BIGINT PRIMARY KEY,  <span style="color:#6a6a66">-- surrogate key</span>
+    customer_id     STRING,              <span style="color:#6a6a66">-- natural key з source</span>
+    email           STRING,
+    country         STRING,
+    valid_from      TIMESTAMP,
+    valid_to        TIMESTAMP,           <span style="color:#6a6a66">-- NULL = current</span>
+    is_current      BOOLEAN
+);
+
+<span style="color:#6a6a66">-- Fact посилається на customer_key, а не customer_id
+-- Join завжди: ON f.customer_key = d.customer_key
+-- Це дає «історично-правильну» картину</span></pre>
+
+      <h4>Snowflake — архітектура, яка змінила ринок</h4>
+      <p>Ключова відмінність Snowflake — повне розділення трьох шарів: <strong>storage</strong> (власні micro-partitions у S3/Azure Blob/GCS), <strong>compute</strong> (віртуальні warehouses — кластери T-shirt size: XS/S/M/L/XL...), <strong>services</strong> (metadata, security, query optimizer). Це дозволяє:</p>
+      <ul>
+        <li>Запустити <strong>10 окремих warehouses</strong> на тих самих даних без конкуренції за ресурси (різні команди не ламають одна одній SLA).</li>
+        <li>Masштабувати compute <strong>вертикально (розмір)</strong> і <strong>горизонтально (кількість кластерів)</strong> незалежно.</li>
+        <li>Платити тільки за час реального використання — warehouse можна auto-suspend через 1 хв бездіяльності.</li>
+        <li><strong>Zero-copy cloning</strong> — створити копію продового DWH за 2 секунди без дублювання даних (тільки metadata copy).</li>
+        <li><strong>Time travel</strong> і <strong>fail-safe</strong> (7 днів додатково) — retention для recovery.</li>
+      </ul>
+      <p class="muted">Особливість ціноутворення: тарифікація у <strong>credits</strong>. XS warehouse = 1 credit/год, S = 2, M = 4, L = 8, XL = 16. На AWS 1 credit ≈ $2-3 (standard) або $4 (enterprise). Запит на L-warehouse 10 хв = 1.3 credit ≈ $3. Помилка багатьох — залишити warehouse без auto-suspend.</p>
+
+      <h4>BigQuery — serverless до кінця</h4>
+      <ul>
+        <li>Немає поняття «інстанс». Пишете SQL — Google Dremel виконує, ви платите за оброблені байти.</li>
+        <li>Ціна (on-demand): <strong>$6.25 за TB сканованих</strong> (us-central1). Тому <strong>завжди</strong> використовуйте partitioning + clustering, щоб обмежити скан.</li>
+        <li>Альтернатива — <strong>Capacity pricing</strong> (раніше Reservation): купуєте slots (compute units) на годину/місяць/рік. Має сенс при &gt; $2000/міс on-demand.</li>
+        <li><strong>Partitioning</strong> — тільки за 1 колонкою (типово date). <strong>Clustering</strong> — до 4 колонок для micro-pruning в межах партиції.</li>
+        <li>Нативна інтеграція з GCS (external tables), Google Sheets, Looker.</li>
+        <li>BigLake — читання Iceberg/Delta з GCS як external tables.</li>
+      </ul>
+
+      <h4>Redshift — для AWS-стеку</h4>
+      <ul>
+        <li>Historical — leader-based MPP, треба було вручну розбиратись з distribution keys і sort keys.</li>
+        <li>Сучасний — <strong>RA3 nodes</strong> з managed storage, плюс <strong>Redshift Serverless</strong> (2022).</li>
+        <li>Сильна інтеграція з AWS: Spectrum для читання S3 Parquet як external tables, Zero-ETL з Aurora.</li>
+        <li>Ціна: <strong>$0.25-$13.04/год</strong> залежно від розміру вузла; serverless — $0.375/RPU-год.</li>
+        <li>Зазвичай програє Snowflake і BigQuery по developer experience, але виграє, коли ви вже у глибині AWS і потрібен tight integration.</li>
+      </ul>
+
+      <h4>ClickHouse — self-hosted швидкість</h4>
+      <ul>
+        <li>Open-source колонкова OLAP БД. Створена Яндексом для аналітики метрики; зараз — ClickHouse Inc.</li>
+        <li>Сильні сторони: <strong>мільйони рядків/сек</strong>, <strong>real-time inserts</strong>, MergeTree-family движків.</li>
+        <li>Підтримує Kafka engine, S3 engine, materialized views зі стрімовими оновленнями.</li>
+        <li>Мінуси: немає повноцінних ACID-транзакцій, UPDATE/DELETE — повільні (mutations), JOINs слабші за Snowflake/BigQuery.</li>
+        <li>Сценарії: product analytics (PostHog on ClickHouse), observability (SigNoz), time-series, user-facing analytics дашборди.</li>
+        <li>Є managed-версія <strong>ClickHouse Cloud</strong> (2022). Ціна — $0.22-0.44/compute-unit-hour + $0.047/GB-місяць storage.</li>
+      </ul>
+
+      <h4>Порівняльна таблиця DWH 2026</h4>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th></th><th>Snowflake</th><th>BigQuery</th><th>Redshift</th><th>ClickHouse</th></tr></thead>
+          <tbody>
+            <tr><td>Модель ціноутворення</td><td>Credits/год</td><td>Per-TB сканованих</td><td>Per-node/год</td><td>Compute + storage</td></tr>
+            <tr><td>Serverless</td><td>Fine-grained (warehouses)</td><td><span class="badge good">Повністю</span></td><td>Redshift Serverless</td><td>ClickHouse Cloud</td></tr>
+            <tr><td>Compute/Storage</td><td><span class="badge good">Розділено</span></td><td><span class="badge good">Розділено</span></td><td>RA3 — розділено</td><td>Окремо на кластер</td></tr>
+            <tr><td>Кращий SQL dialect</td><td><span class="badge good">ANSI-compliant, багатий</span></td><td>Standard SQL</td><td>PostgreSQL-like</td><td>Свій dialect</td></tr>
+            <tr><td>Federated queries</td><td>External tables</td><td>BigLake (Iceberg/Delta)</td><td>Spectrum → S3</td><td>Table engines</td></tr>
+            <tr><td>Semi-structured (JSON)</td><td><span class="badge good">VARIANT нативно</span></td><td>JSON type + STRUCT</td><td>SUPER type</td><td>JSON функції</td></tr>
+            <tr><td>User-facing analytics</td><td>Повільно для &lt; sec</td><td>Повільно для &lt; sec</td><td>Помірно</td><td><span class="badge good">Ідеально (ms)</span></td></tr>
+            <tr><td>Найкраще для</td><td>Mid/Enterprise, мультихмара</td><td>Google-стек, ad-hoc</td><td>AWS-стек глибоко</td><td>Self-host, high-QPS</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Нові гравці та тренди 2025-2026</h4>
+      <ul>
+        <li><strong>Databricks SQL</strong> — DWH-режим на Photon engine поверх Delta. Конкурує зі Snowflake всередині Databricks-клієнтів.</li>
+        <li><strong>Firebolt</strong> — робить акцент на low-latency subsecond-запитах для user-facing dashboards.</li>
+        <li><strong>DuckDB</strong> — embedded OLAP БД (як SQLite, але колонкова). Вистрілив у 2023-2024. Локальна аналітика мільярдів рядків на ноутбуці. Не замінює DWH, але дає альтернативу для малих/середніх даних.</li>
+        <li><strong>MotherDuck</strong> — managed DuckDB у хмарі.</li>
+        <li><strong>Iceberg як universal format</strong> — Snowflake, BigQuery, Databricks читають ту саму Iceberg-таблицю у S3. Кінець vendor-lock-in на рівні даних.</li>
+      </ul>
+
+      <h4>dbt — Data Build Tool</h4>
+      <div class="analogy"><strong>dbt — це «Git для SQL-трансформацій».</strong> Аналітики пишуть SELECT-запити (моделі), dbt компілює їх у правильному порядку залежностей, запускає у вашому DWH і підтримує документацію + тести. Замість «хтось написав views в Snowflake вручну і ніхто не знає чому» — ваш DWH-шар стає version-controlled, тестованим і задокументованим кодом.</div>
+
+      <h5>Як dbt вбудовується в стек</h5>
+      <div class="pipeline-flow">
+        <div class="pipe-node source">Raw / Bronze</div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node process">dbt models<br><small>(Staging)</small></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node process">dbt models<br><small>(Intermediate)</small></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node sink">dbt models<br><small>(Marts)</small></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node sink">BI Tool</div>
+      </div>
+
+      <h5>Materializations — як dbt будує об'єкти в DWH</h5>
+      <div class="mat-grid">
+        <div class="mat-card">
+          <div class="name">view</div>
+          <p>SQL view у DWH. Ніяких даних на диску. Швидко для розробки, повільно при читанні. Default для staging-моделей.</p>
+        </div>
+        <div class="mat-card">
+          <div class="name">table</div>
+          <p>Повна перебудова таблиці при кожному dbt run. Дорого для великих таблиць. Для моделей &lt; 10M рядків.</p>
+        </div>
+        <div class="mat-card">
+          <div class="name">incremental</div>
+          <p>Обробляє тільки нові рядки (WHERE event_date &gt; max_in_target). Найважливіша матеріалізація для production.</p>
+        </div>
+        <div class="mat-card">
+          <div class="name">ephemeral</div>
+          <p>CTE всередині іншої моделі. Ніякого об'єкту в DWH. Для спільної логіки між моделями.</p>
+        </div>
+      </div>
+
+      <h5>dbt Model — практичний приклад для ShopWave</h5>
+      <div class="dbt-model">
+        <h6>models/marts/fct_orders.sql</h6>
+        <div class="pre-wrap"><pre><code>{{
+  config(
+    materialized='incremental',
+    unique_key='order_id',
+    on_schema_change='append_new_columns',
+    partition_by={
+      "field": "order_date",
+      "data_type": "date",
+      "granularity": "month"
+    },
+    cluster_by=["country", "status"]
+  )
+}}
+
+WITH source_orders AS (
+    SELECT * FROM {{ source('shopwave_raw', 'orders') }}
+    {% if is_incremental() %}
+        -- тільки нові рядки при incremental run
+        WHERE _loaded_at > (SELECT MAX(_loaded_at) FROM {{ this }})
+    {% endif %}
+),
+
+stg_orders AS (
+    SELECT
+        order_id,
+        user_id,
+        status,
+        total_amount_usd,
+        country,
+        CAST(created_at AS DATE) AS order_date,
+        created_at
+    FROM source_orders
+    WHERE order_id IS NOT NULL
+      AND total_amount_usd > 0
+),
+
+enriched AS (
+    SELECT
+        o.*,
+        c.country_name,
+        c.region,
+        -- dbt ref() — посилання на іншу модель (dim_customer)
+        dc.customer_segment,
+        dc.lifetime_orders,
+        -- розрахункові метрики
+        CASE
+            WHEN o.total_amount_usd >= 200 THEN 'high'
+            WHEN o.total_amount_usd >= 50  THEN 'medium'
+            ELSE 'low'
+        END AS order_tier
+    FROM stg_orders o
+    LEFT JOIN {{ ref('dim_customer') }}    dc ON o.user_id = dc.user_id
+    LEFT JOIN {{ ref('dim_geo') }}         c  ON o.country = c.country_code
+)
+
+SELECT * FROM enriched</code></pre></div>
+      </div>
+
+      <div class="dbt-model">
+        <h6>models/marts/fct_orders.yml — тести і документація</h6>
+        <div class="pre-wrap"><pre><code>version: 2
+
+models:
+  - name: fct_orders
+    description: "Fact table with one row per order. Incremental, partitioned by month."
+    columns:
+      - name: order_id
+        description: "Унікальний ідентифікатор замовлення"
+        tests:
+          - unique
+          - not_null
+
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customer')
+              field: user_id
+
+      - name: total_amount_usd
+        tests:
+          - not_null
+          # Кастомний тест: позитивне число
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: order_date
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= '2020-01-01'"</code></pre></div>
+      </div>
+
+      <h5>dbt Sources — звідки беруться "сирі" дані</h5>
+      <div class="pre-wrap"><pre><code># models/sources.yml
+version: 2
+
+sources:
+  - name: shopwave_raw
+    database: shopwave_prod
+    schema: raw
+    description: "Сирі дані з bronze-шару (Kafka → S3 → завантажено у DWH)"
+    freshness:
+      warn_after: {count: 6, period: hour}
+      error_after: {count: 24, period: hour}
+    loaded_at_field: _loaded_at
+
+    tables:
+      - name: orders
+        description: "Замовлення з усіх каналів"
+        columns:
+          - name: order_id
+            tests:
+              - not_null
+
+      - name: user_events
+        description: "Поведінкові події (view, click, add_to_cart, purchase)"
+        freshness:
+          warn_after: {count: 1, period: hour}  # events мають бути свіжими!</code></pre></div>
+
+      <h5>dbt Cloud vs dbt Core</h5>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th></th><th>dbt Core</th><th>dbt Cloud</th></tr></thead>
+          <tbody>
+            <tr><td>Ліцензія</td><td>Open-source (Apache 2)</td><td>SaaS, від $100/month</td></tr>
+            <tr><td>Розгортання</td><td>CLI, Airflow, любий scheduler</td><td>Managed scheduler, IDE в браузері</td></tr>
+            <tr><td>Lineage UI</td><td>Тільки статичний docs сайт</td><td>Інтерактивний lineage graph</td></tr>
+            <tr><td>CI/CD</td><td>Власна інтеграція (GitHub Actions)</td><td>Вбудований CI, preview environments</td></tr>
+            <tr><td>Semantic Layer</td><td>Ні</td><td>MetricFlow (unified metrics)</td></tr>
+            <tr><td>Коли обрати</td><td>Airflow вже є, невеликий бюджет</td><td>Хочете managed, гарний UX для аналітиків</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h5>Інтеграція dbt Lineage у DataHub</h5>
+      <div class="pre-wrap"><pre><code># Завантажити dbt artifacts у DataHub після кожного run
+# dbt generate docs (генерує manifest.json і catalog.json)
+dbt docs generate --profiles-dir ./profiles --target prod
+
+# Завантажити lineage через DataHub CLI
+datahub ingest -c datahub_dbt.yml
+
+# datahub_dbt.yml
+source:
+  type: dbt
+  config:
+    manifest_path: ./target/manifest.json
+    catalog_path: ./target/catalog.json
+    sources_path: ./target/sources.json
+    target_platform: bigquery   # або snowflake, clickhouse
+
+sink:
+  type: datahub-rest
+  config:
+    server: "http://datahub-gms:8080"</code></pre></div>
+
+      <h5>BI Інтеграція — Metabase + ClickHouse</h5>
+      <div class="pre-wrap"><pre><code># docker-compose.yml — Metabase + ClickHouse
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_DB: shopwave
+      CLICKHOUSE_USER: admin
+      CLICKHOUSE_PASSWORD: shopwave123
+
+  metabase:
+    image: metabase/metabase:latest
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_HOST: postgres
+      MB_DB_PORT: 5432
+      MB_DB_DBNAME: metabase
+      MB_DB_USER: metabase
+      MB_DB_PASS: metabase
+
+# Підключення ClickHouse до Metabase:
+# Settings → Databases → Add Database → ClickHouse
+# Host: clickhouse, Port: 8123, Database: shopwave
+# Username/Password: admin/shopwave123</code></pre></div>
+
+      <div class="interview-qa">
+        <h5>🎯 Interview Q&A — Модуль 7: DWH + dbt</h5>
+        <div class="qa-item">
+          <div class="qa-q">Що таке dbt і чому він став стандартом у modern data stack?</div>
+          <div class="qa-a">dbt (data build tool) — фреймворк для трансформацій у DWH. Ідея: аналітики пишуть тільки SELECT-запити (models), dbt сам вирішує порядок виконання через граф залежностей (DAG через ref()), матеріалізує результати (table, view, incremental), запускає тести (unique, not_null, relationships), генерує документацію. До dbt трансформації були: хаотичні SQL-скрипти в Airflow, stored procedures без тестів, views без documentation. dbt зробив DWH-шар version-controlled і testable. Переваги: 1) SQL (не Python) — аналітики без engineering-досвіду можуть контрибьютити, 2) Incremental materializations для production-scale, 3) Tests для data quality, 4) Auto-generated lineage graph.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке dbt incremental і як він обробляє дублікати?</div>
+          <div class="qa-a">Incremental materialization: перший run — будує таблицю повністю. Наступні — обробляє тільки нові рядки (WHERE event_date > max_in_target). Це ключово для великих таблиць де повна перебудова коштує $100/run. Дублікати вирішуються через unique_key: якщо вказаний, dbt робить MERGE (upsert): нові рядки — INSERT, існуючі — UPDATE. Без unique_key — тільки INSERT нових. Важливі конфіги: on_schema_change='append_new_columns' (додати нову колонку при schema change), merge_update_columns=['col1','col2'] (оновлювати тільки ці колонки). Пітфол: якщо late-arriving data (events з минулого) — потрібен lookback window у WHERE clause.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Snowflake vs BigQuery — як обирати?</div>
+          <div class="qa-a">Snowflake: compute/storage відокремлені, multiple warehouses на тих самих даних (multi-cluster), credits/год. Краще для: enterprise, мультихмара, складний SQL, команди з різними навантаженнями. BigQuery: повністю serverless (немає "warehouses"), платиш за TB сканованих. Краще для: ad-hoc аналітика, вже у GCP, ML pipeline через BigQuery ML. Практично: якщо у вас є постійне навантаження — Snowflake predictable cost. Якщо sporadic запити — BigQuery виграє (платиш тільки за запити). Обидва читають Iceberg з S3/GCS через external tables. Для стартапу без precommitment — BigQuery через on-demand pricing і free 10GB/month.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">SCD Type 2 — поясніть механізм і типовий SQL</div>
+          <div class="qa-a">SCD2 зберігає повну історію змін атрибутів dimension. Кожна зміна = новий рядок з valid_from/valid_to/is_current. Структура: customer_key (surrogate, auto-increment), customer_id (natural key), email, country, valid_from TIMESTAMP, valid_to TIMESTAMP (NULL = поточний), is_current BOOLEAN. При зміні: закрити старий рядок (SET valid_to = NOW(), is_current = FALSE) + додати новий (valid_from = NOW(), valid_to = NULL, is_current = TRUE). Fact join: ON f.customer_key = d.customer_key — surrogate key не змінюється. Для правильного join по часу: ON f.customer_id = d.customer_id AND f.order_date BETWEEN d.valid_from AND COALESCE(d.valid_to, '9999-12-31'). dbt реалізує через dbt_utils.generate_surrogate_key() + snapshot mechanism.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як тестувати якість даних у DWH?</div>
+          <div class="qa-a">dbt тести: 1) Generic tests — unique, not_null, accepted_values, relationships. Декларативно в YAML, запускаються після кожного run. 2) Singular tests — кастомний SQL який повертає рядки-порушення (SELECT order_id FROM fct_orders WHERE total_amount_usd &lt; 0). 3) dbt-expectations (пакет) — expect_column_values_to_be_between, expect_table_row_count_to_be_between. 4) Source freshness — dbt source freshness перевіряє чи нові дані є у source. Окрім dbt: Great Expectations для глибшого profiling, Monte Carlo для ML-based anomaly detection, Soda для scheduled checks у production. Стратегія: dbt tests блокують deployment (CI/CD), production alerts через Soda або Monte Carlo.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке партиціонування і кластеризація у BigQuery?</div>
+          <div class="qa-a">Partitioning: розподіл таблиці на незалежні сегменти за partition column (зазвичай DATE). BigQuery зберігає кожну партицію окремо — запит з WHERE date = '2026-01-01' сканує тільки 1 партицію замість усієї таблиці. Економія: 90%+ скану = 90% коштів. Clustering: сортування даних в межах партиції за 1-4 колонками (country, product_id). При запиті з WHERE country = 'UA' BigQuery знає, де фізично ці рядки — ще менше скану. Разом: PARTITION BY DATE(order_date) CLUSTER BY country, status. Best practice: майже завжди partition by date + cluster by найчастіший WHERE/GROUP BY. Якщо JOIN по user_id — cluster by user_id для colocation.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке data lineage і навіщо він потрібен?</div>
+          <div class="qa-a">Data lineage — граф, який показує звідки прийшли дані і що з ними відбулось на кожному кроці. Від raw source → через трансформації → до BI dashboard. Навіщо: 1) Impact analysis — якщо змінити upstream таблицю, які downstream дашборди зламаються? 2) Root cause analysis — звіт показує неправильні цифри → простежити назад до source, 3) Compliance/audit — звідки взялися ці дані для регулятора, 4) Onboarding — нові люди розуміють пайплайн. Інструменти: dbt docs generate (статичний lineage граф), DataHub (enterprise-grade, OpenLineage API), OpenMetadata (open-source), Marquez. dbt артефакти (manifest.json) можна завантажити у DataHub через datahub ingest -c dbt.yml.</div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h5>Додаткові ресурси — Модуль 7</h5>
+        <div class="res-grid">
+          <a class="res-item" href="https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/" target="_blank"><span class="res-type">📖 Reference · EN</span><span class="res-title">Kimball Dimensional Modeling Techniques</span><span class="res-meta">kimballgroup.com</span></a>
+          <a class="res-item" href="https://www.oreilly.com/library/view/the-data-warehouse/9781118530801/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">The Data Warehouse Toolkit — Kimball</span><span class="res-meta">Wiley · класика</span></a>
+          <a class="res-item" href="https://docs.snowflake.com/en/guides-overview" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Snowflake Documentation</span><span class="res-meta">docs.snowflake.com</span></a>
+          <a class="res-item" href="https://cloud.google.com/bigquery/docs" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">BigQuery Documentation</span><span class="res-meta">cloud.google.com</span></a>
+          <a class="res-item" href="https://docs.aws.amazon.com/redshift/latest/gsg/getting-started.html" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Amazon Redshift Getting Started</span><span class="res-meta">docs.aws.amazon.com</span></a>
+          <a class="res-item" href="https://clickhouse.com/docs" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">ClickHouse Documentation</span><span class="res-meta">clickhouse.com</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=cAGOXQ4aUSU" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">Snowflake Architecture Explained</span><span class="res-meta">YouTube</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=eLVTTCXYLXI" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">How BigQuery Works Under the Hood</span><span class="res-meta">Google Cloud Tech</span></a>
+          <a class="res-item" href="https://duckdb.org/docs/guides/overview" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">DuckDB — embedded OLAP документація</span><span class="res-meta">duckdb.org</span></a>
+          <a class="res-item" href="https://fundamentals-of-data-engineering.oreilly.com/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Fundamentals of Data Engineering — глави про DWH</span><span class="res-meta">Reis · Housley</span></a>
+          <a class="res-item" href="https://www.benn.so/" target="_blank"><span class="res-type">📖 Blog · EN</span><span class="res-title">benn.substack — глибокі думки про MDS</span><span class="res-meta">Benn Stancil</span></a>
+        </div>
+      </div>
+
+      <div class="assignment">
+        <div class="a-label">📝 Завдання · Модуль 7</div>
+        <h5>Star schema + SCD2 на ClickHouse або BigQuery</h5>
+        <ol>
+          <li>Обрати платформу: <strong>ClickHouse</strong> (локально у docker) або <strong>BigQuery</strong> (free-tier)</li>
+          <li>Взяти публічний датасет: <a href="https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce" target="_blank">Olist E-commerce</a> або <a href="https://www.kaggle.com/datasets/carrie1/ecommerce-data" target="_blank">E-Commerce Data</a></li>
+          <li>Спроектувати <strong>star schema</strong>: <code>fct_orders</code> + 4 dimensions (<code>dim_customer</code>, <code>dim_product</code>, <code>dim_geo</code>, <code>dim_date</code>)</li>
+          <li>Завантажити дані, реалізувати <strong>SCD Type 2</strong> для <code>dim_customer</code>: додати колонки <code>valid_from</code>, <code>valid_to</code>, <code>is_current</code></li>
+          <li>Симулювати зміни: випадково оновити <code>city</code> у 10% клієнтів з timestamp 2 тижні тому. Показати, що старі order-и join-яться з історичними атрибутами, нові — з поточними</li>
+          <li>Написати 5 аналітичних запитів: топ-10 товарів за виторгом Q1 / conversion по країнах / cohort retention / LTV / GMV-growth month-over-month</li>
+          <li>Зробити Metabase або Superset дашборд поверх цих даних (опціонально)</li>
+        </ol>
+        <div class="deliverable"><strong>Deliverable:</strong> DDL-скрипти + load-скрипти + SQL-запити + скріншоти результатів у <code>/assignments/m7/</code></div>
+      </div>
+
+      <div class="milestone">
+        <div class="m-label">Project Milestone · ShopWave</div>
+        <h5>М7: Аналітичний DWH-шар</h5>
+        <ul>
+          <li>Обрати DWH: <strong>ClickHouse</strong> у <code>docker-compose</code> (простіше локально) або <strong>BigQuery</strong> free-tier</li>
+          <li>Спроектувати star schema для ShopWave: <code>fct_orders</code>, <code>fct_events</code> (view/click/cart), <code>dim_customer</code> (SCD2), <code>dim_product</code>, <code>dim_geo</code>, <code>dim_date</code></li>
+          <li>Написати Spark-джобу «gold (Iceberg) → DWH»: читає з Iceberg, форматує у star-schema, завантажує у ClickHouse/BigQuery</li>
+          <li>Реалізувати SCD2 через MERGE-логіку (або Airflow-таск)</li>
+          <li>Створити 10 базових BI-запитів: GMV/день, AOV/country, conversion-funnel, top products, cohort retention</li>
+          <li>Підняти <strong>Metabase</strong> або <strong>Apache Superset</strong> у docker-compose, під'єднати до DWH, побудувати перший ShopWave-дашборд</li>
+          <li>ADR: <code>ADR-006-dwh-choice.md</code> (чому обрали саме ClickHouse / BigQuery)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 8 -->
+<section class="module" id="module-8">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">08</div>
+      <div class="mod-meta">
+        <div class="mod-week">Тиждень 13 · ~15 год</div>
+        <h2 class="mod-title">Orchestration &amp; <span class="violet">NoSQL</span></h2>
+        <p class="mod-lead">Треба зв'язати всі джоби у повторюваний pipeline з retry, залежностями, SLA. Для цього — Airflow. А ще розбираємо, коли PostgreSQL недостатньо і потрібен документний / широкий-колонковий / graph / time-series сторедж.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Навіщо взагалі orchestrator</h4>
+      <p>У вас є 15 Spark-джобів, 3 dbt-models, міграція SCD2, compaction Iceberg і експорт у BI. Вони повинні виконуватись у певному порядку (спочатку bronze→silver, потім silver→gold, потім DWH), з обробкою помилок (retry 3 рази з exponential backoff), з моніторингом SLA («fct_orders має бути готовим до 07:00 щодня»), з можливістю backfill за минулий тиждень після багфіксу. Це не «написати cron» — це повноцінна система. Саме цим і займаються orchestrator-и.</p>
+
+      <h4>Apache Airflow — де-факто стандарт</h4>
+      <p>Airflow створили в Airbnb у 2014, у 2019 став Apache top-level. До 2026 — найпоширеніший orchestrator (MWAA на AWS, Cloud Composer у GCP, Astro і Astronomer у ентерпрайзі).</p>
+
+      <h5>Ключові концепції</h5>
+      <ul>
+        <li><strong>DAG</strong> (Directed Acyclic Graph) — ваш pipeline. Python-файл, що описує таски та їхні залежності.</li>
+        <li><strong>Task</strong> — одна одиниця роботи. Екземпляр <strong>Operator</strong>-а.</li>
+        <li><strong>Operator</strong> — «шаблон» задачі: <code>PythonOperator</code>, <code>BashOperator</code>, <code>SparkSubmitOperator</code>, <code>KubernetesPodOperator</code>, <code>BigQueryOperator</code>. Свої custom-оператори — норма.</li>
+        <li><strong>Sensor</strong> — спеціальний тип task-а, який чекає події (файл у S3, партиція у BigQuery, row у базі). Використовуйте з <code>mode='reschedule'</code>.</li>
+        <li><strong>Scheduler</strong> — сервіс, що триггерить DAG-и за розкладом (cron-expression або <code>@daily</code>).</li>
+        <li><strong>Executor</strong> — виконує таски. <code>LocalExecutor</code> (один сервер), <code>CeleryExecutor</code> (паралельно на багатьох worker-ах), <code>KubernetesExecutor</code> (кожен task — свій pod).</li>
+        <li><strong>XCom</strong> — мікро-стор для обміну даними між тасками (не передавайте через нього великі об'єми — тільки метадані).</li>
+      </ul>
+
+      <h5>TaskFlow API (Airflow 2.0+)</h5>
+      <pre style="background:var(--bg-3);padding:20px;border-radius:8px;border:1px solid var(--border-soft);font-family:var(--mono);font-size:13px;overflow-x:auto;margin:20px 0;max-width:860px;color:var(--fg)">
+<span style="color:#4ecdc4">from</span> airflow.decorators <span style="color:#4ecdc4">import</span> dag, task
+<span style="color:#4ecdc4">from</span> datetime <span style="color:#4ecdc4">import</span> datetime
+
+<span style="color:#b794f6">@dag</span>(schedule=<span style="color:#4ecdc4">"0 2 * * *"</span>,
+     start_date=datetime(<span style="color:#ffb627">2026</span>, <span style="color:#ffb627">1</span>, <span style="color:#ffb627">1</span>),
+     catchup=<span style="color:#ffb627">False</span>, tags=[<span style="color:#4ecdc4">"shopwave"</span>])
+<span style="color:#4ecdc4">def</span> daily_etl():
+    <span style="color:#b794f6">@task</span>
+    <span style="color:#4ecdc4">def</span> bronze_to_silver(ds):
+        <span style="color:#4ecdc4">return</span> run_spark_job(<span style="color:#4ecdc4">"bronze_to_silver.py"</span>, date=ds)
+
+    <span style="color:#b794f6">@task</span>
+    <span style="color:#4ecdc4">def</span> silver_to_gold(ds, silver_ready):
+        <span style="color:#4ecdc4">return</span> run_spark_job(<span style="color:#4ecdc4">"silver_to_gold.py"</span>, date=ds)
+
+    <span style="color:#b794f6">@task</span>
+    <span style="color:#4ecdc4">def</span> load_to_dwh(ds, gold_ready):
+        <span style="color:#4ecdc4">return</span> load_iceberg_to_clickhouse(ds)
+
+    silver = bronze_to_silver(<span style="color:#4ecdc4">"{{ ds }}"</span>)
+    gold   = silver_to_gold(<span style="color:#4ecdc4">"{{ ds }}"</span>, silver)
+    load_to_dwh(<span style="color:#4ecdc4">"{{ ds }}"</span>, gold)
+
+daily_etl()</pre>
+
+      <h4>Альтернативи Airflow — Dagster і Prefect</h4>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th></th><th>Airflow</th><th>Dagster</th><th>Prefect</th></tr></thead>
+          <tbody>
+            <tr><td>Ментальна модель</td><td>Tasks + DAG</td><td><strong>Data assets</strong> (software-defined assets)</td><td>Flows + Tasks</td></tr>
+            <tr><td>Типізовані I/O</td><td><span class="badge bad">Ні (XCom)</span></td><td><span class="badge good">Так, нативно</span></td><td><span class="badge mid">Частково</span></td></tr>
+            <tr><td>Локальна розробка</td><td>Складно (треба db + scheduler)</td><td><span class="badge good">Одна команда</span></td><td><span class="badge good">Легко</span></td></tr>
+            <tr><td>Testing</td><td>Boilerplate</td><td><span class="badge good">Декларативно</span></td><td>Добре</td></tr>
+            <tr><td>Ecosystem / providers</td><td><span class="badge good">Величезна (100+)</span></td><td>Росте</td><td>Середня</td></tr>
+            <tr><td>Ринок праці</td><td><span class="badge good">Усюди</span></td><td>Зростає</td><td>Помірно</td></tr>
+            <tr><td>Коли обирати</td><td><strong>Дефолт у 2026</strong></td><td>Data-centric, ML-team</td><td>Простіше за Airflow, Python-first</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>CAP-теорема — база перед NoSQL</h4>
+      <p>У 2000 Ерік Брюер довів: у розподіленій системі можна мати тільки <strong>2 з 3</strong> властивостей одночасно — <strong>C</strong>onsistency, <strong>A</strong>vailability, <strong>P</strong>artition tolerance. У реальному світі network partitions трапляються, тому обираємо між <strong>CP</strong> і <strong>AP</strong>:</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 700 360" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+          <!-- Triangle -->
+          <polygon points="350,40 80,320 620,320" fill="none" stroke="#26262b" stroke-width="2"/>
+          <!-- Corners -->
+          <g><circle cx="350" cy="40" r="8" fill="#4ecdc4"/><text x="350" y="25" text-anchor="middle" fill="#4ecdc4" font-size="14" font-weight="700">C · Consistency</text></g>
+          <g><circle cx="80" cy="320" r="8" fill="#b794f6"/><text x="30" y="345" text-anchor="start" fill="#b794f6" font-size="14" font-weight="700">A · Availability</text></g>
+          <g><circle cx="620" cy="320" r="8" fill="#ffb627"/><text x="670" y="345" text-anchor="end" fill="#ffb627" font-size="14" font-weight="700">P · Partition tolerance</text></g>
+
+          <!-- Edges labels -->
+          <text x="165" y="170" text-anchor="middle" fill="#f4f4f2" font-size="12" font-weight="700">CA</text>
+          <text x="165" y="188" text-anchor="middle" fill="#9a9a95" font-size="10">RDBMS (single node)</text>
+          <text x="165" y="202" text-anchor="middle" fill="#6a6a66" font-size="9">PostgreSQL · MySQL</text>
+
+          <text x="535" y="170" text-anchor="middle" fill="#f4f4f2" font-size="12" font-weight="700">CP</text>
+          <text x="535" y="188" text-anchor="middle" fill="#9a9a95" font-size="10">MongoDB · HBase</text>
+          <text x="535" y="202" text-anchor="middle" fill="#6a6a66" font-size="9">BigTable · Redis cluster</text>
+
+          <text x="350" y="295" text-anchor="middle" fill="#f4f4f2" font-size="12" font-weight="700">AP</text>
+          <text x="350" y="310" text-anchor="middle" fill="#9a9a95" font-size="10">Cassandra · DynamoDB</text>
+          <text x="350" y="326" text-anchor="middle" fill="#6a6a66" font-size="9">CouchDB · Riak</text>
+        </svg>
+        <div class="diagram-caption">CAP-теорема · реальний вибір між CP і AP</div>
+      </div>
+
+      <p class="muted">CAP-теорема теоретична: у реальних системах усе складніше (PACELC розширення: навіть без partition обираєте між Latency і Consistency). Але для розуміння NoSQL-світу базу треба знати.</p>
+
+      <h4>NoSQL — чотири великі категорії</h4>
+      <div class="cards">
+        <div class="card"><div class="ic">D</div><h6>Document</h6><p><strong>MongoDB · Couchbase · AWS DocumentDB</strong>. JSON/BSON документи з гнучкою схемою. Для user profiles, content management, каталогу продуктів.</p></div>
+        <div class="card violet"><div class="ic">W</div><h6>Wide-column</h6><p><strong>Cassandra · ScyllaDB · HBase · BigTable</strong>. Масивний scale, оптимізований write path. Для time-series, логів, IoT, recommendation engines (Netflix — Cassandra).</p></div>
+        <div class="card"><div class="ic">K</div><h6>Key-Value</h6><p><strong>Redis · DynamoDB · KeyDB · Valkey</strong>. Найпростіша модель, максимальна швидкість. Для кешів, session storage, leaderboards, real-time лічильників.</p></div>
+        <div class="card violet"><div class="ic">G</div><h6>Graph</h6><p><strong>Neo4j · ArangoDB · Amazon Neptune</strong>. Відносини як first-class. Для recommendation, social networks, fraud detection, knowledge graphs.</p></div>
+      </div>
+
+      <h4>Time-series БД — окрема історія</h4>
+      <ul>
+        <li><strong>InfluxDB</strong> — OSS, спеціалізована. Monitoring, IoT. Має власну SQL-подібну мову Flux.</li>
+        <li><strong>TimescaleDB</strong> — розширення PostgreSQL. Якщо вже є Postgres і часові ряди — найкращий вибір. SQL знайомий усім.</li>
+        <li><strong>QuestDB</strong> — новіша, високопродуктивна для financial data.</li>
+        <li><strong>Prometheus</strong> — не загального призначення, а для метрик інфраструктури (про це у Частині 3).</li>
+        <li>Альтернатива: ClickHouse з time-based partitioning — часто швидше за спеціалізовані time-series БД.</li>
+      </ul>
+
+      <h4>Коли SQL, коли NoSQL</h4>
+      <div class="proscons">
+        <div class="pc-box pros">
+          <h6>SQL краще коли...</h6>
+          <ul>
+            <li>Сильна реляційна модель, складні joins</li>
+            <li>ACID-транзакції важливі</li>
+            <li>Схема стабільна, мало змінюється</li>
+            <li>Команда знайома з SQL (завжди)</li>
+            <li>Потрібні звіти і ad-hoc-аналітика</li>
+          </ul>
+        </div>
+        <div class="pc-box cons">
+          <h6>NoSQL краще коли...</h6>
+          <ul>
+            <li>Гнучка схема / швидко еволюціонує</li>
+            <li>Горизонтальне масштабування понад усе</li>
+            <li>Специфічний pattern доступу (графи, key-value, time-series)</li>
+            <li>Дуже high write throughput</li>
+            <li>Global distribution з eventual consistency ОК</li>
+          </ul>
+        </div>
+      </div>
+
+      <h4>Airflow — складний production DAG</h4>
+      <p>TaskFlow API — зручно для простого. Але реальний production DAG використовує Sensors, branching, SLA, on_failure_callback і custom operators.</p>
+
+      <div class="pre-wrap"><pre><code># dags/shopwave_daily_etl.py
+from airflow import DAG
+from airflow.decorators import task, dag
+from airflow.sensors.s3_key_sensor import S3KeySensor
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
+from airflow.operators.python import BranchPythonOperator
+from airflow.utils.trigger_rule import TriggerRule
+from datetime import datetime, timedelta
+
+def alert_slack_on_failure(context):
+    """Callback при будь-якому failure — шле у Slack."""
+    SlackWebhookOperator(
+        task_id="slack_alert",
+        slack_webhook_conn_id="slack_shopwave",
+        message=f":red_circle: DAG {context['dag'].dag_id} "
+                f"task {context['task_instance'].task_id} FAILED\n"
+                f"Execution: {context['ds']} | "
+                f"Log: {context['task_instance'].log_url}",
+    ).execute(context)
+
+default_args = {
+    "owner":            "data-team",
+    "retries":          3,
+    "retry_delay":      timedelta(minutes=5),
+    "retry_exponential_backoff": True,
+    "on_failure_callback": alert_slack_on_failure,
+    "email_on_failure": False,   # замість email — Slack
+}
+
+@dag(
+    dag_id="shopwave_daily_etl",
+    schedule="0 2 * * *",          # щодня о 02:00 UTC
+    start_date=datetime(2026, 1, 1),
+    catchup=False,
+    default_args=default_args,
+    tags=["shopwave", "etl", "daily"],
+    sla_miss_callback=alert_slack_on_failure,
+)
+def shopwave_daily_etl():
+
+    # 1. Sensor: чекаємо поки Kafka Connect скинув файли у S3
+    wait_for_bronze = S3KeySensor(
+        task_id="wait_for_bronze_data",
+        bucket_name="shopwave-prod-lake",
+        bucket_key="bronze/orders/year={{ ds[:4] }}/month={{ ds[5:7] }}/day={{ ds[8:10] }}/_SUCCESS",
+        aws_conn_id="aws_default",
+        timeout=3600,              # чекаємо max 1 годину
+        poke_interval=60,
+        mode="reschedule",         # не займати worker slot під час очікування
+        sla=timedelta(hours=2),
+    )
+
+    # 2. Bronze → Silver через Spark
+    bronze_to_silver = SparkSubmitOperator(
+        task_id="bronze_to_silver",
+        application="s3://shopwave-code/spark/bronze_to_silver.py",
+        conn_id="spark_k8s",
+        application_args=["--date", "{{ ds }}"],
+        conf={
+            "spark.executor.memory": "4g",
+            "spark.executor.instances": "8",
+            "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
+        },
+        sla=timedelta(hours=1),
+    )
+
+    # 3. Validation — чи є достатньо рядків у silver?
+    @task
+    def validate_silver(ds: str) -> str:
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.getOrCreate()
+        count = spark.sql(
+            f"SELECT COUNT(*) FROM shopwave.silver.orders WHERE order_date = '{ds}'"
+        ).collect()[0][0]
+        # Branching: якщо менше 1000 рядків → підозріло
+        return "load_to_dwh" if count >= 1000 else "alert_low_volume"
+
+    validation = validate_silver()
+
+    # 4. Alert якщо мало даних
+    alert_low_volume = SlackWebhookOperator(
+        task_id="alert_low_volume",
+        slack_webhook_conn_id="slack_shopwave",
+        message=":warning: Silver layer має < 1000 рядків за {{ ds }}. Перевірте pipeline.",
+    )
+
+    # 5. Load Silver → DWH (ClickHouse)
+    @task(sla=timedelta(minutes=30))
+    def load_to_dwh(ds: str) -> dict:
+        from clickhouse_driver import Client
+        client = Client("clickhouse.shopwave.svc")
+        result = client.execute(
+            "INSERT INTO shopwave.fct_orders SELECT * FROM iceberg('s3://...', 'silver/orders') "
+            "WHERE order_date = %(date)s",
+            {"date": ds}
+        )
+        return {"rows_loaded": result}
+
+    # 6. dbt run після завантаження
+    @task
+    def run_dbt(ds: str, load_result: dict) -> None:
+        import subprocess
+        proc = subprocess.run(
+            ["dbt", "run", "--select", "marts", "--vars", f'{{"ds": "{ds}"}}'],
+            capture_output=True, text=True, cwd="/opt/dbt/shopwave"
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(f"dbt failed:\n{proc.stderr}")
+
+    # 7. Notify success
+    notify_success = SlackWebhookOperator(
+        task_id="notify_success",
+        slack_webhook_conn_id="slack_shopwave",
+        message=":white_check_mark: ShopWave ETL {{ ds }} completed successfully.",
+        trigger_rule=TriggerRule.ALL_SUCCESS,
+    )
+
+    # Залежності
+    silver_ready = bronze_to_silver
+    branch = BranchPythonOperator(
+        task_id="validate_silver",
+        python_callable=validate_silver,
+    )
+
+    wait_for_bronze >> bronze_to_silver >> branch
+    branch >> alert_low_volume
+    branch >> load_to_dwh("{{ ds }}", {}) >> run_dbt("{{ ds }}", {}) >> notify_success
+
+shopwave_daily_etl()</code></pre></div>
+
+      <h4>MongoDB — практичний код</h4>
+      <div class="analogy"><strong>MongoDB — як папки з документами.</strong> Замість рядків у таблиці — JSON-документи у колекції. Кожен документ може мати різну структуру. Ідеально коли схема нестабільна або дані ієрархічні.</div>
+
+      <div class="pre-wrap"><pre><code># pip install pymongo
+from pymongo import MongoClient, ASCENDING, DESCENDING
+from pymongo.errors import DuplicateKeyError
+from datetime import datetime
+
+client = MongoClient("mongodb://localhost:27017/")
+db = client["shopwave"]
+profiles = db["user_profiles"]
+
+# Індекс для швидкого пошуку
+profiles.create_index([("user_id", ASCENDING)], unique=True)
+profiles.create_index([("updated_at", DESCENDING)])
+
+# ── INSERT ──────────────────────────────────────────────────────────
+profile = {
+    "user_id": "usr-000123",
+    "email_hash": "sha256:abc123...",   # PII у вигляді хешу
+    "preferences": {
+        "language": "uk",
+        "currency": "UAH",
+        "notifications": {"email": True, "push": False}
+    },
+    "recent_views": ["prod-001", "prod-002", "prod-003"],   # масив
+    "segment": "high_value",
+    "lifetime_orders": 47,
+    "created_at": datetime.utcnow(),
+    "updated_at": datetime.utcnow(),
+}
+try:
+    result = profiles.insert_one(profile)
+    print(f"Inserted: {result.inserted_id}")
+except DuplicateKeyError:
+    print("Profile already exists")
+
+# ── UPDATE (upsert) ─────────────────────────────────────────────────
+profiles.update_one(
+    {"user_id": "usr-000123"},
+    {
+        "$set": {"segment": "vip", "updated_at": datetime.utcnow()},
+        "$inc": {"lifetime_orders": 1},                    # атомарний інкремент
+        "$push": {"recent_views": {"$each": ["prod-005"], "$slice": -10}},  # last 10
+    },
+    upsert=True    # якщо не існує — створити
+)
+
+# ── READ ────────────────────────────────────────────────────────────
+# Одного користувача
+user = profiles.find_one({"user_id": "usr-000123"})
+
+# Фільтрація + projection
+vip_users = list(profiles.find(
+    {"segment": "vip", "lifetime_orders": {"$gte": 10}},
+    {"user_id": 1, "segment": 1, "_id": 0}    # projection: тільки ці поля
+).sort("lifetime_orders", DESCENDING).limit(100))
+
+# ── AGGREGATION PIPELINE ────────────────────────────────────────────
+pipeline = [
+    {"$match": {"segment": {"$in": ["high_value", "vip"]}}},
+    {"$group": {
+        "_id": "$segment",
+        "count": {"$sum": 1},
+        "avg_orders": {"$avg": "$lifetime_orders"},
+    }},
+    {"$sort": {"avg_orders": -1}},
+    {"$project": {"segment": "$_id", "count": 1, "avg_orders": 1, "_id": 0}},
+]
+result = list(profiles.aggregate(pipeline))
+
+# ── DELETE ──────────────────────────────────────────────────────────
+# GDPR right-to-be-forgotten
+deleted = profiles.delete_one({"user_id": "usr-000123"})
+print(f"Deleted: {deleted.deleted_count} document")
+
+# ── EXPORT до Parquet (для аналітики у lake) ────────────────────────
+import pandas as pd
+import pyarrow as pa, pyarrow.parquet as pq
+
+docs = list(profiles.find({}, {"_id": 0}))
+df = pd.json_normalize(docs, sep="_")   # розгорнути вкладені об'єкти
+table = pa.Table.from_pandas(df)
+pq.write_table(table, "s3://shopwave-lake/gold/user_profiles/snapshot.parquet")</code></pre></div>
+
+      <h4>Cassandra — write-optimized wide-column patterns</h4>
+      <div class="pre-wrap"><pre><code># pip install cassandra-driver
+from cassandra.cluster import Cluster, ExecutionProfile, EXEC_PROFILE_DEFAULT
+from cassandra.policies import DCAwareRoundRobinPolicy, RetryPolicy
+from cassandra.query import SimpleStatement, BatchStatement, ConsistencyLevel
+from cassandra import ConsistencyLevel
+import uuid
+from datetime import datetime
+
+# Підключення з retry policy
+profile = ExecutionProfile(
+    load_balancing_policy=DCAwareRoundRobinPolicy(local_dc="dc1"),
+    retry_policy=RetryPolicy(),
+    consistency_level=ConsistencyLevel.LOCAL_QUORUM,
+)
+cluster = Cluster(
+    ["cassandra-0.cassandra", "cassandra-1.cassandra"],
+    execution_profiles={EXEC_PROFILE_DEFAULT: profile}
+)
+session = cluster.connect("shopwave")
+
+# ── SCHEMA (денормалізація — key rule of Cassandra) ─────────────────
+# Cassandra: schema визначається query-patterns, а не нормалізацією
+# "Design for queries, not for storage efficiency"
+session.execute("""
+    CREATE TABLE IF NOT EXISTS order_events_by_user (
+        user_id   TEXT,
+        bucket    INT,       -- partition за user_id + bucket (уникаємо wide rows)
+        event_ts  TIMESTAMP,
+        event_id  UUID,
+        event_type TEXT,
+        amount    DECIMAL,
+        country   TEXT,
+        PRIMARY KEY ((user_id, bucket), event_ts, event_id)
+    ) WITH CLUSTERING ORDER BY (event_ts DESC)
+      AND compaction = {'class': 'TimeWindowCompactionStrategy',
+                        'compaction_window_size': '1',
+                        'compaction_window_unit': 'DAYS'}
+      AND default_time_to_live = 7776000;  -- 90 днів TTL
+""")
+
+# ── WRITE (prepared statement для продуктивності) ───────────────────
+insert_stmt = session.prepare("""
+    INSERT INTO order_events_by_user
+        (user_id, bucket, event_ts, event_id, event_type, amount, country)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+""")
+
+def write_event(user_id, event_type, amount, country):
+    bucket = hash(user_id) % 10   # 10 buckets для рівномірного розподілу
+    session.execute(insert_stmt, (
+        user_id, bucket, datetime.utcnow(),
+        uuid.uuid4(), event_type, amount, country
+    ))
+
+# Batch write (тільки для одного partition — інакше anti-pattern!)
+batch = BatchStatement(consistency_level=ConsistencyLevel.LOCAL_QUORUM)
+for event in events_for_one_user:
+    batch.add(insert_stmt, (event["user_id"], ...))
+session.execute(batch)
+
+# ── READ (завжди через partition key) ──────────────────────────────
+read_stmt = session.prepare("""
+    SELECT event_ts, event_type, amount
+    FROM order_events_by_user
+    WHERE user_id = ? AND bucket = ?
+      AND event_ts > ?
+    LIMIT 100
+""")
+bucket = hash("usr-000123") % 10
+rows = session.execute(read_stmt, ("usr-000123", bucket, one_week_ago))
+
+# ── Cassandra Data Modeling Rules ──────────────────────────────────
+# ✅ Partition key = як ви шукаєте дані (user_id + bucket)
+# ✅ Clustering key = порядок всередині partition (event_ts DESC)
+# ✅ Денормалізація = одна query = одна таблиця
+# ❌ JOINs — неможливі
+# ❌ SELECT без partition key — full cluster scan (уникати)
+# ❌ Large partitions > 100MB — anti-pattern → bucketing</code></pre></div>
+
+      <h4>Redis — кеш, leaderboard, pub/sub</h4>
+      <div class="pre-wrap"><pre><code># pip install redis
+import redis
+import json
+from datetime import timedelta
+
+r = redis.Redis(host="redis", port=6379, decode_responses=True)
+
+# ── STRING — кешування результатів запитів ─────────────────────────
+def get_user_segment(user_id: str) -> str:
+    cache_key = f"user:segment:{user_id}"
+    cached = r.get(cache_key)
+    if cached:
+        return cached
+    # Cache miss → запит у MongoDB
+    segment = mongo_db.profiles.find_one({"user_id": user_id})["segment"]
+    r.setex(cache_key, timedelta(minutes=15), segment)   # TTL 15 хв
+    return segment
+
+# ── HASH — profile-like structures ─────────────────────────────────
+r.hset("session:abc123", mapping={
+    "user_id": "usr-000123",
+    "country": "UA",
+    "cart_total": "245.50",
+    "items_count": "3",
+})
+r.expire("session:abc123", 3600)   # session TTL 1 год
+
+cart_total = float(r.hget("session:abc123", "cart_total"))
+r.hincrbyfloat("session:abc123", "cart_total", 50.0)  # атомарний increment
+
+# ── SORTED SET — leaderboard (real-time рейтинги) ──────────────────
+# Top sellers за сьогодні
+r.zadd("leaderboard:products:2026-04-22", {"prod-001": 150.5, "prod-002": 89.0})
+r.zincrby("leaderboard:products:2026-04-22", 45.0, "prod-001")  # додати GMV
+
+# Топ-10 товарів
+top_products = r.zrevrange("leaderboard:products:2026-04-22", 0, 9, withscores=True)
+# [('prod-001', 195.5), ('prod-002', 89.0), ...]
+
+r.expire("leaderboard:products:2026-04-22", 86400 * 2)  # зберігати 2 дні
+
+# ── PUB/SUB — real-time notification ───────────────────────────────
+# Publisher (від Airflow або Flink)
+def publish_fraud_alert(user_id: str, reason: str):
+    r.publish("fraud.alerts", json.dumps({
+        "user_id": user_id, "reason": reason,
+        "ts": int(time.time())
+    }))
+
+# Subscriber (notification service)
+pubsub = r.pubsub()
+pubsub.subscribe("fraud.alerts")
+for message in pubsub.listen():
+    if message["type"] == "message":
+        alert = json.loads(message["data"])
+        send_to_risk_team(alert)
+
+# ── ATOMIC COUNTER — rate limiting ─────────────────────────────────
+def check_rate_limit(user_id: str, limit: int = 100) -> bool:
+    key = f"rate:{user_id}:{int(time.time() // 60)}"  # per minute window
+    count = r.incr(key)
+    if count == 1:
+        r.expire(key, 60)
+    return count <= limit</code></pre></div>
+
+      <div class="resources">
+      <div class="interview-qa">
+        <h5>🎯 Interview Q&A — Модуль 8: Airflow + NoSQL</h5>
+        <div class="qa-item">
+          <div class="qa-q">Що таке idempotency у DAG і чому це критично?</div>
+          <div class="qa-a">Idempotent task: виконання N разів дає той самий результат, що й одноразове виконання. Критично бо Airflow може retry task при падінні або перезапуску. Не-ідемпотентний task: INSERT INTO table SELECT ... — дублікати при retry. Ідемпотентний: INSERT INTO table SELECT ... WHERE date = '{{ ds }}' + unique constraint або MERGE/upsert. Практики: 1) Завжди використовувати {{ ds }} (execution date) а не поточну дату NOW(), 2) Замість INSERT — UPSERT (ON CONFLICT DO UPDATE), 3) Для Parquet writes — mode("overwrite") для конкретної партиції, 4) Для зовнішніх API — check-before-write: чи не відправляли email вже, 5) Зберігати стан у dedicated state table з execution_date.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">XCom у Airflow — що це і коли використовувати?</div>
+          <div class="qa-a">XCom (Cross-Communication) — механізм передачі невеликих значень між tasks у межах DAG run. Task A пуш-ає XCom: ti.xcom_push(key='count', value=1234). Task B читає: ti.xcom_pull(task_ids='task_a', key='count'). З TaskFlow API (@task декоратор) XCom автоматичний: return value = XCom push, параметр функції = XCom pull. Коли використовувати: передати metadata між tasks (кількість рядків, URL файлу, статус). Коли НЕ використовувати: передавати DataFrame або великі дані — XCom зберігається в метадата-БД Airflow (обмежено до ~1MB). Для великих даних — пишіть в S3/GCS і передавайте URL. Пітфол: XCom coupling ускладнює тестування tasks окремо.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Dynamic DAGs в Airflow — що це і як реалізувати?</div>
+          <div class="qa-a">Dynamic DAG = програмно генерувати кілька DAG-ів або task-ів на основі конфігурації. Use cases: 1) Один DAG-шаблон для кожної таблиці (20 таблиць = 20 DAGs), 2) Паралельна обробка кількох країн як окремих tasks. Реалізація через .generate_tasks(): for country in ['UA','PL','DE']: task = SparkSubmitOperator(task_id=f'process_{country}', ...). З Airflow 2.5+ — Task Mapping через .expand(): process.expand(country=['UA','PL','DE']) — кожна країна як динамічний mapped task. Це ефективніше ніж generate_tasks бо Airflow знає кількість tasks тільки в runtime. Проблема з dynamic DAGs: DagBag parsing при кожному scheduler tick — тисячі DAGs сповільнюють scheduler. Рішення: кешувати конфіг.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">MongoDB vs PostgreSQL — коли NoSQL виправданий?</div>
+          <div class="qa-a">PostgreSQL: ACID, SQL joins, fixed schema, FK constraints. Ідеально для: фінансові транзакції, складні аналітичні запити з JOIN-ами, нормалізовані дані. MongoDB: BSON documents (nested JSON), flexible schema, horizontal sharding, денормалізовані дані. Ідеально для: 1) user profiles з різноманітною структурою (різні поля для різних типів юзерів), 2) product catalogs де кожна категорія має різні attributes (телефон vs одяг), 3) session/activity store де структура нестабільна, 4) швидкі writes за document key. Антипатерн MongoDB: транзакції між кількома documents (погана підтримка), складні аналітичні агрегації (краще OLAP), master-data з FK. Загальне правило: якщо сумніваєтесь — PostgreSQL. MongoDB тільки коли flexible schema — справжня вимога.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як правильно налаштувати Airflow для production?</div>
+          <div class="qa-a">Ключові налаштування: 1) Executor: LocalExecutor (1 машина, &lt;20 tasks паралельно), CeleryExecutor (worker pool, масштабується), KubernetesExecutor (кожен task = K8s Pod, ізоляція). 2) Connections: ніколи не хардкодити credentials — Airflow Connections у secrets backend (AWS SSM, Vault, K8s Secrets). 3) SLA: sla=timedelta(hours=2) на critical tasks — Airflow надішле email якщо task не завершився. 4) Pool: обмежити паралельні connections до DWH: Pool('dwh_queries', slots=10). 5) DAG versioning: при зміні DAG структури — новий dag_id, не edit старого (зламає backfill). 6) Monitoring: Statsd metrics → Prometheus → Grafana. Ключові метрики: scheduler_heartbeat, dag_processing_total, task_duration.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">CAP теорема — як застосовувати при виборі БД?</div>
+          <div class="qa-a">CAP: Consistency (всі вузли бачать одні дані), Availability (кожен запит отримує відповідь), Partition tolerance (система працює при network split). В розподіленій системі P завжди потрібен — тому обираємо CP або AP. CP (Consistency + Partition tolerance): MongoDB (з write concern majority), HBase, Redis Cluster. При network partition — система відхиляє writes і стає недоступною, але дані консистентні. AP (Availability + Partition tolerance): Cassandra, DynamoDB, CouchDB. При partition — відповідає з potentially stale даними, але ніколи не падає. Практично: банківський рахунок → CP (краще помилка ніж неправильний баланс). User sessions, product catalog → AP (кешові дані можуть застаріти на секунди — ОК).</div>
+        </div>
+      </div>
+
+        <h5>Додаткові ресурси — Модуль 8</h5>
+        <div class="res-grid">
+          <a class="res-item" href="https://airflow.apache.org/docs/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Apache Airflow Documentation</span><span class="res-meta">airflow.apache.org</span></a>
+          <a class="res-item" href="https://www.manning.com/books/data-pipelines-with-apache-airflow" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Data Pipelines with Apache Airflow — Manning</span><span class="res-meta">Harenslak · de Ruiter</span></a>
+          <a class="res-item" href="https://www.astronomer.io/airflow/" target="_blank"><span class="res-type">📖 Resource · EN</span><span class="res-title">Astronomer Airflow Guides — практичні туторіали</span><span class="res-meta">astronomer.io</span></a>
+          <a class="res-item" href="https://docs.dagster.io/getting-started" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Dagster Documentation</span><span class="res-meta">dagster.io</span></a>
+          <a class="res-item" href="https://docs.prefect.io/latest/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Prefect Documentation</span><span class="res-meta">prefect.io</span></a>
+          <a class="res-item" href="https://dataintensive.net/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Designing Data-Intensive Applications</span><span class="res-meta">Martin Kleppmann · обов'язкове читання</span></a>
+          <a class="res-item" href="https://www.mongodb.com/docs/manual/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">MongoDB Documentation</span><span class="res-meta">mongodb.com</span></a>
+          <a class="res-item" href="https://cassandra.apache.org/doc/latest/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Apache Cassandra Documentation</span><span class="res-meta">cassandra.apache.org</span></a>
+          <a class="res-item" href="https://redis.io/docs/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Redis Documentation</span><span class="res-meta">redis.io</span></a>
+          <a class="res-item" href="https://neo4j.com/docs/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Neo4j Documentation</span><span class="res-meta">neo4j.com</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=BGrlQupPZwU" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">CAP Theorem Explained</span><span class="res-meta">YouTube</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=K9AYw7zIsRY" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">Airflow Tutorial for Beginners — Full Course</span><span class="res-meta">YouTube</span></a>
+        </div>
+      </div>
+
+      <div class="assignment">
+        <div class="a-label">📝 Завдання · Модуль 8</div>
+        <h5>Airflow DAG + MongoDB integration</h5>
+        <ol>
+          <li>Підняти <strong>Airflow 2.x</strong> локально (офіційний <a href="https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html" target="_blank">docker-compose.yml</a>)</li>
+          <li>Написати DAG з 5 тасків (будь-який скелет pipeline): extract → validate → transform → load → notify</li>
+          <li>Використати <strong>TaskFlow API</strong> (@dag + @task декоратори)</li>
+          <li>Додати залежності: task може стартувати тільки коли попередній успішний</li>
+          <li>Додати <code>retries=3</code> + <code>retry_delay=timedelta(minutes=2)</code></li>
+          <li>Додати <code>FileSensor</code>, який чекає на файл у S3/MinIO перед стартом extract</li>
+          <li>Підняти <strong>MongoDB</strong> в docker. Написати скрипт, який вставляє, читає, оновлює, видаляє документи (повний CRUD)</li>
+          <li>Додати ще один DAG, який експортує колекцію з Mongo в Parquet у S3 через <code>MongoHook</code></li>
+        </ol>
+        <div class="deliverable"><strong>Deliverable:</strong> <code>dags/</code> папка + Mongo-скрипти + скріншоти Airflow UI у <code>/assignments/m8/</code></div>
+      </div>
+
+      <div class="milestone">
+        <div class="m-label">Project Milestone · ShopWave</div>
+        <h5>М8: Повна оркестрація + user profiles</h5>
+        <ul>
+          <li>Підняти Airflow у <code>docker-compose</code> ShopWave проекту</li>
+          <li>Написати головний DAG <code>shopwave_daily_etl</code>: Kafka-Connect-to-S3 check → bronze→silver (Spark) → silver→gold Iceberg (Spark) → MERGE у DWH (SCD2) → Metabase cache refresh → Slack notify</li>
+          <li>Додати DAG <code>shopwave_maintenance</code>: compaction Iceberg, expire_snapshots, remove_orphans — щонеділі</li>
+          <li>Створити custom <code>ShopWaveOperator</code> для уніфікованого запуску Spark-джобів</li>
+          <li>Використати <code>ExternalTaskSensor</code> між DAG-ами де треба</li>
+          <li>Підняти <strong>MongoDB</strong>: колекція <code>user_profiles</code> з гнучкою схемою (preferences, recent_views, recommendations_cache)</li>
+          <li>Mongo → Iceberg: щоденний snapshot user_profiles у gold-шар для аналітики</li>
+          <li>Додати DAG для регулярного backup всіх продових DB (Postgres meta + Mongo)</li>
+          <li>ADR: <code>ADR-007-orchestration.md</code> (Airflow vs Dagster) + <code>ADR-008-polyglot-persistence.md</code> (Iceberg+ClickHouse+Mongo)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 2 RECAP + NEXT -->
+<section class="next-cta">
+  <div class="container">
+    <div class="section-label">Частина 2 завершена</div>
+    <h2>Далі — <em>production</em> &amp; хмари</h2>
+    <p>У Частині 3 ShopWave поїде з docker-compose у <strong>Kubernetes</strong>, інфраструктуру опишемо <strong>Terraform-ом</strong>, порівняємо деплой у AWS vs GCP vs Azure, додамо Data Governance з DataHub і захистимо чутливі дані. Фінальний capstone об'єднає все у production-ready платформу.</p>
+    <a class="btn" href="bigdata_part3_production.html">Перейти до Частини 03 — Production &amp; Cloud →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    © Big Data Infrastructure Course · Частина 2 з 3 · <a href="#">ShopWave Project</a>
+    &nbsp;·&nbsp; <a href="bigdata_part1_foundations.html">Частина 1</a> &nbsp;·&nbsp; <a href="bigdata_part3_production.html">Частина 3</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var bar = document.getElementById('reading-progress');
+  if(!bar) return;
+  window.addEventListener('scroll', function(){
+    var pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    bar.style.width = Math.min(pct, 100) + '%';
+  }, {passive: true});
+})();
+
+document.querySelectorAll('pre').forEach(function(pre){
+  var wrap = pre.parentElement;
+  if(!wrap.classList.contains('pre-wrap')){
+    var w = document.createElement('div');
+    w.className = 'pre-wrap';
+    pre.parentNode.insertBefore(w, pre);
+    w.appendChild(pre);
+    wrap = w;
+  }
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'copy';
+  wrap.appendChild(btn);
+  btn.addEventListener('click', function(){
+    navigator.clipboard.writeText(pre.textContent).then(function(){
+      btn.textContent = 'copied ✓';
+      btn.classList.add('copied');
+      setTimeout(function(){ btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  });
+});
+
+document.querySelectorAll('.qa-q').forEach(function(q){
+  q.addEventListener('click', function(){
+    var a = q.nextElementSibling;
+    var isOpen = a.classList.contains('open');
+    var container = q.closest('.interview-qa');
+    container.querySelectorAll('.qa-a').forEach(function(el){ el.classList.remove('open'); });
+    container.querySelectorAll('.qa-q').forEach(function(el){ el.classList.remove('active'); });
+    if(!isOpen){ a.classList.add('open'); q.classList.add('active'); }
+  });
+});
+
+(function(){
+  var sidebar = document.getElementById('toc-sidebar');
+  if(!sidebar) return;
+  var modules = document.querySelectorAll('.module');
+  modules.forEach(function(mod, i){
+    var heading = mod.querySelector('h2');
+    if(!heading) return;
+    var dot = document.createElement('a');
+    dot.className = 'toc-dot';
+    dot.href = '#' + (mod.id || 'module-'+(i+1));
+    dot.title = heading.textContent.trim().replace(/\s+/g,' ');
+    dot.setAttribute('data-target', mod.id || 'module-'+(i+1));
+    sidebar.appendChild(dot);
+  });
+  var dots = sidebar.querySelectorAll('.toc-dot');
+  var targets = Array.from(dots).map(function(d){ return document.getElementById(d.getAttribute('data-target')); });
+  window.addEventListener('scroll', function(){
+    var scrollY = window.scrollY + window.innerHeight * 0.35;
+    var active = 0;
+    targets.forEach(function(t, i){ if(t && t.getBoundingClientRect().top + window.scrollY <= scrollY) active = i; });
+    dots.forEach(function(d, i){ d.classList.toggle('active', i === active); });
+  }, {passive: true});
+})();
+</script>
+</body>
+</html>

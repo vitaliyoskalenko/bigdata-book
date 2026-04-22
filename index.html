@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Data Infrastructure — Повний курс</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0b; --bg-2:#111113; --bg-3:#17171a; --bg-card:#131316;
+  --border:#26262b; --border-soft:#1e1e22;
+  --fg:#f4f4f2; --fg-muted:#9a9a95; --fg-dim:#6a6a66;
+  --accent:#ffb627; --accent-2:#ff6b35;
+  --p2:#4ecdc4; --p3:#7fdba5;
+  --serif:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono','Courier New',monospace;
+  --sans:'Inter Tight',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--fg); font-family:var(--sans);
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255,182,39,.1), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 80%, rgba(78,205,196,.05), transparent 60%);
+  background-attachment:fixed;
+}
+a{color:inherit;text-decoration:none}
+
+nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(10,10,11,.88);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border-soft);
+}
+nav .inner{
+  max-width:1100px;margin:0 auto;padding:16px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.brand{font-family:var(--serif);font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.brand-dot{width:9px;height:9px;background:var(--accent);border-radius:50%;box-shadow:0 0 10px var(--accent)}
+.nav-mono{font-family:var(--mono);font-size:11px;color:var(--fg-dim);letter-spacing:.12em;text-transform:uppercase}
+
+.hero{
+  max-width:1100px;margin:0 auto;padding:100px 32px 80px;
+}
+.hero-label{
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:28px;display:flex;align-items:center;gap:12px;
+}
+.hero-label::before{content:'';width:32px;height:1px;background:var(--accent)}
+h1{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(52px,9vw,120px);line-height:.93;letter-spacing:-.03em;
+  margin-bottom:36px;
+}
+h1 em{font-style:italic;color:var(--accent);font-weight:300}
+.hero-sub{
+  font-size:19px;color:var(--fg-muted);max-width:680px;line-height:1.6;margin-bottom:60px;
+}
+
+.stats{
+  display:flex;gap:48px;flex-wrap:wrap;
+  padding:40px 0;border-top:1px solid var(--border-soft);
+  margin-bottom:80px;
+}
+.stat .n{font-family:var(--serif);font-size:52px;font-weight:300;color:var(--fg);line-height:1;letter-spacing:-.02em}
+.stat .n em{color:var(--accent);font-style:italic}
+.stat .l{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-top:8px}
+
+.parts{
+  max-width:1100px;margin:0 auto;padding:0 32px 120px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;
+}
+
+.part-card{
+  border:1px solid var(--border);border-radius:16px;padding:40px;
+  background:var(--bg-card);position:relative;overflow:hidden;
+  transition:transform .25s, border-color .25s, box-shadow .25s;
+  display:flex;flex-direction:column;
+}
+.part-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+.part-card.p1{border-color:rgba(255,182,39,.25)}
+.part-card.p1:hover{border-color:var(--accent);box-shadow:0 20px 60px rgba(255,182,39,.08)}
+.part-card.p2{border-color:rgba(78,205,196,.2)}
+.part-card.p2:hover{border-color:var(--p2);box-shadow:0 20px 60px rgba(78,205,196,.08)}
+.part-card.p3{border-color:rgba(127,219,165,.2)}
+.part-card.p3:hover{border-color:var(--p3);box-shadow:0 20px 60px rgba(127,219,165,.08)}
+
+.part-card::before{
+  content:attr(data-bg);
+  position:absolute;right:-10px;bottom:-30px;
+  font-family:var(--serif);font-size:160px;font-style:italic;font-weight:300;
+  line-height:1;letter-spacing:-.05em;pointer-events:none;opacity:.04;
+}
+.part-num{
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  margin-bottom:20px;
+}
+.p1 .part-num{color:var(--accent)}
+.p2 .part-num{color:var(--p2)}
+.p3 .part-num{color:var(--p3)}
+
+.part-card h2{
+  font-family:var(--serif);font-size:32px;font-weight:400;
+  letter-spacing:-.02em;margin-bottom:16px;line-height:1.1;
+}
+.part-card p{font-size:15px;color:var(--fg-muted);line-height:1.6;margin-bottom:28px;flex:1}
+
+.modules-list{
+  display:flex;flex-direction:column;gap:8px;margin-bottom:32px;
+}
+.mod-row{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--fg-muted);
+}
+.mod-row::before{
+  content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;
+  background:var(--fg-dim);
+}
+.p1 .mod-row::before{background:rgba(255,182,39,.5)}
+.p2 .mod-row::before{background:rgba(78,205,196,.5)}
+.p3 .mod-row::before{background:rgba(127,219,165,.5)}
+.mod-row strong{color:var(--fg);font-weight:500}
+
+.cta-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:14px 28px;border-radius:8px;
+  font-family:var(--mono);font-size:13px;letter-spacing:.05em;
+  font-weight:600;transition:all .2s;
+  text-decoration:none;align-self:flex-start;
+}
+.p1 .cta-btn{background:var(--accent);color:#000}
+.p1 .cta-btn:hover{background:#ffc94d;box-shadow:0 8px 24px rgba(255,182,39,.3)}
+.p2 .cta-btn{background:var(--p2);color:#000}
+.p2 .cta-btn:hover{background:#6eddd5;box-shadow:0 8px 24px rgba(78,205,196,.3)}
+.p3 .cta-btn{background:var(--p3);color:#000}
+.p3 .cta-btn:hover{background:#97e8b8;box-shadow:0 8px 24px rgba(127,219,165,.3)}
+
+.weeks-badge{
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  color:var(--fg-dim);margin-bottom:12px;
+}
+
+footer{
+  border-top:1px solid var(--border-soft);padding:32px;
+  text-align:center;font-family:var(--mono);font-size:12px;
+  color:var(--fg-dim);letter-spacing:.05em;
+}
+
+@media(max-width:640px){
+  .stats{gap:28px}
+  .hero{padding:72px 20px 60px}
+  .parts{padding:0 20px 80px}
+  h1{font-size:clamp(44px,14vw,80px)}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      Big Data Infrastructure
+    </div>
+    <div class="nav-mono">20 тижнів · 12 модулів</div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-label">Повний курс · Ukrainian</div>
+  <h1>Big Data<br><em>Infrastructure</em></h1>
+  <p class="hero-sub">
+    Від основ до production-ready платформи: Spark, Kafka, Iceberg, dbt, Kubernetes, Terraform і Data Governance —
+    на одному наскрізному проекті <strong>ShopWave</strong>.
+  </p>
+
+  <div class="stats">
+    <div class="stat"><div class="n">20</div><div class="l">тижнів</div></div>
+    <div class="stat"><div class="n">12</div><div class="l">модулів</div></div>
+    <div class="stat"><div class="n">30<em>+</em></div><div class="l">технологій</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">live проект</div></div>
+  </div>
+</div>
+
+<div class="parts">
+
+  <!-- PART 1 -->
+  <div class="part-card p1" data-bg="01">
+    <div class="part-num">Частина 01 · Тижні 1 – 7</div>
+    <div class="weeks-badge">~90 годин</div>
+    <h2>Основи &amp; архітектура</h2>
+    <p>Big Data концепції, системи зберігання, формати даних і Apache Spark — фундамент, без якого решта не має сенсу.</p>
+    <div class="modules-list">
+      <div class="mod-row"><strong>M1</strong> Big Data концепції, 5V, архітектури компаній</div>
+      <div class="mod-row"><strong>M2</strong> HDFS, S3, Parquet, Medallion Architecture</div>
+      <div class="mod-row"><strong>M3</strong> Formати: Parquet, ORC, Avro, Delta</div>
+      <div class="mod-row"><strong>M4</strong> Apache Spark — від MapReduce до Lakehouse</div>
+    </div>
+    <a class="cta-btn" href="bigdata_part1_foundations.html">Почати Частину 1 →</a>
+  </div>
+
+  <!-- PART 2 -->
+  <div class="part-card p2" data-bg="02">
+    <div class="part-num">Частина 02 · Тижні 8 – 13</div>
+    <div class="weeks-badge">~90 годин</div>
+    <h2>Обробка &amp; платформи</h2>
+    <p>Потокова обробка, Lakehouse, DWH і оркестрація — повний сучасний data-стек у дії.</p>
+    <div class="modules-list">
+      <div class="mod-row"><strong>M5</strong> Kafka, Flink, streaming patterns</div>
+      <div class="mod-row"><strong>M6</strong> Apache Iceberg, Delta Lake, ACID transactions</div>
+      <div class="mod-row"><strong>M7</strong> DWH, dbt, Snowflake, BigQuery, ClickHouse</div>
+      <div class="mod-row"><strong>M8</strong> Airflow, MongoDB, Cassandra, Redis</div>
+    </div>
+    <a class="cta-btn" href="bigdata_part2_processing.html">Почати Частину 2 →</a>
+  </div>
+
+  <!-- PART 3 -->
+  <div class="part-card p3" data-bg="03">
+    <div class="part-num">Частина 03 · Тижні 14 – 20</div>
+    <div class="weeks-badge">~90 годин</div>
+    <h2>Production &amp; Cloud</h2>
+    <p>Kubernetes, Terraform, AWS/GCP/Azure, Data Governance і фінальний Capstone — ShopWave у production.</p>
+    <div class="modules-list">
+      <div class="mod-row"><strong>M9</strong> Kubernetes, CI/CD, GitHub Actions</div>
+      <div class="mod-row"><strong>M10</strong> AWS vs GCP vs Azure, TCO, FinOps</div>
+      <div class="mod-row"><strong>M11</strong> DataHub, Presidio, RBAC, GDPR</div>
+      <div class="mod-row"><strong>M12</strong> Capstone — production-ready платформа</div>
+    </div>
+    <a class="cta-btn" href="bigdata_part3_production.html">Почати Частину 3 →</a>
+  </div>
+
+</div>
+
+<footer>
+  Big Data Infrastructure Course · 3 частини · ShopWave Project
+</footer>
+
+</body>
+</html>

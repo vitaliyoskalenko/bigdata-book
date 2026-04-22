@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Data Infrastructure · Частина 3 — Production &amp; Cloud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0b; --bg-2:#111113; --bg-3:#17171a; --bg-card:#131316;
+  --border:#26262b; --border-soft:#1e1e22;
+  --fg:#f4f4f2; --fg-muted:#9a9a95; --fg-dim:#6a6a66;
+  --accent:#7fdba5; --accent-2:#ff5a5f; --accent-soft:rgba(127,219,165,.12);
+  --pro:#7fdba5; --con:#ef6b6b; --amber:#ffb627; --cyan:#4ecdc4; --violet:#b794f6;
+  --serif:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono','Courier New',monospace;
+  --sans:'Inter Tight',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--fg); font-family:var(--sans);
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(127,219,165,.08), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(255,90,95,.05), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 10% 60%, rgba(127,219,165,.04), transparent 60%);
+  background-attachment: fixed;
+  min-height:100vh;
+}
+::selection{background:var(--accent);color:#000}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(127,219,165,.3);transition:all .2s}
+a:hover{color:var(--accent-2);border-color:var(--accent-2)}
+code,.mono{font-family:var(--mono)}
+
+nav.top{position:sticky;top:0;z-index:50;background:rgba(10,10,11,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-soft)}
+nav.top .inner{max-width:1240px;margin:0 auto;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-weight:600;font-size:18px;letter-spacing:-.01em}
+.brand-dot{width:10px;height:10px;background:var(--accent);border-radius:50%;box-shadow:0 0 12px var(--accent)}
+.nav-links{display:flex;gap:28px;font-size:13px;font-weight:500}
+.nav-links a{color:var(--fg-muted);border:none;letter-spacing:.02em}
+.nav-links a:hover{color:var(--accent)}
+.part-pill{font-family:var(--mono);font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:100px;color:var(--fg-muted);letter-spacing:.1em;text-transform:uppercase}
+
+.container{max-width:1240px;margin:0 auto;padding:0 32px}
+
+.hero{padding:120px 0 80px;position:relative}
+.hero-label{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.hero-label::before{content:'';width:32px;height:1px;background:var(--accent)}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(48px,8vw,112px);line-height:.95;letter-spacing:-.03em;margin-bottom:32px}
+.hero h1 em{font-style:italic;color:var(--accent);font-weight:300}
+.hero h1 .red{color:var(--accent-2);font-style:italic;font-weight:300}
+.hero-sub{font-size:20px;color:var(--fg-muted);max-width:720px;line-height:1.5;margin-bottom:48px}
+.hero-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:64px;border-top:1px solid var(--border-soft);padding-top:40px}
+.meta-item .num{font-family:var(--serif);font-size:56px;font-weight:300;color:var(--fg);line-height:1;letter-spacing:-.02em}
+.meta-item .num em{color:var(--accent);font-style:italic}
+.meta-item .lbl{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--fg-dim);margin-top:12px}
+
+section{padding:96px 0;border-top:1px solid var(--border-soft)}
+.section-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.section-title{font-family:var(--serif);font-size:clamp(36px,5vw,64px);font-weight:400;letter-spacing:-.02em;line-height:1.05;margin-bottom:32px;max-width:900px}
+.section-title em{font-style:italic;color:var(--accent);font-weight:300}
+.section-intro{font-size:18px;color:var(--fg-muted);max-width:720px;margin-bottom:56px;line-height:1.6}
+
+.timeline-3parts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+.tl-part{padding:28px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);position:relative;transition:all .3s}
+.tl-part.current{border-color:var(--accent);background:linear-gradient(180deg,rgba(127,219,165,.08),transparent)}
+.tl-part.done{opacity:.7}
+.tl-part.done.p1 .pnum{color:var(--amber)}
+.tl-part.done.p2 .pnum{color:var(--cyan)}
+.tl-part .pnum{font-family:var(--mono);font-size:12px;color:var(--fg-dim);letter-spacing:.1em}
+.tl-part.current .pnum{color:var(--accent)}
+.tl-part h3{font-family:var(--serif);font-size:24px;margin:12px 0 8px;font-weight:500}
+.tl-part .weeks{font-family:var(--mono);font-size:12px;color:var(--fg-muted);margin-bottom:14px}
+.tl-part .desc{font-size:14px;color:var(--fg-muted);line-height:1.5}
+.tl-part .current-badge{position:absolute;top:-10px;right:20px;background:var(--accent);color:#000;font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;letter-spacing:.15em;text-transform:uppercase;font-weight:700}
+.tl-part .done-badge.p1{position:absolute;top:-10px;right:20px;background:var(--amber);color:#000;font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;letter-spacing:.15em;text-transform:uppercase;font-weight:700}
+.tl-part .done-badge.p2{position:absolute;top:-10px;right:20px;background:var(--cyan);color:#000;font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;letter-spacing:.15em;text-transform:uppercase;font-weight:700}
+
+.project-hero{border:1px solid var(--border);border-radius:16px;padding:48px;background:linear-gradient(135deg,rgba(127,219,165,.05),rgba(255,90,95,.03));margin-bottom:40px;position:relative;overflow:hidden}
+.project-hero::before{content:'ShopWave';position:absolute;right:-20px;bottom:-40px;font-family:var(--serif);font-size:240px;font-style:italic;font-weight:300;color:rgba(127,219,165,.05);letter-spacing:-.05em;pointer-events:none}
+.project-tag{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.project-hero h3{font-family:var(--serif);font-size:40px;font-weight:500;margin-bottom:16px;letter-spacing:-.02em}
+.project-hero p{color:var(--fg-muted);max-width:700px;font-size:16px;line-height:1.6;position:relative;z-index:1}
+
+.module{padding:120px 0;border-top:1px solid var(--border-soft);position:relative}
+.module-header{display:grid;grid-template-columns:140px 1fr;gap:40px;margin-bottom:64px;align-items:start}
+.mod-num{font-family:var(--serif);font-size:120px;font-weight:300;font-style:italic;color:var(--accent);line-height:.9;letter-spacing:-.04em}
+.module:nth-of-type(even) .mod-num{color:var(--accent-2)}
+.mod-meta{padding-top:16px}
+.mod-week{font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-bottom:16px}
+.mod-title{font-family:var(--serif);font-size:clamp(36px,4.5vw,56px);font-weight:400;line-height:1.05;letter-spacing:-.02em;margin-bottom:20px}
+.mod-title em{font-style:italic;color:var(--accent);font-weight:300}
+.mod-title .red{font-style:italic;color:var(--accent-2);font-weight:300}
+.mod-lead{font-size:18px;color:var(--fg-muted);line-height:1.6;max-width:760px}
+
+.mod-content h4{font-family:var(--serif);font-size:32px;font-weight:500;font-style:italic;margin:56px 0 24px;letter-spacing:-.01em;color:var(--fg)}
+.mod-content h5{font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:40px 0 16px}
+.mod-content p{margin-bottom:16px;color:var(--fg);max-width:860px}
+.mod-content p.muted{color:var(--fg-muted)}
+.mod-content ul{margin:16px 0 24px 24px;max-width:860px}
+.mod-content ul li{margin-bottom:10px;color:var(--fg)}
+.mod-content ul li::marker{color:var(--accent)}
+.mod-content ol{margin:16px 0 24px 24px;max-width:860px}
+.mod-content ol li{margin-bottom:10px;color:var(--fg)}
+.mod-content ol li::marker{color:var(--accent);font-weight:700}
+.mod-content strong{color:var(--fg);font-weight:600}
+.mod-content code{background:var(--bg-3);padding:2px 8px;border-radius:4px;font-size:.9em;color:var(--accent);border:1px solid var(--border-soft)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:32px 0}
+.card{padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);transition:all .3s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card h6{font-family:var(--serif);font-size:20px;margin-bottom:10px;font-weight:500}
+.card p{font-size:14px;color:var(--fg-muted);line-height:1.5;margin:0}
+.card .ic{width:32px;height:32px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-family:var(--mono);font-weight:700;font-size:14px}
+.card.red .ic{background:rgba(255,90,95,.12);color:var(--accent-2)}
+.card.red:hover{border-color:var(--accent-2)}
+
+.proscons{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px 0;max-width:900px}
+.pc-box{padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card)}
+.pc-box.pros{border-left:3px solid var(--pro)}
+.pc-box.cons{border-left:3px solid var(--con)}
+.pc-box h6{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px}
+.pc-box.pros h6{color:var(--pro)}
+.pc-box.cons h6{color:var(--con)}
+.pc-box ul{margin:0;list-style:none}
+.pc-box ul li{position:relative;padding-left:22px;margin-bottom:10px;font-size:14px;color:var(--fg);line-height:1.5}
+.pc-box.pros ul li::before{content:'+';position:absolute;left:0;top:0;color:var(--pro);font-weight:700}
+.pc-box.cons ul li::before{content:'−';position:absolute;left:0;top:0;color:var(--con);font-weight:700}
+
+.table-wrap{margin:32px 0;border:1px solid var(--border);border-radius:12px;overflow:auto;background:var(--bg-card)}
+table.compare{width:100%;border-collapse:collapse;font-size:14px;min-width:600px}
+table.compare thead{background:var(--bg-3)}
+table.compare th{text-align:left;padding:16px 20px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-muted);font-weight:500;border-bottom:1px solid var(--border)}
+table.compare td{padding:16px 20px;border-bottom:1px solid var(--border-soft);vertical-align:top;color:var(--fg)}
+table.compare tr:last-child td{border-bottom:none}
+table.compare tr:hover td{background:rgba(127,219,165,.03)}
+table.compare td:first-child{font-weight:600;color:var(--fg)}
+table.compare .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:10px;letter-spacing:.05em}
+table.compare .badge.good{background:rgba(127,219,165,.15);color:var(--pro)}
+table.compare .badge.bad{background:rgba(239,107,107,.15);color:var(--con)}
+table.compare .badge.mid{background:rgba(127,219,165,.15);color:var(--accent)}
+table.compare .badge.red{background:rgba(255,90,95,.15);color:var(--accent-2)}
+table.compare .badge.aws{background:rgba(255,153,0,.15);color:#ff9900}
+table.compare .badge.gcp{background:rgba(66,133,244,.15);color:#4285f4}
+table.compare .badge.azure{background:rgba(0,120,212,.15);color:#0078d4}
+
+.diagram{margin:40px 0;padding:32px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);text-align:center}
+.diagram svg{max-width:100%;height:auto}
+.diagram-caption{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-top:20px}
+
+.resources{background:linear-gradient(180deg,rgba(127,219,165,.03),transparent);border:1px solid var(--border);border-radius:12px;padding:32px;margin:40px 0}
+.resources h5{margin-top:0!important}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:20px}
+.res-item{display:block;padding:16px 20px;border:1px solid var(--border);border-radius:8px;background:var(--bg);transition:all .2s;border-left:none}
+.res-item:hover{border-color:var(--accent);background:var(--bg-card);transform:translateX(2px)}
+.res-item .res-type{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;display:block}
+.res-item .res-title{display:block;color:var(--fg);font-size:14px;line-height:1.4;font-weight:500;margin-bottom:4px;border:none}
+.res-item .res-meta{font-size:12px;color:var(--fg-dim);font-family:var(--mono)}
+
+.assignment{margin:48px 0;padding:32px 40px;border:1px solid var(--accent);border-radius:12px;background:linear-gradient(135deg,rgba(127,219,165,.08),rgba(255,90,95,.03));position:relative}
+.assignment .a-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.assignment h5{color:var(--fg)!important;margin:0 0 20px!important;font-family:var(--serif)!important;font-size:24px!important;text-transform:none!important;letter-spacing:-.01em!important;font-weight:500!important}
+.assignment ol{margin:16px 0 16px 24px;max-width:720px}
+.assignment ol li{margin-bottom:10px;color:var(--fg)}
+.assignment ol li::marker{color:var(--accent);font-weight:700}
+.assignment .deliverable{margin-top:24px;padding:16px;background:rgba(0,0,0,.3);border-radius:8px;font-family:var(--mono);font-size:13px;color:var(--fg-muted);border-left:2px solid var(--accent)}
+.assignment .deliverable strong{color:var(--accent)}
+
+.milestone{margin:48px 0;padding:32px 40px;border-radius:12px;background:linear-gradient(135deg,rgba(255,90,95,.08),rgba(127,219,165,.03));border:1px solid rgba(255,90,95,.3)}
+.milestone .m-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-2);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.milestone .m-label::before{content:'◆';color:var(--accent-2)}
+.milestone h5{color:var(--fg)!important;margin:0 0 16px!important;font-family:var(--serif)!important;font-size:24px!important;text-transform:none!important;letter-spacing:-.01em!important;font-weight:500!important}
+.milestone ul{max-width:760px;margin:12px 0 0 24px}
+.milestone ul li::marker{color:var(--accent-2)}
+
+.warning{margin:32px 0;padding:24px 32px;border-radius:8px;background:linear-gradient(90deg,rgba(255,90,95,.08),transparent);border-left:3px solid var(--accent-2);max-width:860px}
+.warning .w-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-2);margin-bottom:10px}
+.warning p{margin:0;color:var(--fg)}
+
+.capstone-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin:32px 0}
+.cap-item{padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);position:relative}
+.cap-item .check{position:absolute;top:20px;right:20px;width:24px;height:24px;border-radius:50%;border:2px solid var(--border)}
+.cap-item h6{font-family:var(--serif);font-size:20px;margin-bottom:10px;font-weight:500;padding-right:40px}
+.cap-item .tech{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.cap-item p{font-size:14px;color:var(--fg-muted);margin:0;line-height:1.5}
+
+.finale{padding:160px 0 120px;text-align:center;border-top:1px solid var(--border-soft);position:relative;overflow:hidden}
+.finale::before{content:'20 weeks';position:absolute;top:20%;left:50%;transform:translateX(-50%);font-family:var(--serif);font-size:360px;font-style:italic;font-weight:300;color:rgba(127,219,165,.04);letter-spacing:-.05em;pointer-events:none;line-height:1}
+.finale .section-label{color:var(--accent-2);position:relative;z-index:1}
+.finale h2{font-family:var(--serif);font-size:clamp(48px,8vw,128px);font-weight:400;line-height:.95;letter-spacing:-.04em;margin-bottom:32px;position:relative;z-index:1}
+.finale h2 em{font-style:italic;color:var(--accent)}
+.finale h2 .red{font-style:italic;color:var(--accent-2)}
+.finale p{color:var(--fg-muted);font-size:20px;max-width:720px;margin:0 auto 40px;position:relative;z-index:1;line-height:1.5}
+.finale-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:960px;margin:56px auto 0;position:relative;z-index:1}
+.finale-stats .stat{padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card)}
+.finale-stats .stat .n{font-family:var(--serif);font-size:48px;font-weight:300;color:var(--accent);font-style:italic;line-height:1}
+.finale-stats .stat .l{font-family:var(--mono);font-size:11px;color:var(--fg-dim);letter-spacing:.15em;text-transform:uppercase;margin-top:10px}
+
+footer{padding:48px 0;border-top:1px solid var(--border-soft);text-align:center;font-family:var(--mono);font-size:12px;color:var(--fg-dim)}
+footer a{color:var(--fg-muted)}
+
+@media (max-width:768px){
+  nav.top .inner{padding:12px 20px}
+  .nav-links{display:none}
+  .container{padding:0 20px}
+  .hero{padding:80px 0 60px}
+  .hero-meta{grid-template-columns:repeat(2,1fr);gap:16px}
+  .module-header{grid-template-columns:1fr;gap:16px}
+  .mod-num{font-size:80px}
+  .proscons{grid-template-columns:1fr}
+  .timeline-3parts{grid-template-columns:1fr}
+  .project-hero{padding:28px}
+  .project-hero::before{font-size:120px}
+  .assignment,.milestone{padding:24px}
+  .finale::before{font-size:160px}
+  .finale-stats{grid-template-columns:repeat(2,1fr)}
+}
+
+/* Universal UI */
+#reading-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:200;width:0;transition:width .1s linear;pointer-events:none}
+.pre-wrap{position:relative;margin:20px 0;max-width:860px}
+.copy-btn{position:absolute;top:10px;right:10px;padding:4px 10px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.3);border-radius:4px;color:var(--accent);font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;transition:all .2s;z-index:5}
+.copy-btn:hover{background:rgba(78,205,196,.2);border-color:var(--accent)}
+.copy-btn.copied{background:rgba(127,219,165,.15);border-color:var(--pro);color:var(--pro)}
+#toc-sidebar{position:fixed;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:100}
+.toc-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .3s;display:block;border:1px solid var(--border)}
+.toc-dot:hover{background:var(--accent-2);border-color:var(--accent-2);transform:scale(1.4)}
+.toc-dot.active{background:var(--accent-2);border-color:var(--accent-2);width:10px;height:10px}
+@media(max-width:1400px){#toc-sidebar{display:none}}
+.interview-qa{margin:56px 0 0;border:1px solid rgba(183,148,246,.3);border-radius:12px;padding:28px 32px;background:linear-gradient(135deg,rgba(183,148,246,.04),transparent)}
+.interview-qa h5{margin-top:0!important;color:var(--accent-2)!important;margin-bottom:20px!important}
+.qa-item{border-bottom:1px solid var(--border-soft);margin-bottom:0}
+.qa-item:last-child{border-bottom:none;margin-bottom:0}
+.qa-q{padding:16px 0;cursor:pointer;font-weight:600;color:var(--fg);font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:16px;user-select:none;transition:color .2s}
+.qa-q::after{content:'＋';font-family:var(--mono);font-size:18px;color:var(--accent-2);flex-shrink:0;transition:transform .2s}
+.qa-q:hover{color:var(--accent-2)}
+.qa-q.active{color:var(--accent-2)}
+.qa-q.active::after{transform:rotate(45deg)}
+.qa-a{display:none;padding:0 0 20px;font-size:14px;color:var(--fg-muted);line-height:1.7;max-width:800px}
+.qa-a.open{display:block}
+.qa-a code{background:var(--bg-3);padding:1px 6px;border-radius:3px;color:var(--accent);font-size:.9em}
+.analogy{margin:24px 0;padding:20px 24px;background:rgba(78,205,196,.06);border-radius:8px;border-left:3px solid var(--accent);font-size:15px;color:var(--fg);max-width:860px}
+.analogy strong{color:var(--accent)}
+.pitfall{margin:24px 0;padding:20px 24px;background:rgba(239,107,107,.06);border-radius:8px;border-left:3px solid var(--con);max-width:860px}
+.pitfall h6{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--con);margin-bottom:12px}
+.pitfall ul{margin:0 0 0 20px}
+.pitfall ul li{font-size:14px;color:var(--fg-muted);margin-bottom:8px;line-height:1.6}
+.part-nav{display:flex;gap:8px;flex-wrap:wrap}
+.part-nav a{font-family:var(--mono);font-size:11px;padding:4px 12px;border:1px solid var(--border);border-radius:100px;color:var(--fg-muted);letter-spacing:.08em;border-bottom:none}
+.part-nav a.active{border-color:var(--accent-2);color:var(--accent-2)}
+.part-nav a:hover{border-color:var(--accent);color:var(--accent)}
+
+/* K8s troubleshooting */
+.k8s-issue{padding:20px 24px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);margin-bottom:12px;max-width:860px}
+.k8s-issue .issue-name{font-family:var(--mono);font-size:12px;color:var(--con);font-weight:700;margin-bottom:8px;letter-spacing:.05em}
+.k8s-issue .fix{font-size:14px;color:var(--fg-muted);line-height:1.6}
+.k8s-issue code{background:var(--bg-3);padding:1px 6px;border-radius:3px;color:var(--accent);font-size:.88em}
+
+/* Portfolio checklist */
+.portfolio-check{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:24px 0}
+.pf-item{padding:16px 20px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);display:flex;gap:12px;align-items:flex-start}
+.pf-item .pf-icon{font-size:20px;flex-shrink:0;margin-top:2px}
+.pf-item .pf-text{font-size:14px;color:var(--fg);line-height:1.5}
+.pf-item .pf-text strong{color:var(--accent);display:block;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div id="reading-progress"></div>
+<div id="toc-sidebar"></div>
+<nav class="top">
+  <div class="inner">
+    <div class="brand"><span class="brand-dot"></span> Big Data Infrastructure</div>
+    <div class="nav-links">
+      <a href="#module-9">М9</a>
+      <a href="#module-10">М10</a>
+      <a href="#module-11">М11</a>
+      <a href="#capstone">Capstone</a>
+    </div>
+    <div class="part-nav">
+      <a href="bigdata_part1_foundations.html">Part 01</a>
+      <a href="bigdata_part2_processing.html">Part 02</a>
+      <a href="bigdata_part3_production.html" class="active">Part 03</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-label">Частина 3 з 3 · Production &amp; Cloud · Фінал</div>
+    <h1>Production,<br><em>Cloud,</em> <span class="red">Governance.</span></h1>
+    <p class="hero-sub">Останні сім тижнів. ShopWave з docker-compose переїжджає у Kubernetes на справжню хмару, інфраструктура описується Terraform-ом, чутливі дані захищаються, а наприкінці — capstone, який об'єднує все двадцятитижневе будівництво у один production-ready проект для портфоліо.</p>
+    <div class="hero-meta">
+      <div class="meta-item"><div class="num"><em>7</em></div><div class="lbl">тижнів фіналу</div></div>
+      <div class="meta-item"><div class="num"><em>4</em></div><div class="lbl">модулі + Capstone</div></div>
+      <div class="meta-item"><div class="num"><em>3</em></div><div class="lbl">хмари порівняно</div></div>
+      <div class="meta-item"><div class="num"><em>1</em></div><div class="lbl">портфоліо-проект</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- 3-PARTS OVERVIEW -->
+<section id="overview">
+  <div class="container">
+    <div class="section-label">◆ Фінальний етап</div>
+    <h2 class="section-title">20 тижнів · <em>одна платформа.</em></h2>
+    <p class="section-intro">Ви пройшли фундамент і додали потужну обробку. Залишилась остання миля — те, що відрізняє «цікавий pet-project» від production-ready системи: деплой у K8s, IaC, security, governance, моніторинг. І нарешті — презентація всього, що побудували.</p>
+
+    <div class="timeline-3parts">
+      <div class="tl-part done p1">
+        <div class="done-badge p1">Пройдено</div>
+        <div class="pnum">PART 01</div>
+        <h3 class="serif">Основи</h3>
+        <div class="weeks mono">тижні 1 – 6 · 4 модулі</div>
+        <p class="desc">Big Data концепції, storage (HDFS / S3), формати (Parquet), batch-обробка (Spark).</p>
+      </div>
+      <div class="tl-part done p2">
+        <div class="done-badge p2">Пройдено</div>
+        <div class="pnum">PART 02</div>
+        <h3 class="serif">Обробка &amp; платформи</h3>
+        <div class="weeks mono">тижні 7 – 13 · 4 модулі</div>
+        <p class="desc">Streaming (Kafka+Flink), Lakehouse (Iceberg), DWH (ClickHouse/BigQuery), Orchestration (Airflow).</p>
+      </div>
+      <div class="tl-part current">
+        <div class="current-badge">Зараз</div>
+        <div class="pnum">PART 03</div>
+        <h3 class="serif">Production &amp; Cloud</h3>
+        <div class="weeks mono">тижні 14 – 20 · 4 модулі</div>
+        <p class="desc">Docker/K8s/Terraform. Порівняння AWS/GCP/Azure. Data governance &amp; security. Capstone-проект.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECT FINALE -->
+<section id="project">
+  <div class="container">
+    <div class="section-label">◆ Фінальний етап ShopWave</div>
+    <div class="project-hero">
+      <div class="project-tag">ShopWave · етап 3 — у продакшн</div>
+      <h3 class="serif"><em>ShopWave</em> переїжджає у прод</h3>
+      <p>Два місяці тому ShopWave був набором Python-скриптів у вашому ноутбуці. Тепер це готова платформа, яка читає потік замовлень через Kafka, обробляє їх Flink-ом у real-time, архівує у Iceberg, завантажує у ClickHouse для BI і все оркеструється Airflow-ом. Але все це все ще живе у вашому <code>docker-compose.yml</code>. У цій частині переносимо все <strong>у справжнє хмарне середовище</strong>: Kubernetes-кластер на AWS EKS або GKE, S3 як data lake, managed-сервіси для того, що не варто тримати самому. Пишемо <strong>Terraform</strong>, щоб усю інфраструктуру можна було знищити і за 30 хвилин підняти з нуля. Додаємо <strong>DataHub</strong> для lineage, <strong>PII-маскування</strong> для email/phone, <strong>RBAC</strong> для розмежування доступу між ролями. Наприкінці презентуєте фінал — і маєте projektn-ready repo для GitHub, який справді демонструє рівень Middle Data Engineer.</p>
+    </div>
+
+    <h5 class="mono" style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:48px 0 16px">Що додається у Частині 3</h5>
+    <ul style="margin:0 0 0 24px;max-width:860px">
+      <li><strong>М9:</strong> контейнеризація всіх сервісів, Helm-чарти, деплой у Kubernetes, повний Terraform-модуль, GitHub Actions CI/CD</li>
+      <li><strong>М10:</strong> мультихмарний референс-деплой — AWS prod + GCP disaster-recovery, порахувати TCO, вибрати compromise</li>
+      <li><strong>М11:</strong> DataHub зі схемами таблиць і lineage, PII detection + column-level encryption, IAM/RBAC політики</li>
+      <li><strong>М12 · Capstone:</strong> фінальна презентація, архітектурна документація (ADR), load testing, code review, готовий GitHub-repo для співбесід</li>
+    </ul>
+  </div>
+</section>
+
+<!-- MODULE 9 -->
+<section class="module" id="module-9">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">09</div>
+      <div class="mod-meta">
+        <div class="mod-week">Тижні 14 – 15 · ~30 год</div>
+        <h2 class="mod-title">DevOps для Data — <em>Docker · K8s · Terraform</em></h2>
+        <p class="mod-lead">Межа між Data Engineer і Data Platform Engineer у 2026 — саме тут. Без вміння упакувати pipeline у контейнер, деплоїти у Kubernetes і описати інфраструктуру кодом — ви не зможете підтримувати production-ready системи.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Чому Data Engineer має вміти DevOps</h4>
+      <p>П'ять років тому відповідальність DE зупинялась на «написав Spark-джоб». Тепер — це повна операційна відповідальність: продовуєте свої pipelines, їх треба деплоїти, апдейтити, відкочувати при помилці, моніторити SLA, масштабувати під навантаження. Усі Modern Data Stack сервіси (Airflow, Spark, Kafka, Flink, dbt) — контейнеризовані і живуть у Kubernetes. Якщо ви не керуєте цим самі — хтось інший керує, і цей «хтось» повільно, дорого і не розуміє data-специфіки.</p>
+
+      <h4>Docker — базові принципи для data workloads</h4>
+      <p>Docker ви, ймовірно, вже бачили. Повторимо акценти, важливі саме для data:</p>
+      <ul>
+        <li><strong>Multi-stage builds</strong> — обов'язково. Base-образ з JDK+Spark компілюється у builder-стадії, потім копіюємо тільки артефакти в slim-образ. Скорочує розмір у 3-5×.</li>
+        <li><strong>Base images для data</strong>: <code>python:3.12-slim</code>, <code>bitnami/spark</code>, <code>apache/airflow</code>, <code>confluentinc/cp-kafka</code>. Уникайте <code>:latest</code> — завжди пінуйте версію.</li>
+        <li><strong>Volumes для state</strong> — Airflow metadata, Kafka logs, Zookeeper state. Ніколи всередині контейнера.</li>
+        <li><strong>.dockerignore</strong> — не тягніть у контекст <code>.venv</code>, <code>__pycache__</code>, <code>.git</code>, <code>data/</code>. Скорочує build-час у 10×.</li>
+        <li><strong>Non-root user</strong> — безпека. <code>RUN useradd -r appuser && USER appuser</code>. Інакше K8s може заблокувати з PSP/PSA.</li>
+        <li><strong>Health checks</strong> — <code>HEALTHCHECK</code> інструкція або <code>livenessProbe</code> у K8s.</li>
+      </ul>
+
+      <h4>Kubernetes — мінімальна архітектура, яка треба</h4>
+
+      <div class="diagram">
+        <svg viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+          <!-- Control plane -->
+          <rect x="40" y="30" width="820" height="110" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="2" rx="10"/>
+          <text x="60" y="20" fill="#7fdba5" font-size="11" letter-spacing="1">CONTROL PLANE (MASTER)</text>
+          <g>
+            <rect x="60" y="50" width="170" height="70" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="145" y="75" text-anchor="middle" fill="#7fdba5" font-size="11" font-weight="700">kube-apiserver</text>
+            <text x="145" y="95" text-anchor="middle" fill="#9a9a95" font-size="10">REST API</text>
+            <text x="145" y="109" text-anchor="middle" fill="#6a6a66" font-size="10">точка входу</text>
+          </g>
+          <g>
+            <rect x="250" y="50" width="170" height="70" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="335" y="75" text-anchor="middle" fill="#7fdba5" font-size="11" font-weight="700">etcd</text>
+            <text x="335" y="95" text-anchor="middle" fill="#9a9a95" font-size="10">KV-store</text>
+            <text x="335" y="109" text-anchor="middle" fill="#6a6a66" font-size="10">state кластера</text>
+          </g>
+          <g>
+            <rect x="440" y="50" width="170" height="70" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="525" y="75" text-anchor="middle" fill="#7fdba5" font-size="11" font-weight="700">scheduler</text>
+            <text x="525" y="95" text-anchor="middle" fill="#9a9a95" font-size="10">розміщує pods</text>
+            <text x="525" y="109" text-anchor="middle" fill="#6a6a66" font-size="10">resource-aware</text>
+          </g>
+          <g>
+            <rect x="630" y="50" width="210" height="70" fill="#131316" stroke="#26262b" rx="6"/>
+            <text x="735" y="75" text-anchor="middle" fill="#7fdba5" font-size="11" font-weight="700">controller-manager</text>
+            <text x="735" y="95" text-anchor="middle" fill="#9a9a95" font-size="10">reconciliation loops</text>
+            <text x="735" y="109" text-anchor="middle" fill="#6a6a66" font-size="10">Deployment, ReplicaSet</text>
+          </g>
+
+          <!-- Worker nodes -->
+          <text x="60" y="170" fill="#ff5a5f" font-size="11" letter-spacing="1">WORKER NODES</text>
+          <g>
+            <rect x="40" y="180" width="260" height="200" fill="rgba(255,90,95,.04)" stroke="#ff5a5f" rx="10"/>
+            <text x="170" y="205" text-anchor="middle" fill="#ff5a5f" font-size="12" font-weight="700">NODE 1</text>
+            <rect x="60" y="220" width="100" height="28" fill="#131316" stroke="#26262b"/><text x="110" y="238" text-anchor="middle" fill="#9a9a95" font-size="9">kubelet</text>
+            <rect x="170" y="220" width="110" height="28" fill="#131316" stroke="#26262b"/><text x="225" y="238" text-anchor="middle" fill="#9a9a95" font-size="9">kube-proxy</text>
+            <rect x="60" y="260" width="220" height="110" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-dasharray="3 3" rx="4"/>
+            <text x="170" y="280" text-anchor="middle" fill="#7fdba5" font-size="10">airflow-scheduler pod</text>
+            <text x="170" y="298" text-anchor="middle" fill="#7fdba5" font-size="10">airflow-webserver pod</text>
+            <text x="170" y="316" text-anchor="middle" fill="#7fdba5" font-size="10">spark-driver pod</text>
+            <text x="170" y="334" text-anchor="middle" fill="#b794f6" font-size="10">spark-executor-1</text>
+            <text x="170" y="352" text-anchor="middle" fill="#b794f6" font-size="10">spark-executor-2</text>
+          </g>
+          <g>
+            <rect x="320" y="180" width="260" height="200" fill="rgba(255,90,95,.04)" stroke="#ff5a5f" rx="10"/>
+            <text x="450" y="205" text-anchor="middle" fill="#ff5a5f" font-size="12" font-weight="700">NODE 2</text>
+            <rect x="340" y="220" width="100" height="28" fill="#131316" stroke="#26262b"/><text x="390" y="238" text-anchor="middle" fill="#9a9a95" font-size="9">kubelet</text>
+            <rect x="450" y="220" width="110" height="28" fill="#131316" stroke="#26262b"/><text x="505" y="238" text-anchor="middle" fill="#9a9a95" font-size="9">kube-proxy</text>
+            <rect x="340" y="260" width="220" height="110" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-dasharray="3 3" rx="4"/>
+            <text x="450" y="280" text-anchor="middle" fill="#4ecdc4" font-size="10">kafka-broker-1 pod</text>
+            <text x="450" y="298" text-anchor="middle" fill="#4ecdc4" font-size="10">kafka-broker-2 pod</text>
+            <text x="450" y="316" text-anchor="middle" fill="#4ecdc4" font-size="10">flink-jobmanager</text>
+            <text x="450" y="334" text-anchor="middle" fill="#4ecdc4" font-size="10">flink-taskmanager</text>
+          </g>
+          <g>
+            <rect x="600" y="180" width="260" height="200" fill="rgba(255,90,95,.04)" stroke="#ff5a5f" rx="10"/>
+            <text x="730" y="205" text-anchor="middle" fill="#ff5a5f" font-size="12" font-weight="700">NODE 3</text>
+            <rect x="620" y="220" width="100" height="28" fill="#131316" stroke="#26262b"/><text x="670" y="238" text-anchor="middle" fill="#9a9a95" font-size="9">kubelet</text>
+            <rect x="730" y="220" width="110" height="28" fill="#131316" stroke="#26262b"/><text x="785" y="238" text-anchor="middle" fill="#9a9a95" font-size="9">kube-proxy</text>
+            <rect x="620" y="260" width="220" height="110" fill="rgba(255,182,39,.06)" stroke="#ffb627" stroke-dasharray="3 3" rx="4"/>
+            <text x="730" y="280" text-anchor="middle" fill="#ffb627" font-size="10">clickhouse pod</text>
+            <text x="730" y="298" text-anchor="middle" fill="#ffb627" font-size="10">datahub-gms pod</text>
+            <text x="730" y="316" text-anchor="middle" fill="#ffb627" font-size="10">prometheus pod</text>
+            <text x="730" y="334" text-anchor="middle" fill="#ffb627" font-size="10">grafana pod</text>
+          </g>
+
+          <!-- lines -->
+          <line x1="170" y1="140" x2="170" y2="178" stroke="#26262b" stroke-width="1"/>
+          <line x1="450" y1="140" x2="450" y2="178" stroke="#26262b" stroke-width="1"/>
+          <line x1="730" y1="140" x2="730" y2="178" stroke="#26262b" stroke-width="1"/>
+        </svg>
+        <div class="diagram-caption">Kubernetes · control plane + worker nodes для типового data-стеку</div>
+      </div>
+
+      <h4>Ключові примітиви K8s для data</h4>
+      <div class="cards">
+        <div class="card"><div class="ic">Po</div><h6>Pod</h6><p>Мінімальна одиниця деплою — 1 або кілька контейнерів з shared network/volumes. Рідко створюєш напряму, завжди через Deployment/StatefulSet.</p></div>
+        <div class="card"><div class="ic">D</div><h6>Deployment</h6><p>Stateless — для Airflow-webserver, dbt-runner. Підтримує rolling updates, replicas. Pods — взаємозамінні.</p></div>
+        <div class="card"><div class="ic">S</div><h6>StatefulSet</h6><p>Для Kafka, ZooKeeper, ClickHouse — pods мають стабільні імена (<code>kafka-0</code>, <code>kafka-1</code>) і persistent volumes, які не губляться.</p></div>
+        <div class="card"><div class="ic">J</div><h6>Job / CronJob</h6><p>Для batch Spark jobs і ETL-скриптів. Виконується до завершення, потім видаляється. CronJob — планувальник.</p></div>
+        <div class="card red"><div class="ic">Sv</div><h6>Service</h6><p>Мережева абстракція — стабільна IP/DNS для групи pods. ClusterIP (internal), NodePort, LoadBalancer.</p></div>
+        <div class="card red"><div class="ic">In</div><h6>Ingress</h6><p>L7 routing ззовні у кластер. Вказує, як потрапити на Airflow UI, Grafana, DataHub. NGINX Ingress — дефолт.</p></div>
+        <div class="card red"><div class="ic">CM</div><h6>ConfigMap / Secret</h6><p>Конфіги і креденшіали окремо від образів. Sealed Secrets або External Secrets Operator для шифрування у Git.</p></div>
+        <div class="card"><div class="ic">PV</div><h6>PVC / StorageClass</h6><p>Persistent storage для stateful workloads. На хмарах мапиться у EBS/PD/Managed Disk.</p></div>
+      </div>
+
+      <h4>Spark on Kubernetes</h4>
+      <p>З 2019 року (Spark 2.3+) Kubernetes — перший-класний cluster manager для Spark, поряд з YARN. Рекомендований підхід у 2026 для нових деплойментів.</p>
+      <ul>
+        <li>Driver — окремий pod, executor-и — окремі pods. Spark сам робить запит до K8s API при старті джобу.</li>
+        <li>Для керування через Airflow — <code>SparkKubernetesOperator</code> або <a href="https://www.kubeflow.org/docs/components/spark-operator/" target="_blank">Spark Operator</a>.</li>
+        <li>Переваги над YARN: не треба окремий кластер, краща інтеграція з sidecar-контейнерами (Envoy, Jaeger), native RBAC.</li>
+        <li>Dynamic allocation — executor-и створюються/вбиваються за потребою.</li>
+      </ul>
+
+      <h4>Helm — пакетний менеджер для K8s</h4>
+      <p>YAML-маніфести K8s швидко стають некерованими для складних стеків. <strong>Helm charts</strong> — шаблонизовані YAML + values для різних environments (dev/staging/prod). Де-факто стандарт для деплою open-source сервісів.</p>
+      <ul>
+        <li><strong>Airflow</strong>: <a href="https://airflow.apache.org/docs/helm-chart/" target="_blank">official helm chart</a> — повний стек за 1 команду.</li>
+        <li><strong>Kafka</strong>: <a href="https://strimzi.io" target="_blank">Strimzi Operator</a> — стандарт у 2026. Керує Kafka, ZooKeeper/KRaft, Schema Registry, Kafka Connect.</li>
+        <li><strong>Spark</strong>: <a href="https://github.com/kubeflow/spark-operator" target="_blank">Spark Operator</a>.</li>
+        <li><strong>Flink</strong>: <a href="https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-stable/" target="_blank">Flink Kubernetes Operator</a>.</li>
+        <li><strong>ClickHouse</strong>: <a href="https://github.com/Altinity/clickhouse-operator" target="_blank">Altinity Operator</a>.</li>
+        <li><strong>DataHub</strong>: <code>acryldata/datahub</code> chart.</li>
+        <li><strong>Prometheus + Grafana</strong>: <code>kube-prometheus-stack</code> — все в одному.</li>
+      </ul>
+
+      <h4>Як масштабувати Big Data платформу — покрокова архітектура</h4>
+      <p>ShopWave пройде той самий шлях що і Rozetka або monobank. Ось як архітектура еволюціонує від docker-compose до production-grade системи, і <strong>коли</strong> додавати кожен компонент:</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+
+          <!-- === STAGE 1: docker-compose (current) === -->
+          <rect x="20" y="20" width="860" height="120" fill="rgba(78,205,196,.03)" stroke="rgba(78,205,196,.2)" stroke-dasharray="4,3" rx="10"/>
+          <text x="30" y="38" fill="#4ecdc4" font-size="9" letter-spacing="1" font-weight="700">STAGE 1 · docker-compose · ShopWave зараз · < 1M events/day</text>
+          <rect x="36" y="46" width="90" height="36" fill="#131316" stroke="#4ecdc4" rx="6"/>
+          <text x="81" y="62" text-anchor="middle" fill="#4ecdc4" font-size="9">Kafka (1)</text>
+          <text x="81" y="74" text-anchor="middle" fill="#6a6a66" font-size="8">single broker</text>
+          <text x="130" y="64" fill="#6a6a66" font-size="14">→</text>
+          <rect x="148" y="46" width="90" height="36" fill="#131316" stroke="#b794f6" rx="6"/>
+          <text x="193" y="62" text-anchor="middle" fill="#b794f6" font-size="9">Spark local</text>
+          <text x="193" y="74" text-anchor="middle" fill="#6a6a66" font-size="8">1 executor</text>
+          <text x="246" y="64" fill="#6a6a66" font-size="14">→</text>
+          <rect x="264" y="46" width="90" height="36" fill="#131316" stroke="#7fdba5" rx="6"/>
+          <text x="309" y="62" text-anchor="middle" fill="#7fdba5" font-size="9">S3 / MinIO</text>
+          <text x="309" y="74" text-anchor="middle" fill="#6a6a66" font-size="8">Parquet files</text>
+          <text x="362" y="64" fill="#6a6a66" font-size="14">→</text>
+          <rect x="380" y="46" width="90" height="36" fill="#131316" stroke="#ffb627" rx="6"/>
+          <text x="425" y="62" text-anchor="middle" fill="#ffb627" font-size="9">ClickHouse</text>
+          <text x="425" y="74" text-anchor="middle" fill="#6a6a66" font-size="8">local analytics</text>
+          <text x="478" y="64" fill="#6a6a66" font-size="14">→</text>
+          <rect x="496" y="46" width="90" height="36" fill="#131316" stroke="#26262b" rx="6"/>
+          <text x="541" y="62" text-anchor="middle" fill="#9a9a95" font-size="9">Airflow</text>
+          <text x="541" y="74" text-anchor="middle" fill="#6a6a66" font-size="8">LocalExecutor</text>
+          <rect x="620" y="46" width="90" height="36" fill="#131316" stroke="#26262b" rx="6"/>
+          <text x="665" y="62" text-anchor="middle" fill="#9a9a95" font-size="9">dbt Core</text>
+          <text x="665" y="74" text-anchor="middle" fill="#6a6a66" font-size="8">local runs</text>
+          <rect x="740" y="46" width="90" height="36" fill="#131316" stroke="#26262b" rx="6"/>
+          <text x="785" y="62" text-anchor="middle" fill="#9a9a95" font-size="9">Metabase</text>
+          <text x="785" y="74" text-anchor="middle" fill="#6a6a66" font-size="8">BI dashboards</text>
+          <!-- Cost badge S1 -->
+          <rect x="36" y="98" width="130" height="20" fill="rgba(127,219,165,.1)" stroke="rgba(127,219,165,.2)" rx="4"/>
+          <text x="101" y="111" text-anchor="middle" fill="#7fdba5" font-size="8" font-weight="700">~$0 локально / $200 dev server</text>
+
+          <!-- DOWN ARROW S1→S2 -->
+          <text x="440" y="165" text-anchor="middle" fill="#6a6a66" font-size="10">▼ Тригер: команда &gt;3 осіб, нестабільні ETL, потрібні SLA</text>
+          <line x1="440" y1="140" x2="440" y2="175" stroke="#6a6a66" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+          <!-- === STAGE 2: Managed Cloud === -->
+          <rect x="20" y="178" width="860" height="140" fill="rgba(183,148,246,.03)" stroke="rgba(183,148,246,.2)" stroke-dasharray="4,3" rx="10"/>
+          <text x="30" y="196" fill="#b794f6" font-size="9" letter-spacing="1" font-weight="700">STAGE 2 · Managed Cloud · 1M–50M events/day · ~$2–5k/міс</text>
+          <!-- Row 1 -->
+          <rect x="36" y="205" width="105" height="36" fill="#131316" stroke="#4ecdc4" rx="6"/>
+          <text x="88" y="220" text-anchor="middle" fill="#4ecdc4" font-size="9">MSK / Confluent</text>
+          <text x="88" y="232" text-anchor="middle" fill="#6a6a66" font-size="8">Kafka managed</text>
+          <text x="149" y="223" fill="#6a6a66" font-size="12">→</text>
+          <rect x="165" y="205" width="105" height="36" fill="#131316" stroke="#b794f6" rx="6"/>
+          <text x="217" y="220" text-anchor="middle" fill="#b794f6" font-size="9">EMR / Dataproc</text>
+          <text x="217" y="232" text-anchor="middle" fill="#6a6a66" font-size="8">Spark managed</text>
+          <text x="278" y="223" fill="#6a6a66" font-size="12">→</text>
+          <rect x="294" y="205" width="105" height="36" fill="#131316" stroke="#7fdba5" rx="6"/>
+          <text x="346" y="220" text-anchor="middle" fill="#7fdba5" font-size="9">S3 + Iceberg</text>
+          <text x="346" y="232" text-anchor="middle" fill="#6a6a66" font-size="8">lakehouse</text>
+          <text x="407" y="223" fill="#6a6a66" font-size="12">→</text>
+          <rect x="423" y="205" width="105" height="36" fill="#131316" stroke="#ffb627" rx="6"/>
+          <text x="475" y="220" text-anchor="middle" fill="#ffb627" font-size="9">BigQuery / Snowflake</text>
+          <text x="475" y="232" text-anchor="middle" fill="#6a6a66" font-size="8">serverless DWH</text>
+          <text x="536" y="223" fill="#6a6a66" font-size="12">→</text>
+          <rect x="552" y="205" width="95" height="36" fill="#131316" stroke="#26262b" rx="6"/>
+          <text x="599" y="220" text-anchor="middle" fill="#9a9a95" font-size="9">Cloud Composer</text>
+          <text x="599" y="232" text-anchor="middle" fill="#6a6a66" font-size="8">managed Airflow</text>
+          <rect x="665" y="205" width="95" height="36" fill="#131316" stroke="#b794f6" rx="6"/>
+          <text x="712" y="220" text-anchor="middle" fill="#b794f6" font-size="9">dbt Cloud</text>
+          <text x="712" y="232" text-anchor="middle" fill="#6a6a66" font-size="8">CI + lineage</text>
+          <rect x="776" y="205" width="95" height="36" fill="#131316" stroke="#26262b" rx="6"/>
+          <text x="823" y="220" text-anchor="middle" fill="#9a9a95" font-size="9">Looker / Superset</text>
+          <text x="823" y="232" text-anchor="middle" fill="#6a6a66" font-size="8">semantic layer</text>
+          <!-- Row 2: Добавляємо у Stage 2 -->
+          <text x="36" y="256" fill="#6a6a66" font-size="8" letter-spacing="1">+ ДОДАЄМО:</text>
+          <rect x="36" y="263" width="88" height="28" fill="rgba(78,205,196,.08)" stroke="rgba(78,205,196,.3)" rx="4"/>
+          <text x="80" y="278" text-anchor="middle" fill="#4ecdc4" font-size="8">Schema Registry</text>
+          <rect x="132" y="263" width="88" height="28" fill="rgba(78,205,196,.08)" stroke="rgba(78,205,196,.3)" rx="4"/>
+          <text x="176" y="278" text-anchor="middle" fill="#4ecdc4" font-size="8">Kafka Connect CDC</text>
+          <rect x="228" y="263" width="88" height="28" fill="rgba(183,148,246,.08)" stroke="rgba(183,148,246,.3)" rx="4"/>
+          <text x="272" y="278" text-anchor="middle" fill="#b794f6" font-size="8">Prometheus+Grafana</text>
+          <rect x="324" y="263" width="88" height="28" fill="rgba(183,148,246,.08)" stroke="rgba(183,148,246,.3)" rx="4"/>
+          <text x="368" y="278" text-anchor="middle" fill="#b794f6" font-size="8">DataHub (catalog)</text>
+          <rect x="420" y="263" width="88" height="28" fill="rgba(127,219,165,.08)" stroke="rgba(127,219,165,.3)" rx="4"/>
+          <text x="464" y="278" text-anchor="middle" fill="#7fdba5" font-size="8">Great Expectations</text>
+          <rect x="516" y="263" width="88" height="28" fill="rgba(255,182,39,.08)" stroke="rgba(255,182,39,.3)" rx="4"/>
+          <text x="560" y="278" text-anchor="middle" fill="#ffb627" font-size="8">Cost tagging + alerts</text>
+
+          <!-- DOWN ARROW S2→S3 -->
+          <line x1="440" y1="318" x2="440" y2="353" stroke="#6a6a66" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <text x="440" y="345" text-anchor="middle" fill="#6a6a66" font-size="10">▼ Тригер: real-time потрібний (&lt;секунди), команда &gt;10 осіб</text>
+
+          <!-- === STAGE 3: K8s Full Stack === -->
+          <rect x="20" y="356" width="860" height="140" fill="rgba(127,219,165,.03)" stroke="rgba(127,219,165,.2)" stroke-dasharray="4,3" rx="10"/>
+          <text x="30" y="374" fill="#7fdba5" font-size="9" letter-spacing="1" font-weight="700">STAGE 3 · K8s Full Stack · 50M–1B events/day · ~$10–50k/міс</text>
+          <!-- Row 1 -->
+          <rect x="36" y="383" width="100" height="36" fill="#131316" stroke="#4ecdc4" rx="6"/>
+          <text x="86" y="398" text-anchor="middle" fill="#4ecdc4" font-size="9">Kafka (EKS)</text>
+          <text x="86" y="410" text-anchor="middle" fill="#6a6a66" font-size="8">3+ brokers, RF=3</text>
+          <text x="144" y="401" fill="#6a6a66" font-size="12">→</text>
+          <rect x="158" y="383" width="100" height="36" fill="#131316" stroke="#ef6b6b" rx="6"/>
+          <text x="208" y="398" text-anchor="middle" fill="#ef6b6b" font-size="9">Flink (K8s)</text>
+          <text x="208" y="410" text-anchor="middle" fill="#6a6a66" font-size="8">true streaming</text>
+          <text x="266" y="401" fill="#6a6a66" font-size="12">→</text>
+          <rect x="280" y="383" width="100" height="36" fill="#131316" stroke="#7fdba5" rx="6"/>
+          <text x="330" y="398" text-anchor="middle" fill="#7fdba5" font-size="9">Iceberg Lake</text>
+          <text x="330" y="410" text-anchor="middle" fill="#6a6a66" font-size="8">Bronze/Silver/Gold</text>
+          <text x="388" y="401" fill="#6a6a66" font-size="12">→</text>
+          <rect x="402" y="383" width="100" height="36" fill="#131316" stroke="#ffb627" rx="6"/>
+          <text x="452" y="398" text-anchor="middle" fill="#ffb627" font-size="9">Snowflake/CH</text>
+          <text x="452" y="410" text-anchor="middle" fill="#6a6a66" font-size="8">DWH + dbt</text>
+          <text x="510" y="401" fill="#6a6a66" font-size="12">→</text>
+          <rect x="524" y="383" width="100" height="36" fill="#131316" stroke="#b794f6" rx="6"/>
+          <text x="574" y="398" text-anchor="middle" fill="#b794f6" font-size="9">Airflow K8sExec</text>
+          <text x="574" y="410" text-anchor="middle" fill="#6a6a66" font-size="8">task = K8s pod</text>
+          <rect x="640" y="383" width="100" height="36" fill="#131316" stroke="#4ecdc4" rx="6"/>
+          <text x="690" y="398" text-anchor="middle" fill="#4ecdc4" font-size="9">Spark Operator</text>
+          <text x="690" y="410" text-anchor="middle" fill="#6a6a66" font-size="8">dynamic scale</text>
+          <rect x="756" y="383" width="100" height="36" fill="#131316" stroke="#26262b" rx="6"/>
+          <text x="806" y="398" text-anchor="middle" fill="#9a9a95" font-size="9">KEDA autoscale</text>
+          <text x="806" y="410" text-anchor="middle" fill="#6a6a66" font-size="8">Kafka lag → pods</text>
+          <!-- Row 2: Additional -->
+          <text x="36" y="430" fill="#6a6a66" font-size="8" letter-spacing="1">+ ДОДАЄМО:</text>
+          <rect x="36" y="437" width="80" height="28" fill="rgba(78,205,196,.08)" stroke="rgba(78,205,196,.3)" rx="4"/>
+          <text x="76" y="452" text-anchor="middle" fill="#4ecdc4" font-size="8">Terraform IaC</text>
+          <rect x="124" y="437" width="80" height="28" fill="rgba(78,205,196,.08)" stroke="rgba(78,205,196,.3)" rx="4"/>
+          <text x="164" y="452" text-anchor="middle" fill="#4ecdc4" font-size="8">ArgoCD GitOps</text>
+          <rect x="212" y="437" width="80" height="28" fill="rgba(183,148,246,.08)" stroke="rgba(183,148,246,.3)" rx="4"/>
+          <text x="252" y="452" text-anchor="middle" fill="#b794f6" font-size="8">DataHub lineage</text>
+          <rect x="300" y="437" width="80" height="28" fill="rgba(183,148,246,.08)" stroke="rgba(183,148,246,.3)" rx="4"/>
+          <text x="340" y="452" text-anchor="middle" fill="#b794f6" font-size="8">Monte Carlo DQ</text>
+          <rect x="388" y="437" width="80" height="28" fill="rgba(239,107,107,.08)" stroke="rgba(239,107,107,.3)" rx="4"/>
+          <text x="428" y="452" text-anchor="middle" fill="#ef6b6b" font-size="8">PagerDuty alerts</text>
+          <rect x="476" y="437" width="80" height="28" fill="rgba(255,182,39,.08)" stroke="rgba(255,182,39,.3)" rx="4"/>
+          <text x="516" y="452" text-anchor="middle" fill="#ffb627" font-size="8">FinOps tagging</text>
+          <rect x="564" y="437" width="80" height="28" fill="rgba(127,219,165,.08)" stroke="rgba(127,219,165,.3)" rx="4"/>
+          <text x="604" y="452" text-anchor="middle" fill="#7fdba5" font-size="8">RBAC + PII masking</text>
+          <rect x="652" y="437" width="80" height="28" fill="rgba(78,205,196,.08)" stroke="rgba(78,205,196,.3)" rx="4"/>
+          <text x="692" y="452" text-anchor="middle" fill="#4ecdc4" font-size="8">Flink checkpoints</text>
+          <rect x="740" y="437" width="80" height="28" fill="rgba(183,148,246,.08)" stroke="rgba(183,148,246,.3)" rx="4"/>
+          <text x="780" y="452" text-anchor="middle" fill="#b794f6" font-size="8">ML Feature Store</text>
+
+          <!-- DOWN ARROW S3→S4 -->
+          <line x1="440" y1="496" x2="440" y2="531" stroke="#6a6a66" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <text x="440" y="523" text-anchor="middle" fill="#6a6a66" font-size="10">▼ Тригер: &gt;5 product teams, data team = bottleneck</text>
+
+          <!-- === STAGE 4: Data Mesh === -->
+          <rect x="20" y="534" width="860" height="55" fill="rgba(255,182,39,.03)" stroke="rgba(255,182,39,.2)" stroke-dasharray="4,3" rx="10"/>
+          <text x="30" y="552" fill="#ffb627" font-size="9" letter-spacing="1" font-weight="700">STAGE 4 · Data Mesh · Netflix / Uber рівень · &gt;1B events/day</text>
+          <rect x="36" y="559" width="110" height="22" fill="rgba(255,182,39,.08)" stroke="rgba(255,182,39,.2)" rx="4"/>
+          <text x="91" y="573" text-anchor="middle" fill="#ffb627" font-size="8">Federated Governance</text>
+          <rect x="154" y="559" width="110" height="22" fill="rgba(255,182,39,.08)" stroke="rgba(255,182,39,.2)" rx="4"/>
+          <text x="209" y="573" text-anchor="middle" fill="#ffb627" font-size="8">Domain Data Products</text>
+          <rect x="272" y="559" width="110" height="22" fill="rgba(255,182,39,.08)" stroke="rgba(255,182,39,.2)" rx="4"/>
+          <text x="327" y="573" text-anchor="middle" fill="#ffb627" font-size="8">Data Contracts API</text>
+          <rect x="390" y="559" width="110" height="22" fill="rgba(255,182,39,.08)" stroke="rgba(255,182,39,.2)" rx="4"/>
+          <text x="445" y="573" text-anchor="middle" fill="#ffb627" font-size="8">Self-serve Data Platform</text>
+          <rect x="508" y="559" width="110" height="22" fill="rgba(255,182,39,.08)" stroke="rgba(255,182,39,.2)" rx="4"/>
+          <text x="563" y="573" text-anchor="middle" fill="#ffb627" font-size="8">Iceberg Universal Catalog</text>
+          <rect x="626" y="559" width="110" height="22" fill="rgba(255,182,39,.08)" stroke="rgba(255,182,39,.2)" rx="4"/>
+          <text x="681" y="573" text-anchor="middle" fill="#ffb627" font-size="8">Custom Orchestration</text>
+          <rect x="744" y="559" width="110" height="22" fill="rgba(255,182,39,.08)" stroke="rgba(255,182,39,.2)" rx="4"/>
+          <text x="799" y="573" text-anchor="middle" fill="#ffb627" font-size="8">Multi-region Active-Active</text>
+        </svg>
+        <div class="diagram-caption">Еволюція архітектури ShopWave від docker-compose до Data Mesh · кожен перехід визначається конкретним bottleneck</div>
+      </div>
+
+      <h5>Як додавати нові сервіси без зупинки</h5>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Новий сервіс</th><th>Як інтегрувати</th><th>Де приєднати</th><th>Час впровадження</th></tr></thead>
+          <tbody>
+            <tr><td>Новий data source (мікросервіс)</td><td>Kafka producer + Avro schema → Schema Registry</td><td>Новий topic → існуючий Kafka</td><td>1-3 дні</td></tr>
+            <tr><td>Новий аналітичний DWH</td><td>Spark/dbt job пише в новий DWH паралельно зі старим</td><td>Gold-шар Iceberg → новий sink</td><td>1-2 тижні</td></tr>
+            <tr><td>ML Feature Store</td><td>Spark feature engineering → Feast/Tecton → model serving</td><td>Silver layer → Feature Store</td><td>2-4 тижні</td></tr>
+            <tr><td>Real-time dashboard (Pinot)</td><td>Kafka → Pinot ingestion → REST API</td><td>Існуючий Kafka topic</td><td>3-7 днів</td></tr>
+            <tr><td>Нова команда з data-потребами</td><td>Новий dbt project + Airflow namespace + IAM role</td><td>Iceberg Silver (read) + Gold (write)</td><td>1 тиждень</td></tr>
+            <tr><td>Compliance/GDPR pipeline</td><td>Airflow DAG + Iceberg DELETE + DataHub PII tags</td><td>Поверх існуючого lake</td><td>2-3 тижні</td></tr>
+            <tr><td>Multi-region DR</td><td>Kafka MirrorMaker 2 + S3 Cross-Region Replication</td><td>Kafka + S3 replication</td><td>3-4 тижні</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Terraform — Infrastructure as Code</h4>
+      <p>Один із ключових навичок сучасного DE. Terraform (HashiCorp) описує будь-яку інфраструктуру (AWS, GCP, Azure, K8s, Snowflake, Databricks) у декларативних HCL-файлах. Ви запушили зміни в Git → pipeline підняв інфраструктуру.</p>
+
+      <pre style="background:var(--bg-3);padding:20px;border-radius:8px;border:1px solid var(--border-soft);font-family:var(--mono);font-size:13px;overflow-x:auto;margin:20px 0;max-width:860px;color:var(--fg)">
+<span style="color:#6a6a66"># S3 bucket для ShopWave data lake</span>
+<span style="color:#7fdba5">resource</span> <span style="color:#ff5a5f">"aws_s3_bucket"</span> <span style="color:#ff5a5f">"shopwave_lake"</span> {
+  bucket = <span style="color:#ff5a5f">"shopwave-${var.env}-lake"</span>
+  tags   = {
+    Project = <span style="color:#ff5a5f">"shopwave"</span>
+    Env     = var.env
+    Owner   = <span style="color:#ff5a5f">"data-team"</span>
+  }
+}
+
+<span style="color:#7fdba5">resource</span> <span style="color:#ff5a5f">"aws_s3_bucket_versioning"</span> <span style="color:#ff5a5f">"shopwave_lake"</span> {
+  bucket = aws_s3_bucket.shopwave_lake.id
+  versioning_configuration { status = <span style="color:#ff5a5f">"Enabled"</span> }
+}
+
+<span style="color:#7fdba5">resource</span> <span style="color:#ff5a5f">"aws_s3_bucket_lifecycle_configuration"</span> <span style="color:#ff5a5f">"shopwave_lake"</span> {
+  bucket = aws_s3_bucket.shopwave_lake.id
+  rule {
+    id     = <span style="color:#ff5a5f">"move-old-to-glacier"</span>
+    status = <span style="color:#ff5a5f">"Enabled"</span>
+    transition {
+      days          = <span style="color:#7fdba5">90</span>
+      storage_class = <span style="color:#ff5a5f">"GLACIER"</span>
+    }
+  }
+}</pre>
+
+      <h5>Основні концепції Terraform</h5>
+      <ul>
+        <li><strong>Resources</strong> — що створити (VPC, S3 bucket, EKS cluster, IAM role).</li>
+        <li><strong>State</strong> (<code>terraform.tfstate</code>) — поточний стан. <strong>ОБОВ'ЯЗКОВО</strong> тримати у remote backend (S3 + DynamoDB lock), не у Git.</li>
+        <li><strong>Modules</strong> — переюзабельні пакети ресурсів. <code>terraform-aws-modules/vpc/aws</code>, <code>eks/aws</code> — написані AWS-спільнотою.</li>
+        <li><strong>Variables</strong> + <strong>outputs</strong> — параметризація.</li>
+        <li><strong>Workspaces</strong> або (краще) окремі backends для dev/staging/prod.</li>
+      </ul>
+
+      <div class="warning">
+        <div class="w-label">⚠ Warning</div>
+        <p>Ніколи не комітьте <code>terraform.tfstate</code> у Git — там у plain text лежать паролі, access keys, endpoints. Використовуйте S3 backend з <code>encrypt=true</code> + DynamoDB state lock. Це правило №1 у Terraform.</p>
+      </div>
+
+      <h5>Альтернативи Terraform</h5>
+      <ul>
+        <li><strong>Pulumi</strong> — те саме, але справжніми мовами (Python, TypeScript, Go). Хороший вибір для дев-команд, які не хочуть вчити HCL.</li>
+        <li><strong>AWS CDK</strong> — AWS-only, але глибока інтеграція.</li>
+        <li><strong>Crossplane</strong> — IaC як Kubernetes CRDs. Інфраструктура керується тим самим API, що й pods.</li>
+        <li><strong>OpenTofu</strong> — форк Terraform після ліцензійних змін HashiCorp 2023. Спільнотний, open-source. У 2026 багато команд мігрують з TF на OpenTofu.</li>
+      </ul>
+
+      <h4>CI/CD для data pipelines</h4>
+      <p>Коли у вас є Terraform + Kubernetes + Helm + Python-код — ручний деплой неможливий. Типова CI/CD-схема для data team:</p>
+
+      <ol>
+        <li>Push у feature branch → GitHub Actions: lint (<code>ruff</code>), type-check (<code>mypy</code>), unit tests (pytest)</li>
+        <li>Pre-commit hooks локально: <code>black</code>, <code>isort</code>, <code>terraform fmt</code>, <code>sqlfluff</code></li>
+        <li>PR → integration tests на ephemeral environment (preview K8s namespace)</li>
+        <li>Merge у main → побудова Docker-образів, пуш у ECR/GCR/ACR з git SHA як тегом</li>
+        <li>Автоматичний deploy у staging через ArgoCD (GitOps) або <code>kubectl apply</code></li>
+        <li>Smoke tests на staging → manual approval → deploy у prod</li>
+        <li>Spark-джоби і dbt-моделі — тести на sample даних перед деплоєм</li>
+      </ol>
+
+      <h4>Data testing — Great Expectations і dbt tests</h4>
+      <p>Код тестуєте через pytest, але <strong>дані</strong> треба тестувати окремо. На проді трапляється: джерело раптом почало надсилати null замість email, схема змінилась на один байт, дублі пролізли. Без data-testing — ви дізнаєтесь від бізнесу через тиждень, коли звіти покажуть дивне.</p>
+      <ul>
+        <li><strong>Great Expectations</strong> — бібліотека, де декларативно описуєте expectations про дані (<code>expect_column_values_to_not_be_null</code>, <code>expect_values_in_set</code>, <code>expect_row_count_to_be_between</code>). Генерує Data Docs HTML-репорт.</li>
+        <li><strong>dbt tests</strong> — для dbt-моделей: <code>unique</code>, <code>not_null</code>, <code>accepted_values</code>, <code>relationships</code>. Custom tests через SQL.</li>
+        <li><strong>Soda Core</strong> — YAML-based альтернатива, легковаговий.</li>
+        <li><strong>Elementary</strong> — спостережливість поверх dbt-tests.</li>
+        <li>Тригер: якщо тест fail, Airflow зупиняє downstream tasks і шле alert у Slack.</li>
+      </ul>
+
+      <h4>Моніторинг: Prometheus + Grafana + Alertmanager</h4>
+      <p>Стандартна тріада SRE-світу. Для data-платформ треба моніторити три групи метрик:</p>
+      <div class="cards">
+        <div class="card"><div class="ic">I</div><h6>Infrastructure</h6><p>CPU, RAM, disk, network pods. <code>node_exporter</code>, <code>kube-state-metrics</code>.</p></div>
+        <div class="card"><div class="ic">A</div><h6>Application</h6><p>Spark job duration, Kafka lag, Flink checkpoint size, Airflow DAG success rate. <code>StatsD exporter</code>, Micrometer.</p></div>
+        <div class="card red"><div class="ic">B</div><h6>Business / Data</h6><p>Row count /день, GMV delta, null-rate. Прописуєте запити у dashboards + alerts на аномалії.</p></div>
+      </div>
+      <p>Альтернатива для cloud-native — <strong>DataDog</strong> (зручно, але дорого) або <strong>Grafana Cloud</strong>. Для pure data observability — <strong>Monte Carlo</strong>, <strong>Metaplane</strong>, <strong>Bigeye</strong>, open-source <strong>OpenLineage</strong>.</p>
+
+      <h4>K8s Troubleshooting — топ-10 проблем для data workloads</h4>
+      <div class="analogy"><strong>Перша реакція на будь-яку K8s проблему:</strong> <code>kubectl describe pod &lt;pod-name&gt;</code> → <code>kubectl logs &lt;pod-name&gt; --previous</code>. 90% відповідей там.</div>
+
+      <div class="k8s-issue">
+        <div class="issue-name">OOMKilled — Spark Executor</div>
+        <div class="fix">Pod вбитий через перевищення memory limit. Діагностика: <code>kubectl describe pod &lt;pod&gt;</code> → Events → "OOMKilled". Фікс: збільшити <code>spark.executor.memory</code> і відповідно <code>resources.limits.memory</code> у SparkApplication CRD. Правило: limits.memory = executor.memory + executor.memoryOverhead (мінімум 10%). Наприклад: executor.memory=4g → limit=5g.</div>
+      </div>
+      <div class="k8s-issue">
+        <div class="issue-name">CrashLoopBackOff — будь-який Pod</div>
+        <div class="fix">Pod стартує і падає, K8s перезапускає з exponential backoff. Діагностика: <code>kubectl logs &lt;pod&gt; --previous</code> — логи останнього контейнера до краша. Типові причини: bad env variable, missing secret, wrong entrypoint, Python exception в init-коді. Фікс залежить від логу.</div>
+      </div>
+      <div class="k8s-issue">
+        <div class="issue-name">Pending Pod — не можна запланувати</div>
+        <div class="fix"><code>kubectl describe pod &lt;pod&gt;</code> → Events → "0/5 nodes are available: 3 Insufficient cpu, 2 node(s) had taint". Причини: 1) resource requests перевищують доступне (збільшити node pool або зменшити requests), 2) taint на нодах без відповідного toleration (додати toleration у spec), 3) nodeSelector або affinity не відповідає (перевірити node labels: <code>kubectl get nodes --show-labels</code>).</div>
+      </div>
+      <div class="k8s-issue">
+        <div class="issue-name">ImagePullBackOff — не може завантажити image</div>
+        <div class="fix">Pod не може pull образ. Причини: 1) image не існує або wrong tag → перевірити registry, 2) private registry без credentials → додати imagePullSecret: <code>kubectl create secret docker-registry ecr-secret --docker-server=&lt;ecr-url&gt; ...</code> + spec.imagePullSecrets, 3) ECR image expired (12h TTL на external accounts) → оновити auth token через AWS CLI.</div>
+      </div>
+      <div class="k8s-issue">
+        <div class="issue-name">Kafka StatefulSet PVC не монтується</div>
+        <div class="fix">Kafka broker pod Pending або не стартує. <code>kubectl describe pod kafka-0</code> → "PVC not found" або "can't be bound". Перевірити: <code>kubectl get pvc</code> → статус. Якщо Pending: StorageClass не знаходить PV → <code>kubectl get sc</code>, переконатись що provisioner встановлений (EBS CSI driver для AWS). Якщо volume у wrong AZ — видалити PVC і перестворити StatefulSet у правильній AZ.</div>
+      </div>
+      <div class="k8s-issue">
+        <div class="issue-name">Airflow Worker Pod зависає — task Stuck</div>
+        <div class="fix">DAG task показує "running" 12+ годин. <code>kubectl get pods -n airflow</code> → знайти worker pod → <code>kubectl logs &lt;worker-pod&gt;</code>. Якщо logs порожній → worker загинув (OOM або eviction) а Airflow не отримав callback. Фікс: перевірити pod events на Eviction, збільшити worker memory limits, налаштувати <code>executor_task_timeout</code> щоб Airflow виявляв "orphaned" tasks.</div>
+      </div>
+      <div class="k8s-issue">
+        <div class="issue-name">Spark Executor Lost — Spot Instance Preemption</div>
+        <div class="fix">Spark executor lost через AWS Spot interruption (2-min warning). Spark не знає чому executor зник — просто retries task. Фікс: <code>spark.task.maxFailures=4</code> (default 4 retries), <code>spark.dynamicAllocation.enabled=true</code> (автозамінити executor), використовуйте mix On-Demand (driver) + Spot (executors), налаштуйте Node Termination Handler для graceful draining.</div>
+      </div>
+      <div class="k8s-issue">
+        <div class="issue-name">Service not accessible / DNS не резолвиться</div>
+        <div class="fix"><code>kubectl exec -it &lt;pod&gt; -- curl http://my-service:8080</code> → timeout. Перевірити: 1) Service існує <code>kubectl get svc</code>, 2) selector відповідає pod labels <code>kubectl describe svc my-service</code>, 3) Pod endpoints <code>kubectl get endpoints my-service</code> — якщо порожній, selector не матчить, 4) NetworkPolicy не блокує трафік <code>kubectl get networkpolicies</code>.</div>
+      </div>
+      <div class="k8s-issue">
+        <div class="issue-name">Init Container не завершується</div>
+        <div class="fix">Pod застряг у Init:0/1. Init containers перевіряють prerequisites (БД ready, secret існує). <code>kubectl logs &lt;pod&gt; -c init-wait-db</code>. Типові проблеми: БД ще не запустилась (треба чекати), wrong database URL у env, TCP порт заблокований NetworkPolicy.</div>
+      </div>
+      <div class="k8s-issue">
+        <div class="issue-name">Horisontal Pod Autoscaler не масштабує</div>
+        <div class="fix"><code>kubectl describe hpa &lt;hpa-name&gt;</code> → перевірити Events. Причини: 1) metrics-server не встановлений → <code>kubectl top pods</code> не працює, 2) Pods не мають resource requests → HPA не може обчислити % CPU, 3) minReplicas = maxReplicas (забули різниці). Для custom metrics (Kafka lag → Spark workers) — потрібен KEDA замість HPA.</div>
+      </div>
+
+      <h4>GitHub Actions CI/CD — повний пайплайн</h4>
+      <div class="pre-wrap"><pre><code># .github/workflows/data-pipeline-ci.yml
+name: Data Pipeline CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION: eu-west-1
+  ECR_REGISTRY: 123456789.dkr.ecr.eu-west-1.amazonaws.com
+  IMAGE_NAME: shopwave-spark-jobs
+
+jobs:
+  # ─── Lint & Test ─────────────────────────────────────
+  lint-and-test:
+    name: Lint + Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Ruff lint
+        run: ruff check ./shopwave --output-format=github
+
+      - name: mypy type check
+        run: mypy ./shopwave --ignore-missing-imports
+
+      - name: pytest unit tests
+        run: pytest tests/unit -v --tb=short --cov=shopwave --cov-report=xml
+
+      - name: dbt compile (validate SQL)
+        run: |
+          cd dbt_project
+          dbt deps
+          dbt compile --profiles-dir ./profiles --target ci
+
+  # ─── Build & Push Docker ──────────────────────────────
+  build-and-push:
+    name: Build Docker → ECR
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        id: meta
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─── Integration Tests on Staging ────────────────────
+  integration-tests:
+    name: Integration Tests (staging)
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: staging
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS + kubectl
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig (EKS staging)
+        run: aws eks update-kubeconfig --name shopwave-staging --region $AWS_REGION
+
+      - name: Run integration tests
+        run: pytest tests/integration -v --timeout=300
+        env:
+          SPARK_MASTER: k8s://https://staging-k8s-api:443
+          IMAGE_TAG: ${{ github.sha }}
+
+  # ─── Deploy via ArgoCD ────────────────────────────────
+  deploy-production:
+    name: Deploy → Production (ArgoCD)
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    environment:
+      name: production
+      url: https://argocd.shopwave.internal
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Update image tag in Helm values
+        run: |
+          sed -i "s|tag: .*|tag: ${{ github.sha }}|g" \
+            helm/shopwave-spark/values-prod.yaml
+          git config user.email "ci@shopwave.com"
+          git config user.name "GitHub Actions CI"
+          git add helm/shopwave-spark/values-prod.yaml
+          git commit -m "ci: deploy ${{ github.sha }} to production"
+          git push
+
+      # ArgoCD auto-syncs after git push (GitOps)
+      - name: Wait for ArgoCD sync
+        run: |
+          argocd app wait shopwave-spark \
+            --timeout 300 \
+            --server argocd.shopwave.internal \
+            --auth-token ${{ secrets.ARGOCD_TOKEN }}</code></pre></div>
+
+      <div class="interview-qa">
+        <h5>🎯 Interview Q&A — Модуль 9: DevOps для Data</h5>
+        <div class="qa-item">
+          <div class="qa-q">Як K8s вирішує resource management для Spark jobs?</div>
+          <div class="qa-a">Spark on Kubernetes: Driver Pod + динамічно створені Executor Pods. Кожен Pod має resource requests (гарантовані) і limits (максимум). Spark configs: spark.driver.memory, spark.executor.memory, spark.driver.cores, spark.executor.cores. K8s scheduler розміщує pods на нодах де є вільні ресурси. Spark Operator (Kubeflow) спрощує управління SparkApplication CRD. Dynamic Allocation: spark.dynamicAllocation.enabled=true → Executor pods автоматично з'являються під навантаженням і видаляються після idle. Переваги K8s vs YARN: ізоляція, multi-tenancy, легша конфігурація, використання тих самих нод для різних workloads (Spark + Airflow workers + Kafka).</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">GitOps та ArgoCD — як це організовано?</div>
+          <div class="qa-a">GitOps: Git репозиторій є єдиним джерелом правди для стану infrastructure та deployments. Ніяких ручних kubectl apply у prod — тільки через PR. ArgoCD: controller у K8s cluster, постійно порівнює desired state (Git) з actual state (cluster). При divergence — alerting або auto-sync. Workflow: розробник змінює Helm values у Git → PR → review → merge → ArgoCD виявляє зміну → синхронізує cluster. Переваги: аудит через git history, rollback = git revert, preview environments через Argo ApplicationSet, automated sync для staging/manual для prod. ApplicationSet дозволяє один шаблон для кількох environments (dev/staging/prod).</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Terraform state — що це і чому remote backend обов'язковий?</div>
+          <div class="qa-a">terraform.tfstate — JSON файл, що описує реальний стан infrastructure (ресурси, їхні ID, залежності). Terraform порівнює desired (код) з actual (state) і обчислює plan. Проблеми з local state: 1) Якщо два інженери запускають terraform apply одночасно — конфлікт і corrupted state, 2) Якщо ноутбук загорівся — state втрачено і треба import всіх ресурсів вручну. Remote backend (S3 + DynamoDB): state зберігається у S3 (versioned bucket), DynamoDB state lock не дає двом apply одночасно, state encrypted at rest (encrypt=true). Ніколи не комітьте tfstate у Git — там credentials у plain text.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як організувати CI/CD для data pipelines?</div>
+          <div class="qa-a">Типовий pipeline: 1) Lint + unit tests (ruff, pytest) — швидко, &lt;2 хв, блокує PR при fail. 2) dbt compile — перевірити що SQL компілюється. 3) Build + push Docker image з git SHA як тегом. 4) Deploy в staging + integration tests — Spark job на sample даних, dbt run на staging DWH. 5) Manual approval (environment protection) → deploy in prod через ArgoCD. Дані-специфічне: тести на sample data (<1% prod), data quality checks після deploy, schema compatibility tests (Avro schema registry), DAG validation (Airflow dag-test). Секрети — тільки через GitHub Secrets або AWS Secrets Manager, ніколи у коді.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Stateful vs Stateless workloads у K8s — як вибирати тип ресурсу?</div>
+          <div class="qa-a">Deployment: stateless workloads — Airflow webserver, API server, Spark driver (тимчасово). Може бути replicated, pod убитий і перестворений без проблем, всі поди ідентичні. StatefulSet: stateful workloads — Kafka brokers, Zookeeper, PostgreSQL, ClickHouse. Гарантує стабільні мережеві ідентифікатори (kafka-0, kafka-1, kafka-2), Persistent Volume Claim пов'язаний з конкретним pod-ом, pods запускаються і зупиняються у порядку. Job/CronJob: Spark jobs, dbt runs, Airflow K8sExecutor tasks — одноразові або за розкладом. Pod стартує, виконує задачу, завершується. Helm charts для data workloads: bitnami/kafka, spark-operator, apache/airflow.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як моніторити data pipeline у production?</div>
+          <div class="qa-a">Три рівні: 1) Infrastructure: Prometheus + node_exporter + kube-state-metrics → Grafana. CPU, RAM, disk, network. Alert: pod OOMKilled, node disk &gt;85%, PV near full. 2) Application: Kafka Exporter (lag, ISR), Spark metrics через StatsD → Prometheus, Airflow StatsD, Flink JMX. Alert: consumer lag &gt; threshold, Spark job duration anomaly, DAG SLA miss. 3) Data quality: dbt tests після кожного run, Great Expectations на source data, Monte Carlo для ML-based anomaly detection. Alert: row count drop &gt;20%, null rate spike, business metric anomaly (GMV drop). Playbook: alert → auto-link до runbook → on-call action. PagerDuty для SEV-1, Slack для degradations.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Blue/Green vs Canary deployments для data pipelines — коли що?</div>
+          <div class="qa-a">Blue/Green: два ідентичних environments (blue = current, green = new). Traffic миттєво перемикається. Rollback = перемикнути назад. Проблема для data pipelines: подвійне споживання Kafka topics або подвійні writes у DWH при перемиканні. Вирішення: consumer groups версіонуються (v1, v2), переключаємо offset після валідації. Canary: поступово збільшуємо % трафіку на нову версію (5% → 25% → 100%). Для streaming: частина partitions читається новим consumer. Дивимося на error rate і lag. Для batch jobs: запускаємо нову версію паралельно на 1-днях даних, порівнюємо вихідні. Зазвичай для data pipelines простіший Blue/Green з feature flags ніж Canary.</div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h5>Додаткові ресурси — Модуль 9</h5>
+        <div class="res-grid">
+          <a class="res-item" href="https://kubernetes.io/docs/home/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Kubernetes Documentation</span><span class="res-meta">kubernetes.io</span></a>
+          <a class="res-item" href="https://www.oreilly.com/library/view/kubernetes-up-and/9781098110192/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Kubernetes: Up &amp; Running (3rd ed.)</span><span class="res-meta">Burns · Hightower · O'Reilly</span></a>
+          <a class="res-item" href="https://www.terraform.io/docs" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Terraform Documentation</span><span class="res-meta">terraform.io</span></a>
+          <a class="res-item" href="https://www.oreilly.com/library/view/terraform-up-running/9781098116736/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Terraform: Up &amp; Running (3rd ed.)</span><span class="res-meta">Yevgeniy Brikman</span></a>
+          <a class="res-item" href="https://helm.sh/docs/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Helm Documentation</span><span class="res-meta">helm.sh</span></a>
+          <a class="res-item" href="https://strimzi.io/docs/operators/latest/overview" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Strimzi — Kafka on Kubernetes</span><span class="res-meta">strimzi.io</span></a>
+          <a class="res-item" href="https://www.kubeflow.org/docs/components/spark-operator/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Kubeflow Spark Operator</span><span class="res-meta">kubeflow.org</span></a>
+          <a class="res-item" href="https://greatexpectations.io/blog/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Great Expectations Documentation</span><span class="res-meta">greatexpectations.io</span></a>
+          <a class="res-item" href="https://prometheus.io/docs/introduction/overview/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Prometheus Documentation</span><span class="res-meta">prometheus.io</span></a>
+          <a class="res-item" href="https://grafana.com/docs/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Grafana Documentation</span><span class="res-meta">grafana.com</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=X48VuDVv0do" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">Kubernetes Crash Course for Absolute Beginners</span><span class="res-meta">TechWorld with Nana · 1 год</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=SLB_c_ayRMo" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">Terraform Explained — повний туторіал</span><span class="res-meta">TechWorld with Nana</span></a>
+        </div>
+      </div>
+
+      <div class="assignment">
+        <div class="a-label">📝 Завдання · Модуль 9</div>
+        <h5>Airflow + Spark у K8s через Helm + Terraform для AWS</h5>
+        <ol>
+          <li>Підняти локальний K8s через <a href="https://kind.sigs.k8s.io" target="_blank">kind</a> або <a href="https://minikube.sigs.k8s.io" target="_blank">minikube</a></li>
+          <li>Встановити <strong>Airflow</strong> через official Helm chart (<code>apache-airflow/airflow</code>) з PostgreSQL і CeleryExecutor</li>
+          <li>Встановити <strong>Spark Operator</strong>, задеплоїти <code>SparkApplication</code> CRD — простий джоб, що читає CSV з S3 і пише Parquet</li>
+          <li>Тригерити цей Spark-джоб з Airflow DAG через <code>SparkKubernetesOperator</code></li>
+          <li>Написати <strong>Terraform</strong>-модуль, який створює: S3 bucket для data lake + IAM role з політикою доступу + KMS-ключ для шифрування + CloudWatch alarm на розмір bucket-а</li>
+          <li>Remote backend у S3 з DynamoDB state-lock</li>
+          <li>Перевірити <code>terraform plan</code>, <code>terraform apply</code>, <code>terraform destroy</code> — все має бути ідемпотентно</li>
+        </ol>
+        <div class="deliverable"><strong>Deliverable:</strong> <code>helm/</code> values + <code>terraform/</code> модулі + <code>Makefile</code> у <code>/assignments/m9/</code></div>
+      </div>
+
+      <div class="milestone">
+        <div class="m-label">Project Milestone · ShopWave</div>
+        <h5>М9: Контейнеризація + Terraform</h5>
+        <ul>
+          <li>Переробити усі <code>docker-compose</code>-сервіси у Helm charts (або Kustomize overlays)</li>
+          <li>Переписати всі Python-сервіси (producers, Spark-джоби, API) з multi-stage <code>Dockerfile</code>, non-root user, health checks</li>
+          <li>Структура Terraform: <code>terraform/modules/</code> (vpc, eks, s3-lake, iam, msk-or-confluent) + <code>terraform/envs/</code> (dev, staging, prod)</li>
+          <li>EKS-кластер (3 nodes) + managed S3 + managed MSK (Kafka) — через модулі</li>
+          <li>GitOps: ArgoCD встановлений у EKS, слідкує за <code>helm/</code> папкою у вашому репо</li>
+          <li>GitHub Actions: lint → test → build image → push to ECR → update Helm values</li>
+          <li>Prometheus + Grafana + Alertmanager через <code>kube-prometheus-stack</code></li>
+          <li>3 базові алерти: Airflow DAG failed, Spark executor OOMKilled, Kafka consumer lag &gt; 100k</li>
+          <li>ADR: <code>ADR-009-k8s-deployment.md</code> + <code>ADR-010-iac-approach.md</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 10 -->
+<section class="module" id="module-10">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">10</div>
+      <div class="mod-meta">
+        <div class="mod-week">Тижні 16 – 17 · ~30 год</div>
+        <h2 class="mod-title">Хмари — <span class="red">AWS · GCP · Azure</span></h2>
+        <p class="mod-lead">Три гіганти ділять 65% хмарного ринку. Кожен має повний data-стек, але з різними сильними сторонами. Уміти обрати хмару, порахувати реальну вартість і не потрапити у vendor lock-in — один з найцінніших навичків data-інженера у 2026.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Частка ринку та загальний контекст</h4>
+      <p>Станом на Q4 2025: <strong>AWS ~31%</strong>, <strong>Azure ~25%</strong>, <strong>Google Cloud ~11%</strong>. Плюс Alibaba, Oracle, IBM та інші. Для data-специфічних навантажень розрив між трьома трохи менший — GCP традиційно сильний у data/ML через BigQuery і TPUs, Azure виграє корпоративний сегмент (пакет з Office/AD), AWS залишається найширшим і найзрілішим.</p>
+
+      <h4>AWS — найповніший data-стек</h4>
+      <p>У AWS для кожної задачі є 2-3 сервіси, часто з перекриттям. Плюс — гнучкість і вибір, мінус — надто багато опцій і плутанина.</p>
+
+      <div class="cards">
+        <div class="card red"><div class="ic">S3</div><h6>S3</h6><p>Object storage. Де-факто стандарт. $0.023/GB Standard, знижується до $0.004 у Glacier. Data lake основа.</p></div>
+        <div class="card red"><div class="ic">EMR</div><h6>EMR / EMR Serverless</h6><p>Managed Hadoop/Spark/Hive/Presto. Serverless-варіант — платите за job, без кластера. ~$0.12/min vCPU.</p></div>
+        <div class="card red"><div class="ic">GL</div><h6>Glue</h6><p>Serverless Spark + data catalog + crawlers. Простіше за EMR, дорожче ($0.44/DPU-year). ETL-орієнтований.</p></div>
+        <div class="card red"><div class="ic">At</div><h6>Athena</h6><p>Presto/Trino як сервіс. $5/TB сканованих. Для ad-hoc-запитів на S3 Parquet без ETL.</p></div>
+        <div class="card red"><div class="ic">RS</div><h6>Redshift</h6><p>DWH. $0.25-$13/год RA3 nodes, або Serverless $0.375/RPU-год.</p></div>
+        <div class="card red"><div class="ic">Kn</div><h6>Kinesis</h6><p>Streaming. Data Streams (аналог Kafka), Firehose (loader у S3), Analytics (SQL на стріми). ~$0.015/shard-hour.</p></div>
+        <div class="card red"><div class="ic">MSK</div><h6>MSK</h6><p>Managed Kafka (справжня). ~$0.21/год kafka.m5.large + $0.10/GB storage. Якщо не хочете Kinesis.</p></div>
+        <div class="card red"><div class="ic">MWA</div><h6>MWAA</h6><p>Managed Airflow. ~$0.49/год Small env + $0.77/worker. Дорого, але не треба самому підтримувати.</p></div>
+      </div>
+
+      <h4>GCP — data-native підхід</h4>
+      <p>Google — компанія, що побудувала свою інфраструктуру на MapReduce, BigTable, Dremel. Цей досвід видно у сервісах: BigQuery неймовірно зручний, Dataflow просто працює. Мінус — менша зрілість за межами data і ML.</p>
+
+      <div class="cards">
+        <div class="card"><div class="ic">GCS</div><h6>GCS</h6><p>Object storage. $0.020/GB Standard, до $0.0012 у Archive. API сумісний з S3 через HMAC keys.</p></div>
+        <div class="card"><div class="ic">BQ</div><h6>BigQuery</h6><p>Flagship DWH. Serverless, $6.25/TB on-demand або Capacity pricing. BigLake читає Iceberg/Delta.</p></div>
+        <div class="card"><div class="ic">DP</div><h6>Dataproc / Dataproc Serverless</h6><p>Managed Hadoop/Spark. Serverless platить за job, $0.06/DCU-год. Аналог EMR.</p></div>
+        <div class="card"><div class="ic">DF</div><h6>Dataflow</h6><p>Managed Apache Beam. І batch, і stream в одному API. Унікальне для GCP, дуже елегантне.</p></div>
+        <div class="card"><div class="ic">P/S</div><h6>Pub/Sub</h6><p>Managed messaging. Serverless, autoscale. ~$40/TB. Сильна альтернатива Kafka для GCP-стеку.</p></div>
+        <div class="card"><div class="ic">Co</div><h6>Composer</h6><p>Managed Airflow. ~$400-800/міс small env. Стандарт для оркестрації у GCP.</p></div>
+      </div>
+
+      <h4>Azure — enterprise і Microsoft-екосистема</h4>
+      <p>Azure виграє там, де компанія вже у Microsoft-світі (Office 365, AD, Windows). Дуже сильна інтеграція з Databricks (Azure Databricks — спільний продукт). Data-стек менш "нативний", але широкий.</p>
+
+      <div class="cards">
+        <div class="card red"><div class="ic">AL</div><h6>ADLS Gen2</h6><p>Data Lake Storage — S3-подібне, поверх Blob. Hierarchical namespace. $0.018/GB Hot.</p></div>
+        <div class="card red"><div class="ic">Sy</div><h6>Synapse</h6><p>Унифіцоване: DWH + Spark + pipelines + SQL serverless. Аналог BigQuery + EMR + Glue в одному продукті.</p></div>
+        <div class="card red"><div class="ic">ADF</div><h6>Data Factory</h6><p>ETL/ELT orchestration з GUI. Альтернатива Airflow для non-engineers. Інтеграція з 90+ джерелами.</p></div>
+        <div class="card red"><div class="ic">EH</div><h6>Event Hubs</h6><p>Streaming. Kafka-protocol сумісний. ~$0.015/throughput unit-год.</p></div>
+        <div class="card red"><div class="ic">DB</div><h6>Azure Databricks</h6><p>Native Databricks як managed-сервіс. Для багатьох Azure-клієнтів — основний DE/ML-стек.</p></div>
+        <div class="card red"><div class="ic">Fa</div><h6>Microsoft Fabric</h6><p>Нова (2023+) SaaS-платформа, об'єднує Power BI + Synapse + Data Factory. OneLake як universal storage. Конкурує зі Snowflake + Databricks.</p></div>
+      </div>
+
+      <h4>Порівняльна таблиця — еквіваленти</h4>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Шар</th><th>AWS</th><th>GCP</th><th>Azure</th></tr></thead>
+          <tbody>
+            <tr><td>Object storage</td><td><span class="badge aws">S3</span></td><td><span class="badge gcp">GCS</span></td><td><span class="badge azure">Blob / ADLS Gen2</span></td></tr>
+            <tr><td>DWH</td><td><span class="badge aws">Redshift</span></td><td><span class="badge gcp">BigQuery</span></td><td><span class="badge azure">Synapse / Fabric</span></td></tr>
+            <tr><td>Managed Spark</td><td><span class="badge aws">EMR / Glue</span></td><td><span class="badge gcp">Dataproc</span></td><td><span class="badge azure">HDInsight / Databricks</span></td></tr>
+            <tr><td>Serverless SQL</td><td><span class="badge aws">Athena</span></td><td><span class="badge gcp">BigQuery</span></td><td><span class="badge azure">Synapse Serverless</span></td></tr>
+            <tr><td>Streaming</td><td><span class="badge aws">Kinesis / MSK</span></td><td><span class="badge gcp">Pub/Sub</span></td><td><span class="badge azure">Event Hubs</span></td></tr>
+            <tr><td>Stream processing</td><td><span class="badge aws">Kinesis Analytics / MSF</span></td><td><span class="badge gcp">Dataflow</span></td><td><span class="badge azure">Stream Analytics</span></td></tr>
+            <tr><td>Orchestration</td><td><span class="badge aws">MWAA / Step Functions</span></td><td><span class="badge gcp">Composer / Workflows</span></td><td><span class="badge azure">Data Factory</span></td></tr>
+            <tr><td>NoSQL (doc)</td><td><span class="badge aws">DocumentDB</span></td><td><span class="badge gcp">Firestore</span></td><td><span class="badge azure">Cosmos DB</span></td></tr>
+            <tr><td>NoSQL (wide-col)</td><td><span class="badge aws">DynamoDB</span></td><td><span class="badge gcp">Bigtable</span></td><td><span class="badge azure">Cosmos DB (Cassandra API)</span></td></tr>
+            <tr><td>Managed Kubernetes</td><td><span class="badge aws">EKS</span></td><td><span class="badge gcp">GKE</span></td><td><span class="badge azure">AKS</span></td></tr>
+            <tr><td>Data Catalog</td><td><span class="badge aws">Glue Catalog</span></td><td><span class="badge gcp">Dataplex</span></td><td><span class="badge azure">Purview</span></td></tr>
+            <tr><td>BI / Dashboards</td><td><span class="badge aws">QuickSight</span></td><td><span class="badge gcp">Looker</span></td><td><span class="badge azure">Power BI</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Приклад TCO — «простий» data pipeline на трьох хмарах</h4>
+      <p>Сценарій: 500 GB даних/день, 1 TB DWH активних даних, базовий ETL через Spark, один BI-дашборд. Orієнтовні ціни на місяць (production-setup, single region, без reserved).</p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Компонент</th><th>AWS (~)</th><th>GCP (~)</th><th>Azure (~)</th></tr></thead>
+          <tbody>
+            <tr><td>Data lake (15 TB stored)</td><td>$345 (S3 Std)</td><td>$300 (GCS Std)</td><td>$270 (ADLS Hot)</td></tr>
+            <tr><td>Batch ETL (300 Spark-годин)</td><td>$400 (EMR m5.xl spot)</td><td>$280 (Dataproc Serverless)</td><td>$350 (Databricks)</td></tr>
+            <tr><td>DWH 1 TB active + 50к запитів</td><td>$720 (Redshift RA3.xlplus)</td><td>$400 (BigQuery on-demand)</td><td>$650 (Synapse DW100c)</td></tr>
+            <tr><td>Streaming (50 MB/s · 1 місяць)</td><td>$200 (Kinesis)</td><td>$160 (Pub/Sub)</td><td>$180 (Event Hubs)</td></tr>
+            <tr><td>Managed Airflow</td><td>$430 (MWAA small)</td><td>$480 (Composer small)</td><td>$200 (ADF alternative)</td></tr>
+            <tr><td>Managed K8s (3 workers)</td><td>$220 (EKS + t3.large)</td><td>$180 (GKE)</td><td>$210 (AKS)</td></tr>
+            <tr><td>Egress 500 GB</td><td>$45</td><td>$40</td><td>$43</td></tr>
+            <tr><td><strong>Разом (~)</strong></td><td><strong>$2,360 / міс</strong></td><td><strong>$1,840 / міс</strong></td><td><strong>$1,903 / міс</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">⚠ Це орієнтир. Реальні суми сильно залежать від паттернів використання, reserved instances / committed use discounts (до −50%), spot pricing для EMR/Dataproc (до −80%), партнерських знижок (enterprise-контракти 20-40%), і регіону. Завжди робіть власні розрахунки у pricing-калькуляторі провайдера.</p>
+
+      <h4>Vendor lock-in — риск, який треба усвідомлювати</h4>
+      <p>Кожен сервіс, який ви обираєте, має свій рівень lock-in. Ієрархія:</p>
+      <ul>
+        <li><strong>Майже без lock-in:</strong> open-source у managed-обгортці (EKS/GKE/AKS, MSK, Elastic, PostgreSQL, Spark через EMR/Dataproc) — мігрувати складно, але реально.</li>
+        <li><strong>Помірний lock-in:</strong> S3/GCS/Blob на рівні API — усі підтримують S3-сумісний протокол, але dialect різниться в деталях.</li>
+        <li><strong>Високий lock-in:</strong> BigQuery, Redshift, Synapse, Snowflake — свій SQL dialect, свої функції, своя платіжна модель. Міграція = переписати всі запити і ETL.</li>
+        <li><strong>Максимальний lock-in:</strong> AWS Step Functions, Azure Data Factory pipelines, IAM-політики — це proprietary формати, які ніде більше не використовуються.</li>
+      </ul>
+
+      <h4>Multi-cloud strategy — корисно чи навіть не пробувати</h4>
+      <div class="proscons">
+        <div class="pc-box pros">
+          <h6>Multi-cloud має сенс коли...</h6>
+          <ul>
+            <li>Регуляторні вимоги (частина даних у певній юрисдикції)</li>
+            <li>Disaster recovery (AWS prod + GCP DR — різні failure domains)</li>
+            <li>Вендорські переговори (важіль на знижки)</li>
+            <li>Використовуєте сильні сторони (GCP для BigQuery, AWS для Glacier)</li>
+            <li>Acquisitions / M&amp;A — злили дві компанії з різними стеками</li>
+          </ul>
+        </div>
+        <div class="pc-box cons">
+          <h6>Multi-cloud ускладнює...</h6>
+          <ul>
+            <li>Egress costs — дані між AWS і GCP $0.09/GB, знищує бюджет</li>
+            <li>Operational overhead — 2 набори IAM, 2 моніторинги, 2 команди експертизи</li>
+            <li>Security surface зростає вдвічі</li>
+            <li>Latency для cross-cloud запитів</li>
+            <li>Team cognitive load</li>
+          </ul>
+        </div>
+      </div>
+
+      <h4>FinOps для data teams</h4>
+      <p>Data-воркоди — головна стаття витрат хмари для багатьох компаній. Базові практики:</p>
+      <ul>
+        <li><strong>Tagging everything.</strong> Обов'язкові tags: <code>Project</code>, <code>Environment</code>, <code>Owner</code>, <code>CostCenter</code>. Без тегів Cost Explorer марний.</li>
+        <li><strong>Reserved / Committed use</strong> — знижка 40-70% за 1-3 роки. Для стабільних workloads обов'язково.</li>
+        <li><strong>Spot / Preemptible</strong> — знижка до 80% для fault-tolerant workloads. EMR, Dataproc — ідеально.</li>
+        <li><strong>Auto-scaling</strong> і <strong>auto-suspend</strong>. Snowflake warehouse без <code>auto_suspend=60</code> = двозначні $ в день даремно.</li>
+        <li><strong>Data lifecycle</strong> — S3 lifecycle rules для переведення старого у Glacier. GCS Autoclass.</li>
+        <li><strong>Query optimization</strong> — у BigQuery з on-demand pricing один кривий <code>SELECT *</code> на великій таблиці = рахунок на $50.</li>
+        <li><strong>Budget alerts</strong> — Cloud Billing alerts на 50%, 80%, 100% бюджету. Автоматичне вимкнення non-prod environments на вихідні.</li>
+        <li><strong>Cost attribution</strong> — щомісячні cost-review з усіма командами.</li>
+      </ul>
+
+      <h4>Terraform — повний модуль для AWS data infra</h4>
+      <p>Один S3 bucket — лише для прикладу. Реальна data infra потребує VPC, IAM, EKS і MSK. Ось як виглядає структура production Terraform для ShopWave:</p>
+
+      <div class="pre-wrap"><pre><code># terraform/
+# ├── modules/
+# │   ├── s3-lake/       — data lake buckets + lifecycle
+# │   ├── iam/           — roles + policies per service
+# │   ├── eks/           — K8s cluster + node groups
+# │   └── msk/           — managed Kafka
+# ├── envs/
+# │   ├── dev/main.tf
+# │   ├── staging/main.tf
+# │   └── prod/main.tf
+# └── backend.tf         — remote state config
+
+# backend.tf — remote state (обов'язково!)
+terraform {
+  backend "s3" {
+    bucket         = "shopwave-terraform-state"
+    key            = "prod/terraform.tfstate"
+    region         = "eu-central-1"
+    encrypt        = true
+    dynamodb_table = "shopwave-terraform-lock"  # state locking
+  }
+}
+
+# modules/iam/main.tf — IAM roles per service (least privilege)
+# Spark executor — тільки read bronze + write silver
+resource "aws_iam_role" "spark_executor" {
+  name               = "shopwave-spark-executor-${var.env}"
+  assume_role_policy = data.aws_iam_policy_document.eks_assume.json
+}
+
+resource "aws_iam_role_policy" "spark_s3" {
+  role = aws_iam_role.spark_executor.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["s3:GetObject", "s3:ListBucket"]
+        Resource = [
+          "arn:aws:s3:::shopwave-${var.env}-lake/bronze/*",
+          "arn:aws:s3:::shopwave-${var.env}-lake",
+        ]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["s3:PutObject", "s3:DeleteObject"]
+        Resource = "arn:aws:s3:::shopwave-${var.env}-lake/silver/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:GenerateDataKey", "kms:Decrypt"]
+        Resource = aws_kms_key.lake.arn
+      }
+    ]
+  })
+}
+
+# modules/eks/main.tf — EKS cluster через community module
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 20.0"
+
+  cluster_name    = "shopwave-${var.env}"
+  cluster_version = "1.30"
+  vpc_id          = module.vpc.vpc_id
+  subnet_ids      = module.vpc.private_subnets
+
+  # Node groups
+  eks_managed_node_groups = {
+    # On-Demand для stateful workloads (Airflow, Kafka, drivers)
+    core = {
+      instance_types = ["m5.xlarge"]
+      min_size = 2; max_size = 5; desired_size = 3
+    }
+    # Spot для Spark executors (до 80% дешевше)
+    spark_spot = {
+      instance_types = ["m5.2xlarge", "m5.4xlarge", "m4.2xlarge"]
+      capacity_type  = "SPOT"
+      min_size = 0; max_size = 20; desired_size = 0
+      labels = { workload = "spark" }
+      taints = [{ key = "workload", value = "spark", effect = "NO_SCHEDULE" }]
+    }
+  }
+
+  # IRSA — IAM roles for K8s service accounts (не потрібні node IAM roles)
+  enable_irsa = true
+}
+
+# modules/msk/main.tf — Managed Kafka
+resource "aws_msk_cluster" "shopwave" {
+  cluster_name           = "shopwave-${var.env}"
+  kafka_version          = "3.6.0"
+  number_of_broker_nodes = 3
+
+  broker_node_group_info {
+    instance_type   = "kafka.m5.large"
+    client_subnets  = module.vpc.private_subnets
+    storage_info {
+      ebs_storage_info { volume_size = 500 }
+    }
+  }
+
+  encryption_info {
+    encryption_in_transit { client_broker = "TLS" }
+  }
+
+  configuration_info {
+    arn      = aws_msk_configuration.shopwave.arn
+    revision = aws_msk_configuration.shopwave.latest_revision
+  }
+}
+
+resource "aws_msk_configuration" "shopwave" {
+  name = "shopwave-kafka-config"
+  server_properties = <<-EOT
+    auto.create.topics.enable=false
+    default.replication.factor=3
+    min.insync.replicas=2
+    log.retention.hours=168
+    log.segment.bytes=536870912
+    compression.type=lz4
+  EOT
+}</code></pre></div>
+
+      <h4>Terraform для GCP — BigQuery + GKE</h4>
+      <div class="pre-wrap"><pre><code># GCP provider
+terraform {
+  required_providers {
+    google = { source = "hashicorp/google", version = "~> 5.0" }
+  }
+  backend "gcs" {
+    bucket = "shopwave-terraform-state"
+    prefix = "prod"
+  }
+}
+
+# GCS data lake bucket
+resource "google_storage_bucket" "lake" {
+  name          = "shopwave-${var.env}-lake"
+  location      = "EU"
+  storage_class = "STANDARD"
+
+  lifecycle_rule {
+    condition { age = 30; matches_prefix = ["bronze/"] }
+    action    { type = "SetStorageClass"; storage_class = "NEARLINE" }
+  }
+  lifecycle_rule {
+    condition { age = 365; matches_prefix = ["bronze/"] }
+    action    { type = "SetStorageClass"; storage_class = "COLDLINE" }
+  }
+
+  versioning { enabled = true }
+  uniform_bucket_level_access = true  # IAM only, no ACLs
+}
+
+# BigQuery dataset + table з partitioning
+resource "google_bigquery_dataset" "shopwave" {
+  dataset_id    = "shopwave_${var.env}"
+  location      = "EU"
+  friendly_name = "ShopWave ${var.env}"
+
+  access {
+    role          = "READER"
+    special_group = "projectReaders"
+  }
+}
+
+resource "google_bigquery_table" "fct_orders" {
+  dataset_id          = google_bigquery_dataset.shopwave.dataset_id
+  table_id            = "fct_orders"
+  deletion_protection = true
+
+  time_partitioning {
+    type  = "DAY"
+    field = "order_date"
+  }
+
+  clustering = ["country", "status"]   # до 4 колонок
+
+  schema = jsonencode([
+    { name = "order_id",     type = "STRING",    mode = "REQUIRED" },
+    { name = "user_id",      type = "STRING",    mode = "REQUIRED" },
+    { name = "order_date",   type = "DATE",      mode = "REQUIRED" },
+    { name = "total_amount", type = "FLOAT64",   mode = "NULLABLE" },
+    { name = "country",      type = "STRING",    mode = "NULLABLE" },
+    { name = "status",       type = "STRING",    mode = "NULLABLE" },
+  ])
+}
+
+# GKE Autopilot — serverless K8s (Google керує нодами)
+resource "google_container_cluster" "shopwave" {
+  name     = "shopwave-${var.env}"
+  location = "europe-west1"
+
+  enable_autopilot = true  # GKE Autopilot = платиш за pod resources, не за ноди
+
+  ip_allocation_policy {}   # required for Autopilot
+}
+
+# Service Account для Spark з Workload Identity
+resource "google_service_account" "spark" {
+  account_id   = "shopwave-spark-${var.env}"
+  display_name = "ShopWave Spark SA"
+}
+
+resource "google_storage_bucket_iam_member" "spark_bronze_read" {
+  bucket = google_storage_bucket.lake.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.spark.email}"
+  condition {
+    title      = "bronze_only"
+    expression = "resource.name.startsWith('projects/_/buckets/${google_storage_bucket.lake.name}/objects/bronze/')"
+  }
+}</code></pre></div>
+
+      <h4>BigQuery — оптимізація запитів і витрат</h4>
+      <div class="pre-wrap"><pre><code>-- ❌ Дорогий запит: читає ВСЮ таблицю (скажімо 10TB → ~$62)
+SELECT user_id, SUM(total_amount) as gmv
+FROM `shopwave.fct_orders`
+GROUP BY user_id;
+
+-- ✅ Дешевий: partition pruning + clustering pruning
+SELECT user_id, SUM(total_amount) as gmv
+FROM `shopwave.fct_orders`
+WHERE order_date BETWEEN '2026-01-01' AND '2026-01-31'  -- partition filter!
+  AND country = 'UA'                                      -- clustering filter!
+GROUP BY user_id;
+-- BigQuery сканує тільки партиції за January + рядки де country='UA'
+-- Можна на 99% зменшити скан для типових запитів
+
+-- Materialized Views — автоматично оновлювані агрегати
+CREATE MATERIALIZED VIEW `shopwave.mv_daily_gmv`
+OPTIONS (enable_refresh = true, refresh_interval_minutes = 60)
+AS SELECT
+  order_date,
+  country,
+  SUM(total_amount)  AS gmv,
+  COUNT(*)           AS order_count,
+  COUNT(DISTINCT user_id) AS unique_buyers
+FROM `shopwave.fct_orders`
+GROUP BY order_date, country;
+-- Запит на MV — безкоштовний (читає тільки MV, не source table!)
+
+-- Таблиці з expiration — автовидалення старих тимчасових таблиць
+CREATE TABLE `shopwave.temp_analysis_20260422`
+OPTIONS (expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 7 DAY))
+AS SELECT * FROM `shopwave.fct_orders` WHERE order_date = '2026-04-22';
+
+-- Authorized views — дати analyst доступ без доступу до source
+CREATE VIEW `shopwave_analytics.fct_orders_masked` AS
+SELECT
+  order_id,
+  REGEXP_REPLACE(user_id, r'usr-(\d+)', 'usr-***') AS user_id_masked,
+  order_date,
+  total_amount,
+  country
+FROM `shopwave.fct_orders`;</code></pre></div>
+
+      <h4>AWS IAM — practical policy examples</h4>
+      <div class="pre-wrap"><pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowReadBronze",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:GetObjectVersion"],
+      "Resource": "arn:aws:s3:::shopwave-prod-lake/bronze/*"
+    },
+    {
+      "Sid": "AllowWriteSilver",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::shopwave-prod-lake/silver/*",
+      "Condition": {
+        "StringEquals": {
+          "s3:x-amz-server-side-encryption": "aws:kms"
+        }
+      }
+    },
+    {
+      "Sid": "DenyPublicAccess",
+      "Effect": "Deny",
+      "Action": "s3:PutBucketPublicAccessBlock",
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:PrincipalOrgID": "o-xxxx"
+        }
+      }
+    }
+  ]
+}
+
+# Перевірка ефективних прав:
+aws iam simulate-principal-policy \
+  --policy-source-arn arn:aws:iam::123456789:role/spark-executor \
+  --action-names s3:GetObject \
+  --resource-arns arn:aws:s3:::shopwave-prod-lake/bronze/test.parquet</code></pre></div>
+
+      <div class="interview-qa">
+        <h5>🎯 Interview Q&A — Модуль 10: Хмари</h5>
+        <div class="qa-item">
+          <div class="qa-q">AWS vs GCP vs Azure для Big Data — як обирати?</div>
+          <div class="qa-a">AWS: найбільша екосистема, найбільший ринок праці. S3 + Glue + EMR/Spark + Kinesis + Redshift — зрілий стек. Мінус: складне ціноутворення, менший ML-фокус. GCP: BigQuery (найкращий serverless DWH), Dataflow (Apache Beam managed), Vertex AI (ML platform), Pub/Sub. Краще для ML-команд та аналітиків. Azure: обов'язковий якщо компанія на Microsoft (Office 365, Azure AD). Synapse Analytics, Azure Data Factory. Корпоративний enterprise. Для навчання: AWS free tier найширший. Для продакшн: де вже є існуюча cloud infrastructure. Тренд 2026: multi-cloud з Iceberg як neutral format — дані в S3, compute вибираємо.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке Reserved Instances/Committed Use та коли це виправдано?</div>
+          <div class="qa-a">Reserved Instances (AWS) / Committed Use Discounts (GCP) / Reserved Capacity (Azure): передплата на 1 або 3 роки в обмін на знижку 30-72%. On-demand: максимальна гнучкість, платиш за фактичне використання (no commitment). Spot/Preemptible: до 90% дешевше, але може бути відключено. Стратегія: baseline workloads (Kafka brokers, постійні DB, Airflow workers) → Reserved (передбачувано, завжди running). Burst/batch workloads (Spark jobs, ML training) → Spot (дешево, OK якщо перерветься). Dev/staging → On-demand або Spot. Коли виправдано RI: ресурс running &gt;50% часу місяця. Break-even зазвичай ~8-10 місяців. 3-year RI для core infrastructure = швидке payback.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке egress costs і як їх мінімізувати?</div>
+          <div class="qa-a">Egress = трафік що виходить з хмари назовні або між регіонами. AWS: $0.09/GB для перших 10TB/місяць. Читати дані з S3 на EC2 у тому ж регіоні — безкоштовно. Читати з S3 у різних регіонах — платно ($0.02/GB). Передавати дані назовні (до on-premise або аналітичному інструменту) — $0.09/GB. Мінімізація: 1) Тримати compute у тому ж регіоні що й storage, 2) Cloudflare R2 — S3-сумісне, zero egress fees (підходить для datapipe до CDN), 3) Compression перед transfer, 4) VPC endpoints для AWS services (трафік всередині AWS), 5) AWS Direct Connect / GCP Dedicated Interconnect для on-premise — фіксована ціна замість per-GB. Egress costs можуть бути 20-40% cloud bill при неправильній архітектурі.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Managed Kubernetes (EKS/GKE/AKS) vs self-managed — що обирати?</div>
+          <div class="qa-a">Self-managed K8s: повний контроль, але ваша команда відповідає за control plane HA, updates, etcd backups, certificate rotation. Для 99.9% компаній це зайва робота. Managed (EKS/GKE/AKS): cloud provider керує control plane, HA з коробки, managed upgrades. GKE: найкращий K8s experience, Autopilot mode (serverless K8s — тільки за pod resources, не node), найшвидший час до production. EKS: AWS ecosystem, tight integration з IAM, Load Balancers, EBS CSI. AKS: Azure AD integration, Windows node pools. Рекомендація 2026: GKE для нових проектів (Autopilot + GKE Standard), EKS якщо вже у AWS-стеку. Ціна managed K8s control plane: GKE безкоштовно, EKS $0.10/год ($73/місяць), AKS безкоштовно.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">FinOps — як контролювати cloud costs у data team?</div>
+          <div class="qa-a">Типові проблеми: forgot to stop dev cluster → $5k за вихідні, DWH warehouse без auto-suspend → $2k/місяць idle, Spark job reads entire table без partition pruning → $100 замість $1. Практики: 1) Tagging — кожен ресурс tagged: team, project, environment, cost-center. Cloud billing за тегами = видно хто скільки витрачає. 2) Budget alerts — 50/80/100% → Slack alert → email C-level при 100%. 3) Auto-shutdown non-prod: Lambda/Cloud Function вимикає dev clusters о 20:00 і вихідні. 4) Cost-aware code: BigQuery → SELECT конкретні колонки (не *), LIMIT в exploration, тільки потрібні партиції. 5) Rightsizing — AWS Compute Optimizer аналізує CPU/RAM usage і рекомендує зменшити. 6) Waste review щомісяця: unused EBS volumes, orphaned Elastic IPs, idle DWH warehouses.</div>
+        </div>
+      </div>
+
+      <div class="resources">
+        <h5>Додаткові ресурси — Модуль 10</h5>
+        <div class="res-grid">
+          <a class="res-item" href="https://aws.amazon.com/architecture/analytics-big-data/" target="_blank"><span class="res-type">📖 Resource · EN</span><span class="res-title">AWS Big Data Architecture Center</span><span class="res-meta">aws.amazon.com</span></a>
+          <a class="res-item" href="https://cloud.google.com/architecture/data-lifecycle-cloud-platform" target="_blank"><span class="res-type">📖 Resource · EN</span><span class="res-title">Data Lifecycle на GCP</span><span class="res-meta">cloud.google.com</span></a>
+          <a class="res-item" href="https://learn.microsoft.com/en-us/azure/architecture/data-guide/" target="_blank"><span class="res-type">📖 Resource · EN</span><span class="res-title">Azure Data Architecture Guide</span><span class="res-meta">learn.microsoft.com</span></a>
+          <a class="res-item" href="https://calculator.aws/" target="_blank"><span class="res-type">🧮 Tool · EN</span><span class="res-title">AWS Pricing Calculator</span><span class="res-meta">calculator.aws</span></a>
+          <a class="res-item" href="https://cloud.google.com/products/calculator" target="_blank"><span class="res-type">🧮 Tool · EN</span><span class="res-title">Google Cloud Pricing Calculator</span><span class="res-meta">cloud.google.com</span></a>
+          <a class="res-item" href="https://azure.microsoft.com/en-us/pricing/calculator/" target="_blank"><span class="res-type">🧮 Tool · EN</span><span class="res-title">Azure Pricing Calculator</span><span class="res-meta">azure.microsoft.com</span></a>
+          <a class="res-item" href="https://www.finops.org/introduction/what-is-finops/" target="_blank"><span class="res-type">📖 Framework · EN</span><span class="res-title">FinOps Foundation — What is FinOps</span><span class="res-meta">finops.org</span></a>
+          <a class="res-item" href="https://www.oreilly.com/library/view/cloud-finops-2nd/9781492080664/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Cloud FinOps (2nd ed.)</span><span class="res-meta">Storment · Fuller · O'Reilly</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=a9__D53WsUs" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">AWS vs Google Cloud vs Azure — Cloud Comparison</span><span class="res-meta">YouTube</span></a>
+          <a class="res-item" href="https://medium.com/@sunnybhambhani" target="_blank"><span class="res-type">📖 Blog · EN</span><span class="res-title">Cloud data engineering blog posts</span><span class="res-meta">Medium</span></a>
+        </div>
+      </div>
+
+      <div class="assignment">
+        <div class="a-label">📝 Завдання · Модуль 10</div>
+        <h5>Один pipeline на 2 хмарах + TCO</h5>
+        <ol>
+          <li>Обрати 2 хмари (AWS+GCP або AWS+Azure)</li>
+          <li>Реалізувати <strong>однаковий pipeline</strong>: CSV в object storage → Spark-job трансформує у Parquet → завантажує у DWH → простий SQL-запит</li>
+          <li>Використовувати managed-сервіси: AWS (S3 + Glue + Redshift Serverless) vs GCP (GCS + Dataproc Serverless + BigQuery) vs Azure (ADLS + Synapse Spark + Synapse SQL)</li>
+          <li>Порахувати <strong>TCO на 500 GB/день, 6 місяців</strong> у pricing calculator кожної</li>
+          <li>Виміряти реальну вартість виконання (від моменту старту до завершення 1 запуску)</li>
+          <li>Скласти порівняльний звіт: розробницький досвід, ціна, vendor lock-in, documentation quality</li>
+          <li>Зробити висновок: для вашого гіпотетичного сценарію (стартап / enterprise / state-регульоване) — яку хмару обрати і чому</li>
+        </ol>
+        <div class="deliverable"><strong>Deliverable:</strong> Terraform-модулі для 2 хмар + TCO-таблиця Excel + markdown-звіт у <code>/assignments/m10/</code></div>
+      </div>
+
+      <div class="milestone">
+        <div class="m-label">Project Milestone · ShopWave</div>
+        <h5>М10: Мультихмарний ShopWave</h5>
+        <ul>
+          <li>Обрати <strong>primary cloud</strong> для production (рекомендую AWS або GCP) — повноцінний Terraform для EKS/GKE, MSK/Pub/Sub, S3/GCS, Redshift/BigQuery</li>
+          <li>Обрати <strong>secondary cloud</strong> для DR — мінімальний deployment (тільки storage + читанкова репліка) у другій хмарі</li>
+          <li>Cross-region replication data lake у secondary storage (S3 → GCS або навпаки)</li>
+          <li>Розрахувати реальний TCO вашого ShopWave на 12 місяців вперед у обох хмарах</li>
+          <li>Додати <strong>cost tagging</strong> до всіх ресурсів: <code>Project=shopwave</code>, <code>Env=prod/staging/dev</code>, <code>Owner=data-team</code></li>
+          <li>Cost alerts: email/Slack коли місячна витрата перевищує $X</li>
+          <li>Імплементувати <strong>auto-shutdown</strong> для non-prod environments на вихідні (GitHub Action + Terraform)</li>
+          <li>Перевести EMR/Dataproc workloads на <strong>spot/preemptible</strong> instances</li>
+          <li>ADR: <code>ADR-011-cloud-strategy.md</code> з обґрунтуванням вибору</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 11 -->
+<section class="module" id="module-11">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">11</div>
+      <div class="mod-meta">
+        <div class="mod-week">Тиждень 18 · ~15 год</div>
+        <h2 class="mod-title">Data Governance &amp; <span class="red">Security</span></h2>
+        <p class="mod-lead">Побудувати платформу — пів справи. У 2026 під GDPR, CCPA, NIS2 і секторальні регуляції (PCI DSS, HIPAA) — треба ще знати хто, коли і навіщо читав які дані, і вміти швидко видалити конкретного користувача на його запит. Без цього production — юридичний ризик.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Що таке Data Governance і чому це не "paperwork"</h4>
+      <p>Data governance — це система відповідальності за дані у компанії: хто власник, хто може змінювати схему, хто має доступ, як ми відстежуємо походження. У 2024-2026 це перестало бути enterprise-онлі: навіть стартапи з 20 людьми потребують базового governance, тому що один leak email-ів = штраф до 4% річного обороту.</p>
+
+      <h4>Data Catalog — мапа вашого хаосу</h4>
+      <p>Через пів року у ShopWave у вас буде ~40 Iceberg-таблиць, ~100 Airflow DAGs, ~20 Kafka-топіків, ~50 dbt-моделей, ~15 BI-дашбордів. Data Catalog — це <strong>централізоване сховище metadata</strong>: що є, що означає, хто власник, як пов'язане, коли оновлено востаннє.</p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Інструмент</th><th>Тип</th><th>Сильні сторони</th><th>Коли обирати</th></tr></thead>
+          <tbody>
+            <tr><td>DataHub</td><td><span class="badge good">Open-source</span></td><td>Найширша інтеграція (50+), сучасний UI, lineage з коробки</td><td><strong>Дефолт у 2026</strong> для self-hosted</td></tr>
+            <tr><td>Apache Atlas</td><td><span class="badge good">Open-source</span></td><td>Legacy (Hadoop-екосистема), Ranger для authz</td><td>Якщо у вас Cloudera/HDP</td></tr>
+            <tr><td>Amundsen</td><td><span class="badge good">Open-source (Lyft)</span></td><td>Простіше за DataHub, search-орієнтований</td><td>Малі команди, швидкий старт</td></tr>
+            <tr><td>OpenMetadata</td><td><span class="badge good">Open-source</span></td><td>API-first, гарно тримає schema evolution</td><td>Програмна робота з метаданими</td></tr>
+            <tr><td>Collibra / Alation</td><td><span class="badge red">Enterprise SaaS</span></td><td>Повний data office suite, compliance tooling</td><td>Великий enterprise, регульовані галузі</td></tr>
+            <tr><td>Unity Catalog</td><td><span class="badge red">Databricks</span></td><td>Централізований catalog + governance всередині Databricks</td><td>Ви — Databricks-клієнт</td></tr>
+            <tr><td>AWS Glue Data Catalog</td><td><span class="badge red">AWS</span></td><td>Нативно з EMR/Athena/Redshift</td><td>Pure AWS стек</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Data Lineage — «звідки це взялось»</h4>
+      <p>Lineage — автоматичне відстеження, як конкретна колонка у звіті з'явилась: які source-таблиці, які SQL-трансформації, які Spark-джоби її створили. Цінність:</p>
+      <ul>
+        <li><strong>Impact analysis</strong> — «якщо я видалю колонку <code>customer.country_raw</code>, який дашборд зламається?»</li>
+        <li><strong>Root cause analysis</strong> — «цифра GMV неправильна → прогріти всі tables і джоби, які її обчислюють».</li>
+        <li><strong>Compliance</strong> — «покажіть, де саме email цього юзера потрапляє у ML-моделі».</li>
+        <li><strong>Onboarding</strong> — новачки швидше розуміють систему.</li>
+      </ul>
+      <p>Стандарт 2026 — <strong>OpenLineage</strong>. Spark/Airflow/dbt/Flink емітять події у форматі OpenLineage → DataHub/Marquez/etc консьюмить.</p>
+
+      <h4>GDPR, CCPA, NIS2 — практичні вимоги</h4>
+      <div class="cards">
+        <div class="card red"><div class="ic">R</div><h6>Right to Access</h6><p>Користувач має право отримати усі свої дані у структурованому вигляді за 30 днів. Потрібен pipeline, який збирає дані по всіх таблицях за <code>user_id</code>.</p></div>
+        <div class="card red"><div class="ic">F</div><h6>Right to be Forgotten</h6><p>Користувач може вимагати видалення. У lake-архітектурі це справжній виклик — треба фізично прати з Parquet-файлів. Iceberg <code>DELETE</code> + <code>expire_snapshots</code> + <code>VACUUM</code>.</p></div>
+        <div class="card red"><div class="ic">C</div><h6>Consent tracking</h6><p>Для кожного user треба знати, на що він дав згоду (marketing, analytics, third-party). Зберігати з timestamp, мати API для відзиву.</p></div>
+        <div class="card red"><div class="ic">D</div><h6>Data retention</h6><p>Особисті дані — не навічно. GDPR каже «не довше ніж потрібно». Треба політика: orders 7 років (fiscal), events 13 місяців, session-cookies 90 днів.</p></div>
+        <div class="card red"><div class="ic">N</div><h6>Notification</h6><p>Breach notification — 72 години. Потрібен audit-лог ВСІХ читання чутливих таблиць, щоб швидко зрозуміти масштаб.</p></div>
+        <div class="card red"><div class="ic">DP</div><h6>DPIA</h6><p>Data Protection Impact Assessment — перед запуском нового feature з PII треба оцінити риски. Документ зазвичай пише Legal+DPO разом з DE.</p></div>
+      </div>
+
+      <div class="warning">
+        <div class="w-label">⚠ Важливо — ідеальне не буває</div>
+        <p>Ця секція — оглядова. <strong>Не беріть на себе роль юриста.</strong> У серйозних проектах завжди є DPO (Data Protection Officer) або юридичний відділ. Ваша задача як DE — знати достатньо, щоб правильно задавати запитання і знати, що технічно можливо.</p>
+      </div>
+
+      <h4>PII detection та маскування</h4>
+      <p>Personally Identifiable Information — імена, email, телефони, адреси, IP, cookie-ідентифікатори, геодані. Політика має бути: <strong>PII не попадає у зонах без явного дозволу і завжди маскується на шляхах до BI/ML</strong>.</p>
+
+      <h5>Техніки маскування</h5>
+      <ul>
+        <li><strong>Hashing</strong>: <code>SHA256(email + salt)</code>. Детермінований — один email завжди дає той самий хеш, можна joins. Необортний.</li>
+        <li><strong>Tokenization</strong>: замінити email на token, а мапінг тримати у окремому захищеному vault.</li>
+        <li><strong>Redaction</strong>: <code>a***@gmail.com</code>. Читабельно, але не joinable.</li>
+        <li><strong>Format-preserving encryption (FPE)</strong>: зашифроване має той самий формат (<code>555-12-3456</code> залишається у форматі SSN). Для схем, які перевіряють формат.</li>
+        <li><strong>Differential privacy</strong>: додаєш шум до агрегатів, щоб окремого користувача не можна було реідентифікувати.</li>
+        <li><strong>Synthetic data</strong>: згенеровані дані з тією самою статистикою — для dev/test-середовищ.</li>
+      </ul>
+
+      <h5>Автоматична детекція PII</h5>
+      <ul>
+        <li><strong>AWS Macie</strong>, <strong>GCP Cloud DLP</strong>, <strong>Azure Purview</strong> — managed ML-сервіси, які сканують сховища і знаходять PII у неструктурованих даних.</li>
+        <li><strong>Presidio (Microsoft)</strong> — open-source alternative, працює локально.</li>
+        <li><strong>DataHub</strong> має інтеграцію з PII-детекцією і додає теги до колонок.</li>
+        <li>Наслідок: автоматично позначені колонки йдуть через masking-layer у DWH-view перед BI.</li>
+      </ul>
+
+      <h4>IAM · RBAC · ABAC</h4>
+      <p>Три рівня контролю доступу:</p>
+      <div class="cards">
+        <div class="card"><div class="ic">IAM</div><h6>IAM (Identity)</h6><p>Хто ти? Users, groups, service accounts. SSO через SAML/OIDC (Okta, Auth0, Google). MFA всюди.</p></div>
+        <div class="card"><div class="ic">R</div><h6>RBAC (Role-Based)</h6><p>Що ти можеш робити за роллю. <code>analyst</code> читає gold, <code>engineer</code> пише у silver, <code>admin</code> може все. Стандарт для більшості випадків.</p></div>
+        <div class="card red"><div class="ic">A</div><h6>ABAC (Attribute-Based)</h6><p>Більш гнучко: доступ залежить від атрибутів (country=UA, department=marketing, time &lt; 18:00). Для сильно регульованих даних або мультитенантності.</p></div>
+      </div>
+
+      <h4>Шифрування — at rest, in transit, at use</h4>
+      <ul>
+        <li><strong>At rest</strong> — дефолт у всіх managed-сервісах (S3, BigQuery, Snowflake). Використовуйте <strong>customer-managed keys (CMK)</strong> у KMS для справжнього контролю: якщо ключ видалено → дані недоступні навіть провайдеру.</li>
+        <li><strong>In transit</strong> — TLS 1.2+ всюди. Внутрішньокластерний трафік у K8s — через service mesh (Istio, Linkerd) з mTLS.</li>
+        <li><strong>Column-level encryption</strong> — для sensitive колонок (SSN, card numbers). Snowflake має external tokenization, BigQuery — AEAD-функції.</li>
+        <li><strong>At use</strong> — confidential computing (Intel SGX, AMD SEV). Дані розшифровані тільки всередині enclave. Дорого, нішево.</li>
+      </ul>
+
+      <h4>Audit logs та compliance evidence</h4>
+      <ul>
+        <li>Всі запити у DWH, доступи до lake, зміни у IAM — логуються у централізований audit trail.</li>
+        <li><strong>AWS CloudTrail</strong>, <strong>GCP Audit Logs</strong>, <strong>Azure Activity Logs</strong> — native-рішення.</li>
+        <li>Snowflake, BigQuery мають свої access history.</li>
+        <li>Logs йдуть у окремий immutable bucket з object lock — щоб навіть admin не міг замести сліди.</li>
+        <li>SIEM (Splunk, Datadog, Elastic) — для real-time-алертів на підозрілі патерни.</li>
+      </ul>
+
+      <h4>Data Mesh — організаційний погляд</h4>
+      <p>Концепція Zhamak Dehghani (2019). Замість одного централізованого data-team з single data platform — <strong>data як продукт</strong>, який власне data-domain team випускає для інших. Наприклад, <code>checkout-team</code> випускає <code>orders</code>-dataset як офіційний продукт з SLA, schema contract, документацією.</p>
+      <ul>
+        <li><strong>Не технологія</strong>, а підхід до організації роботи. Можна реалізувати поверх будь-якого стеку.</li>
+        <li>Працює в великих компаніях (500+), маленьким командам — оверкіл.</li>
+        <li>Федеративний governance замість централізованого.</li>
+        <li>Найуспішніші приклади: Zalando, Netflix, HelloFresh.</li>
+      </ul>
+
+      <h4>DataHub — практичне розгортання</h4>
+      <div class="analogy"><strong>DataHub — це Google для ваших даних.</strong> Ви можете шукати «де є таблиця з замовленнями?», бачити звідки вона взялась, хто власник, коли оновлювалась, і чи є у ній PII. Без DataHub ці питання займають годину розкопок у Slack.</div>
+
+      <div class="pre-wrap"><pre><code># Розгортання DataHub через Docker Compose (dev/local)
+pip install acryl-datahub
+datahub docker quickstart      # підніме ~10 контейнерів, ~5 хвилин
+
+# Або через Helm у K8s (prod)
+helm repo add datahub https://helm.datahubproject.io/
+helm install datahub datahub/datahub \
+  --set global.datahub.gms.host=datahub-gms \
+  --namespace datahub --create-namespace
+
+# Перевірити що працює:
+datahub check server-config    # http://localhost:9002
+
+# ── Ingestion конфіги ─────────────────────────────────────────────
+
+# 1. Iceberg / S3 metadata
+# datahub_iceberg.yml
+source:
+  type: iceberg
+  config:
+    catalog_type: rest
+    catalog_uri: "http://iceberg-rest:8181"
+    platform_instance: "shopwave-prod"
+    profiling:
+      enabled: true        # статистика колонок (min/max/null_ratio)
+      profile_table_level_only: false
+sink:
+  type: datahub-rest
+  config:
+    server: "http://datahub-gms:8080"
+
+# Запустити:
+datahub ingest -c datahub_iceberg.yml
+
+# 2. Airflow lineage (через Airflow plugin)
+# airflow.cfg
+[lineage]
+backend = airflow.lineage.backend.DatahubLineageBackend
+
+# plugins/datahub_plugin.py — у папці Airflow plugins
+DATAHUB_CONN_ID = "datahub_rest_default"
+# Connection: http://datahub-gms:8080
+
+# 3. Spark → OpenLineage → DataHub
+spark_conf = {
+    "spark.jars.packages": "io.openlineage:openlineage-spark:1.17.0",
+    "spark.extraListeners": "io.openlineage.spark.agent.OpenLineageSparkListener",
+    "spark.openlineage.transport.type": "http",
+    "spark.openlineage.transport.url": "http://datahub-gms:8080/openapi/openlineage",
+    "spark.openlineage.namespace": "shopwave.spark",
+}
+
+# 4. dbt → DataHub (після кожного dbt run)
+datahub ingest -c datahub_dbt.yml   # як у M7, але тепер з реальними даними
+
+# Результат: повний lineage граф
+# S3 raw CSV → Spark bronze_to_silver.py → Iceberg silver.orders
+#   → dbt fct_orders → ClickHouse → Metabase Dashboard</code></pre></div>
+
+      <h4>Presidio — автоматичне виявлення PII</h4>
+      <div class="pre-wrap"><pre><code># pip install presidio-analyzer presidio-anonymizer
+# python -m spacy download en_core_web_lg  (NLP модель)
+from presidio_analyzer import AnalyzerEngine
+from presidio_anonymizer import AnonymizerEngine
+from presidio_anonymizer.entities import OperatorConfig
+import pandas as pd
+
+analyzer = AnalyzerEngine()
+anonymizer = AnonymizerEngine()
+
+# ── Сканування одного тексту ────────────────────────────────────────
+text = "Клієнт John Doe, email: john@example.com, тел: +380 67 123 4567"
+results = analyzer.analyze(text=text, language="en")
+for r in results:
+    print(f"  {r.entity_type}: '{text[r.start:r.end]}' (score={r.score:.2f})")
+# PERSON: 'John Doe' (score=0.85)
+# EMAIL_ADDRESS: 'john@example.com' (score=1.00)
+# PHONE_NUMBER: '+380 67 123 4567' (score=0.75)
+
+# Анонімізація з різними стратегіями
+anonymized = anonymizer.anonymize(
+    text=text,
+    analyzer_results=results,
+    operators={
+        "EMAIL_ADDRESS": OperatorConfig("hash", {"hash_type": "sha256"}),
+        "PHONE_NUMBER":  OperatorConfig("mask",  {"masking_char": "*", "chars_to_mask": 8, "from_end": True}),
+        "PERSON":        OperatorConfig("replace", {"new_value": "<PERSON>"}),
+    }
+)
+# "Клієнт <PERSON>, email: a94e...hash, тел: +380 67 ***"
+
+# ── Batch scanning Parquet-файлів у S3 ────────────────────────────
+def scan_parquet_for_pii(s3_path: str) -> dict:
+    df = pd.read_parquet(s3_path)
+    pii_columns = {}
+
+    for col in df.select_dtypes(include="object").columns:
+        sample = df[col].dropna().head(100).astype(str).tolist()
+        col_pii_types = set()
+        for text in sample:
+            results = analyzer.analyze(text=text, language="en")
+            for r in results:
+                if r.score > 0.7:
+                    col_pii_types.add(r.entity_type)
+        if col_pii_types:
+            pii_columns[col] = list(col_pii_types)
+
+    return pii_columns
+
+pii_report = scan_parquet_for_pii("s3://shopwave-lake/bronze/users/2026-04.parquet")
+# {'email': ['EMAIL_ADDRESS'], 'address': ['LOCATION'], 'phone': ['PHONE_NUMBER']}
+
+# ── Автоматичне тегування у DataHub ───────────────────────────────
+from datahub.emitter.rest_emitter import DatahubRestEmitter
+from datahub.metadata.schema_classes import TagClass, TagAssociationClass
+
+emitter = DatahubRestEmitter("http://datahub-gms:8080")
+for col_name, pii_types in pii_report.items():
+    for pii_type in pii_types:
+        # Додати тег PII_EMAIL або PII_PHONE до колонки у DataHub
+        emitter.emit_tag(
+            f"urn:li:tag:PII_{pii_type}",
+            TagClass(name=f"PII: {pii_type}", description="Auto-detected PII")
+        )
+
+# ── Airflow DAG: щоденне сканування нових bronze-файлів ───────────
+@task
+def daily_pii_scan(ds: str):
+    import boto3
+    s3 = boto3.client("s3")
+    new_files = [
+        obj["Key"] for obj in
+        s3.list_objects_v2(
+            Bucket="shopwave-lake",
+            Prefix=f"bronze/orders/year={ds[:4]}/month={ds[5:7]}/day={ds[8:10]}/"
+        ).get("Contents", [])
+        if obj["Key"].endswith(".parquet")
+    ]
+    for f in new_files:
+        pii = scan_parquet_for_pii(f"s3://shopwave-lake/{f}")
+        if pii:
+            tag_columns_in_datahub(f, pii)</code></pre></div>
+
+      <h4>RBAC SQL — Snowflake, ClickHouse, BigQuery</h4>
+      <div class="pre-wrap"><pre><code">-- ══ SNOWFLAKE RBAC ════════════════════════════════════════════════
+
+-- Ролі для ShopWave
+CREATE ROLE IF NOT EXISTS shopwave_analyst;
+CREATE ROLE IF NOT EXISTS shopwave_engineer;
+CREATE ROLE IF NOT EXISTS shopwave_admin;
+
+-- Ієрархія: admin включає всі ролі
+GRANT ROLE shopwave_engineer TO ROLE shopwave_admin;
+GRANT ROLE shopwave_analyst  TO ROLE shopwave_engineer;
+
+-- Права на схеми
+GRANT USAGE ON DATABASE shopwave TO ROLE shopwave_analyst;
+GRANT USAGE ON SCHEMA shopwave.gold TO ROLE shopwave_analyst;
+GRANT SELECT ON ALL TABLES IN SCHEMA shopwave.gold TO ROLE shopwave_analyst;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA shopwave.gold TO ROLE shopwave_analyst;
+
+GRANT USAGE ON SCHEMA shopwave.silver TO ROLE shopwave_engineer;
+GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA shopwave.silver TO ROLE shopwave_engineer;
+
+GRANT ALL ON ALL SCHEMAS IN DATABASE shopwave TO ROLE shopwave_admin;
+
+-- Column masking для PII
+CREATE MASKING POLICY shopwave.mask_email AS (val STRING)
+  RETURNS STRING ->
+    CASE
+      WHEN CURRENT_ROLE() IN ('SHOPWAVE_ADMIN') THEN val
+      WHEN CURRENT_ROLE() = 'SHOPWAVE_ENGINEER' THEN SHA2(val)
+      ELSE REGEXP_REPLACE(val, '.+@', '***@')
+    END;
+
+ALTER TABLE shopwave.bronze.users
+  MODIFY COLUMN email SET MASKING POLICY shopwave.mask_email;
+
+-- Призначити ролі користувачам
+GRANT ROLE shopwave_analyst TO USER analyst_john;
+GRANT ROLE shopwave_engineer TO USER engineer_maria;
+
+
+-- ══ CLICKHOUSE RBAC ═══════════════════════════════════════════════
+
+-- Профілі обмеження ресурсів
+CREATE SETTINGS PROFILE analyst_profile
+  SETTINGS max_memory_usage = 4000000000,
+           max_execution_time = 30,
+           readonly = 1;
+
+CREATE USER analyst_john
+  IDENTIFIED WITH sha256_password BY 'SecurePass123!'
+  SETTINGS PROFILE analyst_profile;
+
+CREATE ROLE shopwave_analyst_ch;
+GRANT SELECT ON shopwave.fct_orders TO shopwave_analyst_ch;
+GRANT SELECT ON shopwave.dim_customer TO shopwave_analyst_ch;
+GRANT shopwave_analyst_ch TO analyst_john;
+
+-- Row-level access (ClickHouse 22.4+)
+CREATE ROW POLICY ua_only ON shopwave.fct_orders
+  FOR SELECT USING country = 'UA'
+  TO analyst_john;   -- analyst_john бачить тільки UA рядки
+
+
+-- ══ BIGQUERY RBAC (через Terraform або gcloud) ════════════════════
+
+# gcloud — дати роль на dataset рівні
+gcloud projects add-iam-policy-binding shopwave-prod \
+  --member="serviceAccount:spark-executor@shopwave-prod.iam.gserviceaccount.com" \
+  --role="roles/bigquery.dataViewer" \
+  --condition='expression=resource.name.startsWith("projects/shopwave-prod/datasets/shopwave_prod"),title=gold_only'
+
+# Policy Tags для column-level access (через Data Catalog taxonomy)
+# 1. Створити Taxonomy "ShopWave PII" → Tag "email" → Tag "phone"
+# 2. Призначити Tag до колонки у BigQuery table
+# 3. IAM: дати/заборонити roles/datacatalog.categoryFineGrainedReader
+
+# Перевірити ефективні права:
+gcloud asset get-effective-iam-policy \
+  --scope=projects/shopwave-prod \
+  --names="//bigquery.googleapis.com/projects/shopwave-prod/datasets/shopwave_prod/tables/fct_orders"</code></pre></div>
+
+      <div class="resources">
+      <div class="interview-qa">
+        <h5>🎯 Interview Q&A — Модуль 11: Data Governance & Security</h5>
+        <div class="qa-item">
+          <div class="qa-q">Як реалізувати RBAC у data platform?</div>
+          <div class="qa-a">RBAC (Role-Based Access Control) для data: 1) Cloud IAM: AWS IAM roles/policies, GCP IAM, Azure RBAC — доступ до S3 buckets, GCS, BigQuery datasets на рівні cloud. Принцип least privilege: сервіс-акаунт Spark-джобу має тільки read на bronze S3 + write на silver. 2) Database RBAC: Snowflake GRANT, ClickHouse RBAC, BigQuery dataset permissions. Наприклад: role analyst → SELECT on gold schema only. role engineer → SELECT/INSERT on silver+gold. role admin → all. 3) Data catalog RBAC: DataHub policies — хто може редагувати метадані яких domain. Практика: ролі в Terraform, documentation у DataHub, quarterly access review (кожен квартал перевіряти — чи нема зайвих прав).</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">GDPR для data engineer — що потрібно знати?</div>
+          <div class="qa-a">GDPR (General Data Protection Regulation) — закон ЄС про захист персональних даних. Для data engineer критично: 1) Right to erasure (right-to-be-forgotten): отримали запит → повинні видалити user_id з усіх систем: DWH, lake (Iceberg DELETE + VACUUM), Kafka (tombstone message), MongoDB, backups (або задокументувати що backup буде видалено при наступній ротації). 2) Data minimization: збирати тільки потрібні PII. Не тримати email якщо достатньо user_id. 3) PII classification: знати які поля є PII (email, IP, phone, device_id). Presidio для автоматичного detection. 4) Retention policies: не зберігати PII довше ніж потрібно. S3 lifecycle → автоматичне видалення. 5) Encryption at rest + in transit. 6) Audit log: хто, коли, що переглядав/змінював.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке column-level masking і коли використовувати?</div>
+          <div class="qa-a">Column masking: автоматично замінювати PII значення на маскований вираз залежно від ролі користувача. Приклад: analyst бачить email як "j***@gmail.com", engineer → hash("email"), admin → оригінал. Snowflake: Dynamic Data Masking policies — CREATE MASKING POLICY mask_email AS (val STRING) RETURNS STRING → CASE WHEN current_role() IN ('ADMIN') THEN val WHEN current_role() = 'ENGINEER' THEN SHA256(val) ELSE REGEXP_REPLACE(val, '.@', '***@') END. BigQuery: Column-level security через Policy Tags + Data Catalog taxonomy. ClickHouse: obfuscation functions або column-level GRANT. Коли потрібно: аналітики мають доступ до gold-шару де є PII — дати доступ але не показувати реальні дані. Кращий підхід: PII у bronze тільки, gold де можливо — anonymized.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як захистити Kafka від несанкціонованого доступу?</div>
+          <div class="qa-a">Kafka security шари: 1) TLS/SSL — шифрування трафіку між clients і brokers (listeners: SSL://). 2) SASL Authentication — хто має право з'єднуватись: SASL_PLAINTEXT (dev), SASL_SSL (prod). Механізми: SASL/PLAIN (user/password), SASL/SCRAM (bcrypt-hashed), SASL/OAUTHBEARER (JWT, best practice 2026). 3) ACL Authorization: KafkaAcls визначають що кожен principal може робити: ALLOW user=orders-producer OPERATION=WRITE TOPIC=orders. DENY default. 4) Schema Registry auth: basic auth або OAuth. 5) Network: Kafka у private subnet, тільки через VPC, no public endpoint. Для managed Kafka (Confluent Cloud, MSK): RBAC з roles (Developer, Operator, SystemAdmin).</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке data catalog і навіщо він потрібен?</div>
+          <div class="qa-a">Data catalog = searchable inventory всіх data assets: таблиці, колонки, значення, власники, опис, якість, lineage. Без catalog: нові аналітики не знають що є і де шукати (onboarding 2 тижні замість 2 годин), дублікати — 3 команди роблять одне і те ж, "хто-такий цей user_id?" — ніхто не знає. Основні tools: DataHub (Apache-licenced OSS, LinkedIn, Uber), OpenMetadata (community fork від Amundsen), Amundsen (Lyft, простіший), Alation/Atlan/Collibra (enterprise SaaS). DataHub фічі: column-level lineage з dbt/Spark/Kafka, Slack integration (питаєш "хто власник таблиці X?" → bot відповідає), PII tags, freshness SLAs, assertions. Практика: автоматична індексація через connectors + людська документація для business context.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Encryption at rest vs in transit — що це і як реалізувати?</div>
+          <div class="qa-a">Encryption at rest: дані зашифровані коли зберігаються. S3: SSE-S3 (AWS managed key) — за замовчуванням з 2023, SSE-KMS (Customer Managed Key через AWS KMS) — ваш ключ, ви контролюєте ротацію і audit, SSE-C (client-side key). Для GDPR/HIPAA — SSE-KMS з CMK. EBS volumes: AES-256 шифрування. RDS/databases: encryption at rest у налаштуваннях. Encryption in transit: TLS 1.2+ для всіх API endpoints, S3 — enforce_tls через bucket policy (deny HTTP), Kafka SSL listeners, PostgreSQL ssl=require. Ключі: ніколи не хардкодити у коді. AWS Secrets Manager або Vault для credentials. KMS для encryption keys. Rotation — автоматична через Secrets Manager (30/90 днів).</div>
+        </div>
+      </div>
+
+        <h5>Додаткові ресурси — Модуль 11</h5>
+        <div class="res-grid">
+          <a class="res-item" href="https://datahubproject.io/docs/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">DataHub Documentation</span><span class="res-meta">datahubproject.io</span></a>
+          <a class="res-item" href="https://openlineage.io/docs/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">OpenLineage — стандарт lineage-подій</span><span class="res-meta">openlineage.io</span></a>
+          <a class="res-item" href="https://gdpr.eu/" target="_blank"><span class="res-type">📖 Reference · EN</span><span class="res-title">GDPR.eu — практичний guide для бізнесу</span><span class="res-meta">gdpr.eu</span></a>
+          <a class="res-item" href="https://www.oreilly.com/library/view/data-mesh/9781492092384/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Data Mesh — Zhamak Dehghani</span><span class="res-meta">O'Reilly</span></a>
+          <a class="res-item" href="https://microsoft.github.io/presidio/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Microsoft Presidio — PII detection/anonymization</span><span class="res-meta">microsoft.github.io</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=szt6UFwKn_Q" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">Data Mesh Principles by Zhamak Dehghani</span><span class="res-meta">Thoughtworks · YouTube</span></a>
+          <a class="res-item" href="https://atlas.apache.org/" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Apache Atlas Documentation</span><span class="res-meta">atlas.apache.org</span></a>
+          <a class="res-item" href="https://cloud.google.com/dlp/docs" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">Google Cloud DLP — PII detection</span><span class="res-meta">cloud.google.com</span></a>
+          <a class="res-item" href="https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html" target="_blank"><span class="res-type">📄 Docs · EN</span><span class="res-title">AWS Macie — PII discovery</span><span class="res-meta">docs.aws.amazon.com</span></a>
+          <a class="res-item" href="https://www.youtube.com/watch?v=XNA_6arvbAQ" target="_blank"><span class="res-type">▶ Video · EN</span><span class="res-title">GDPR for Data Engineers</span><span class="res-meta">YouTube</span></a>
+        </div>
+      </div>
+
+      <div class="assignment">
+        <div class="a-label">📝 Завдання · Модуль 11</div>
+        <h5>DataHub + lineage + PII detection</h5>
+        <ol>
+          <li>Розгорнути <strong>DataHub</strong> локально через <a href="https://datahubproject.io/docs/quickstart" target="_blank">datahub quickstart</a></li>
+          <li>Додати інтеграції: Iceberg-каталог, Airflow, dbt, Kafka Schema Registry</li>
+          <li>Імпортувати метадані ваших таблиць з попередніх модулів — мінімум 10 таблиць, 5 DAG-ів</li>
+          <li>Налаштувати <strong>OpenLineage</strong> у Spark-джобах: додати <code>spark.openlineage.*</code> конфіги, перевірити, що події летять у DataHub</li>
+          <li>Встановити <strong>Microsoft Presidio</strong>, написати скрипт, який сканує sample датасету (наприклад, <a href="https://github.com/datablist/sample-csv-files" target="_blank">sample CSV</a>) і знаходить PII</li>
+          <li>Додати PII-теги до колонок у DataHub вручну або через API</li>
+          <li>Налаштувати domain ownership у DataHub: хто власник яких таблиць</li>
+        </ol>
+        <div class="deliverable"><strong>Deliverable:</strong> скрипти інтеграції + скріншоти DataHub UI з lineage графом + PII-звіт у <code>/assignments/m11/</code></div>
+      </div>
+
+      <div class="milestone">
+        <div class="m-label">Project Milestone · ShopWave</div>
+        <h5>М11: Governance layer для ShopWave</h5>
+        <ul>
+          <li>DataHub як окремий namespace у K8s-кластері, Helm-чарт <code>acryldata/datahub</code></li>
+          <li>Автоматичне оновлення метаданих: OpenLineage у всіх Spark-jobs + Airflow-плагін + Kafka-connector</li>
+          <li>PII detection pipeline: щоденний Airflow DAG з Presidio сканує нові bronze-таблиці, додає теги</li>
+          <li><strong>Column-level masking</strong>: у silver-шарі PII колонки (email, phone, address) → у gold → хеш або redacted. Pure PII лишається тільки у bronze з доступом через RBAC</li>
+          <li>Створити 3 ролі у Iceberg/ClickHouse/DataHub: <code>analyst</code> (тільки gold), <code>engineer</code> (silver+gold), <code>admin</code> (усе)</li>
+          <li>IAM у Terraform: окремі policies для кожної ролі, сервіс-аккаунти для pipeline, MFA обов'язково для admin</li>
+          <li>KMS-ключ для шифрування S3-бакету з CMK, логи у окремий audit-bucket з object lock</li>
+          <li>Реалізувати <strong>right-to-be-forgotten</strong> pipeline: Airflow DAG, який по user_id робить DELETE з Iceberg, VACUUM, MongoDB delete, Kafka tombstone</li>
+          <li>Retention policies у S3 lifecycle: events 13 місяців, PII 2 роки, agg 7 років</li>
+          <li>ADR: <code>ADR-012-governance-and-security.md</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPSTONE MODULE 12 -->
+<section class="module" id="capstone">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">12</div>
+      <div class="mod-meta">
+        <div class="mod-week">Тижні 19 – 20 · Capstone</div>
+        <h2 class="mod-title"><em>Capstone</em> — фінал</h2>
+        <p class="mod-lead">Останні два тижні — без нових концепцій. Замість цього — інтеграція всього, документація, навантажувальне тестування, полірування, презентація. На виході — GitHub-репо, яке справді говорить «ця людина може бути Middle Data Engineer».</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Структура репозиторію — точна карта</h4>
+      <p>Перше що відкриває рекрутер або tech lead — дерево файлів. Ось еталонна структура ShopWave, яка одразу сигналізує «ця людина розуміє production»:</p>
+
+      <div class="pre-wrap"><pre><code>shopwave-platform/
+├── README.md                    # архітектурна діаграма + quick-start
+├── Makefile                     # make dev-up, make test, make deploy
+├── .github/
+│   └── workflows/
+│       ├── ci.yml               # lint + test + build
+│       └── deploy.yml           # push to ECR + ArgoCD sync
+├── docker-compose.yml           # локальний стек (Kafka+Spark+Airflow+CH+DataHub)
+├── docs/
+│   ├── architecture/
+│   │   ├── ADR-001-lake-format.md      ... ADR-012-governance.md
+│   │   └── system-diagram.drawio
+│   ├── runbooks/
+│   │   ├── backfill.md          # як запустити backfill за тиждень
+│   │   ├── rotate-keys.md       # ротація KMS + Kafka creds
+│   │   └── restore-from-backup.md
+│   └── load-testing.md
+├── terraform/
+│   ├── modules/
+│   │   ├── s3-lake/             # main.tf, variables.tf, outputs.tf
+│   │   ├── iam/
+│   │   ├── eks/
+│   │   └── msk/
+│   └── envs/
+│       ├── dev/
+│       ├── staging/
+│       └── prod/
+├── helm/
+│   ├── airflow/                 # values-dev.yaml, values-prod.yaml
+│   ├── kafka/                   # strimzi config
+│   └── shopwave-spark/          # SparkApplication CRDs
+├── spark/
+│   ├── bronze_to_silver.py
+│   ├── silver_to_gold.py
+│   ├── fraud_detection_flink.py
+│   └── tests/
+│       ├── test_bronze_to_silver.py
+│       └── conftest.py          # SparkSession fixture
+├── kafka/
+│   ├── producers/
+│   │   └── orders_producer.py   # Avro + Schema Registry
+│   ├── consumers/
+│   │   └── orders_consumer.py   # manual commit + DLQ
+│   └── schemas/
+│       └── order_event.avsc
+├── dbt/
+│   ├── models/
+│   │   ├── staging/             # stg_orders.sql, stg_users.sql
+│   │   ├── intermediate/        # int_order_enriched.sql
+│   │   └── marts/               # fct_orders.sql, dim_customer.sql
+│   ├── tests/                   # custom SQL tests
+│   ├── sources.yml
+│   └── dbt_project.yml
+├── airflow/
+│   └── dags/
+│       ├── shopwave_daily_etl.py
+│       ├── shopwave_maintenance.py   # compaction + expire_snapshots
+│       └── pii_scan_dag.py
+└── scripts/
+    ├── seed-data.py             # генератор тестових подій
+    └── setup-datahub.sh         # автоматична реєстрація connectors</code></pre></div>
+
+      <h4>Timeline виконання Capstone — 2 тижні</h4>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>День</th><th>Задача</th><th>Deliverable</th><th>Типовий блокер</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1</strong></td><td>Repo structure + Makefile + docker-compose skeleton</td><td>make dev-up → Kafka + MinIO піднялись</td><td>Port conflicts → змінити порти</td></tr>
+            <tr><td><strong>2</strong></td><td>Kafka producer + Schema Registry</td><td>orders_producer.py відправляє 1000 events</td><td>Schema Registry URL неправильний</td></tr>
+            <tr><td><strong>3</strong></td><td>Spark bronze_to_silver.py + тести</td><td>pytest tests/test_bronze.py — GREEN</td><td>Iceberg jars не в classpath → додати до spark.jars</td></tr>
+            <tr><td><strong>4</strong></td><td>Flink fraud detection job</td><td>fraud alerts у окремому Kafka topic</td><td>PyFlink version mismatch → pin версію</td></tr>
+            <tr><td><strong>5</strong></td><td>dbt models (staging + marts) + tests</td><td>dbt run → dbt test → 0 failures</td><td>Connection credentials неправильні</td></tr>
+            <tr><td><strong>6</strong></td><td>Airflow DAG shopwave_daily_etl</td><td>DAG успішно проходить перший run</td><td>SparkSubmitOperator config → KubernetesExecutor</td></tr>
+            <tr><td><strong>7</strong></td><td>Terraform modules (S3 + IAM + EKS skeleton)</td><td>terraform plan показує 0 errors</td><td>AWS credentials або quota limits</td></tr>
+            <tr><td><strong>8</strong></td><td>GitHub Actions CI/CD</td><td>PR merge → pipeline проходить</td><td>ECR login permissions у GitHub Secrets</td></tr>
+            <tr><td><strong>9</strong></td><td>DataHub + OpenLineage у Spark</td><td>Lineage граф видний у DataHub UI</td><td>datahub quickstart повільно стартує → дати 10 хв</td></tr>
+            <tr><td><strong>10</strong></td><td>Prometheus + Grafana + 3 alerts</td><td>Dashboard з Kafka lag + Spark duration</td><td>Prometheus scrape config → перевірити annotations</td></tr>
+            <tr><td><strong>11</strong></td><td>Метрики + Metabase dashboard</td><td>5 дашбордів: GMV, conversion, LTV…</td><td>ClickHouse JDBC driver для Metabase</td></tr>
+            <tr><td><strong>12</strong></td><td>Load test (k6 або Kafka producer 10k/sec)</td><td>load-testing.md з результатами</td><td>Kafka partition count → збільшити до 12</td></tr>
+            <tr><td><strong>13</strong></td><td>README + всі 12 ADR-ів + Loom demo</td><td>Публічний GitHub + відео</td><td>draw.io діаграма бере час</td></tr>
+            <tr><td><strong>14</strong></td><td>Buffer: баги, polish, публікація</td><td>LinkedIn post + DOU стаття draft</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Типові блокери і як їх обходити</h4>
+      <div class="pre-wrap"><pre><code># ── Проблема 1: Iceberg jars не завантажуються у Spark ─────────────
+# Симптом: ClassNotFoundException: org.apache.iceberg.spark...
+# Фікс:
+spark = SparkSession.builder \
+    .config("spark.jars.packages",
+            "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0") \
+    .config("spark.sql.extensions",
+            "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
+    .getOrCreate()
+
+# ── Проблема 2: Docker memory — Kafka/Spark OOM ─────────────────────
+# Симптом: Container exited с code 137
+# Фікс: збільшити Docker Desktop memory до 8GB (Settings → Resources)
+# Або зменшити конфіги:
+# kafka: KAFKA_HEAP_OPTS: "-Xmx512m -Xms512m"
+# spark: spark.executor.memory=512m
+
+# ── Проблема 3: Airflow DAG не з'являється в UI ─────────────────────
+# Симптом: DAG є у dags/ але не видно в UI
+# Фікс:
+airflow dags list                    # перевірити чи є
+airflow dags test shopwave_daily_etl 2026-04-22  # тест без UI
+# Типова причина: syntax error у DAG файлі
+python -c "from dags.shopwave_daily_etl import *"  # перевірити імпорти
+
+# ── Проблема 4: dbt test failures ──────────────────────────────────
+# Симптом: "Got 5 results, configured to fail if != 0" (unique test)
+# Фікс: знайти дублікати
+SELECT order_id, COUNT(*)
+FROM {{ ref('fct_orders') }}
+GROUP BY order_id HAVING COUNT(*) > 1;
+# Якщо є — виправити Spark job (видалити дублікати через DISTINCT або dedup window)
+
+# ── Проблема 5: Terraform state lock ───────────────────────────────
+# Симптом: "Error acquiring the state lock"
+# Фікс: попередній terraform apply не завершився
+aws dynamodb delete-item \
+  --table-name shopwave-terraform-lock \
+  --key '{"LockID": {"S": "shopwave-terraform-state/prod/terraform.tfstate-md5"}}'
+
+# ── Проблема 6: GitHub Actions ECR push failed ─────────────────────
+# Симптом: "Error: denied: User ... is not authorized to perform: ecr:BatchCheckLayerAvailability"
+# Фікс: GitHub Actions роль потребує:
+# ecr:GetAuthorizationToken, ecr:BatchCheckLayerAvailability,
+# ecr:PutImage, ecr:InitiateLayerUpload, ecr:UploadLayerPart, ecr:CompleteLayerUpload
+# Додати ці permissions до IAM policy GitHub Actions role</code></pre></div>
+
+      <h4>Що має бути у фінальному ShopWave</h4>
+      <p>Ця секція — ваш чек-лист. Що саме має бути присутнім у репо, щоб проект рахувався завершеним:</p>
+
+      <div class="capstone-grid">
+        <div class="cap-item"><span class="check"></span><div class="tech">Repo hygiene</div><h6>Чистий Git-репо</h6><p>README з архітектурою (mermaid-діаграма), <code>CONTRIBUTING.md</code>, <code>LICENSE</code>, <code>Makefile</code> з усіма командами, pre-commit hooks, чіткий <code>.gitignore</code>.</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">Docs</div><h6>Архітектурна документація</h6><p>12 ADR-ів (по одному на модуль), архітектурна діаграма, опис кожного компонента, runbooks для типових операцій (backfill, rotate keys, restore from backup).</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">Infrastructure</div><h6>Terraform усього</h6><p>Повна інфраструктура піднімається одним <code>terraform apply</code>. Три environments: dev/staging/prod. Remote state у S3+DynamoDB. Приклад destroy/apply з нуля.</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">K8s</div><h6>Helm deployment</h6><p>Усі сервіси через Helm-чарти. ArgoCD для GitOps. Окремий namespace на environment. Separate node pools для batch/streaming.</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">Batch</div><h6>Batch ETL</h6><p>Spark jobs: bronze→silver→gold через Iceberg. dbt-моделі для DWH-шару. Всі Airflow DAGs з retry, SLA, on_failure callbacks.</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">Streaming</div><h6>Real-time pipeline</h6><p>Kafka cluster (Strimzi), producer-симулятор, Flink jobs (windowing + stateful). Schema Registry з evolution policy. Kafka Connect S3 sink.</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">Storage</div><h6>Lakehouse + DWH</h6><p>Iceberg у S3 з compaction/expire DAG-ами. DWH (ClickHouse або BigQuery) зі star-schema і SCD2. MongoDB для user profiles.</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">Quality</div><h6>Data testing</h6><p>Great Expectations або dbt-tests на критичних таблицях. Contract-tests між producer і consumer. 80%+ покриття pytest для Python-коду.</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">CI/CD</div><h6>Автоматизація</h6><p>GitHub Actions: lint, test, build, push, deploy. Preview environments на PR. Automated rollback при failure.</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">Observability</div><h6>Моніторинг і алерти</h6><p>Prometheus + Grafana. Dashboards: K8s cluster, Kafka lag, Spark jobs, Airflow SLAs, business metrics. 10+ alerts у Alertmanager.</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">Governance</div><h6>DataHub + PII</h6><p>Каталог з 100% таблиць. OpenLineage з усіх джобів. Automated PII detection. Column masking у DWH. RBAC з 3-ма ролями.</p></div>
+        <div class="cap-item"><span class="check"></span><div class="tech">BI</div><h6>End-user дашборд</h6><p>Metabase або Superset з 5+ дашбордами: GMV, conversion, LTV, retention, operational health.</p></div>
+      </div>
+
+      <h4>Навантажувальне тестування</h4>
+      <p>Одне з найскладніших завдань фіналу. Треба показати, що ShopWave не ламається під реалістичним навантаженням:</p>
+      <ul>
+        <li>Написати load-generator: 10 000 orders/sec у Kafka протягом 1 години</li>
+        <li>Заміряти: Kafka producer p99 latency, Flink checkpoint size/time, Spark job duration degradation, K8s pods CPU/memory</li>
+        <li>Знайти bottleneck (гарантовано буде — недостатньо партицій Kafka, занадто маленькі Spark executors, або IOPS у S3)</li>
+        <li>Описати у <code>docs/load-testing.md</code>: методологія, результати, wins, відкриті питання</li>
+        <li>Інструменти: <a href="https://k6.io" target="_blank">k6</a> для API load, <a href="https://github.com/confluentinc/librdkafka/blob/master/examples/rdkafka_performance.c" target="_blank">rdkafka_performance</a> або Python + confluent-kafka для Kafka</li>
+      </ul>
+
+      <h4>Chaos engineering — мінімум</h4>
+      <p>Не повноцінна chaos-practice, але базові експерименти для перевірки resilience:</p>
+      <ul>
+        <li>Вбити один Kafka broker pod — замовлення продовжують писатись?</li>
+        <li>Вбити Airflow scheduler — DAGs resume після відновлення?</li>
+        <li>Вбити Spark executor посеред джобу — task re-execute без duplicates?</li>
+        <li>Видалити Iceberg-файл з S3 — чи є alert, як відновлюватись?</li>
+        <li>Інструменти: <a href="https://chaos-mesh.org" target="_blank">Chaos Mesh</a> для K8s або ручні <code>kubectl delete pod</code></li>
+      </ul>
+
+      <h4>Презентація — як показувати проект</h4>
+      <p>У фіналі (і на співбесідах) готуйте ~15-хвилинну презентацію. Структура, яка працює:</p>
+      <ol>
+        <li><strong>Проблема (1-2 хв):</strong> гіпотетичний ShopWave-бізнес, які питання треба закривати, SLA</li>
+        <li><strong>Архітектура high-level (2 хв):</strong> одна діаграма, 5-6 коробок</li>
+        <li><strong>Demo live (5-7 хв):</strong> показати real-time dashboard, trigger Airflow DAG, подивитись lineage у DataHub, кинути failure і показати recovery</li>
+        <li><strong>Технічні рішення (3-4 хв):</strong> 3 найцікавіші ADR і чому обрали саме так — не просто «ми використали X», а «обрали X тому що Y, хоч і Z мав переваги»</li>
+        <li><strong>Що не встиг / далі (1-2 хв):</strong> чесно перелічити, що лишилось у беклозі. Це +10 очок на співбесіді.</li>
+      </ol>
+
+      <h4>Rubric — що оцінюється на фіналі</h4>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Критерій</th><th>Опис</th><th>Вага</th></tr></thead>
+          <tbody>
+            <tr><td>Working end-to-end</td><td>Усі компоненти реально працюють разом, не тільки у README</td><td>25%</td></tr>
+            <tr><td>Code quality</td><td>Структура репо, тести, CI, ручна перевірка змінами</td><td>15%</td></tr>
+            <tr><td>Production-readiness</td><td>Secrets, monitoring, IaC, CI/CD, proper K8s</td><td>20%</td></tr>
+            <tr><td>Documentation</td><td>README, ADRs, runbooks, diagrams, API docs</td><td>15%</td></tr>
+            <tr><td>Data quality</td><td>Tests, validation, lineage, PII handling</td><td>10%</td></tr>
+            <tr><td>Technical depth</td><td>Обґрунтовані рішення, не просто tutorial-based копіювання</td><td>10%</td></tr>
+            <tr><td>Presentation</td><td>Ясна комунікація, чесність щодо trade-offs</td><td>5%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Як використовувати на співбесідах</h4>
+      <ul>
+        <li><strong>Готовий GitHub-link</strong> у резюме — «Live project: github.com/yourname/shopwave»</li>
+        <li><strong>Loom/Video demo</strong> 5-хв огляд прикріпленим до резюме — багато рекрутерів не відкривають GitHub, але подивляться відео</li>
+        <li><strong>На technical interview</strong> — готуйтесь до питання «розкажіть про складний тех-проект». ShopWave — ідеальна відповідь на 20 хвилин</li>
+        <li><strong>System design</strong> — з проектом за плечима ви зможете говорити не теоретично, а з досвіду («ми взяли Iceberg тому що...»)</li>
+        <li>Будьте готові чесно казати «цей шматок я зробив у навчальному проекті, в проді не мав досвіду» — ніколи не брехати</li>
+      </ul>
+
+      <div class="resources">
+        <h5>Додаткові ресурси — для фіналу та інтерв'ю</h5>
+        <div class="res-grid">
+          <a class="res-item" href="https://github.com/DataExpert-io/data-engineer-handbook" target="_blank"><span class="res-type">💻 GitHub · EN</span><span class="res-title">Data Engineer Handbook</span><span class="res-meta">DataExpert.io</span></a>
+          <a class="res-item" href="https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/" target="_blank"><span class="res-type">📚 Book · EN</span><span class="res-title">Designing Data-Intensive Applications</span><span class="res-meta">Martin Kleppmann · must-read</span></a>
+          <a class="res-item" href="https://github.com/donnemartin/system-design-primer" target="_blank"><span class="res-type">💻 GitHub · EN</span><span class="res-title">System Design Primer</span><span class="res-meta">github.com</span></a>
+          <a class="res-item" href="https://lethain.com/" target="_blank"><span class="res-type">📖 Blog · EN</span><span class="res-title">Will Larson — engineering career advice</span><span class="res-meta">lethain.com</span></a>
+          <a class="res-item" href="https://dou.ua/lenta/articles/?topic=Data+Engineer" target="_blank"><span class="res-type">💬 DOU · UA</span><span class="res-title">Data Engineer — статті на dou.ua</span><span class="res-meta">dou.ua</span></a>
+          <a class="res-item" href="https://www.interviewing.io/" target="_blank"><span class="res-type">🎓 Service · EN</span><span class="res-title">interviewing.io — моковані інтерв'ю</span><span class="res-meta">interviewing.io</span></a>
+          <a class="res-item" href="https://seattledataguy.substack.com/" target="_blank"><span class="res-type">📧 Newsletter · EN</span><span class="res-title">Seattle Data Guy — data engineering newsletter</span><span class="res-meta">substack.com</span></a>
+          <a class="res-item" href="https://dataengineering.wiki/" target="_blank"><span class="res-type">🗂 Wiki · EN</span><span class="res-title">Data Engineering Wiki</span><span class="res-meta">dataengineering.wiki</span></a>
+          <a class="res-item" href="https://github.com/andkret/Cookbook" target="_blank"><span class="res-type">💻 GitHub · EN</span><span class="res-title">The Data Engineering Cookbook</span><span class="res-meta">github.com</span></a>
+          <a class="res-item" href="https://www.youtube.com/@seattledataguy" target="_blank"><span class="res-type">▶ Channel · EN</span><span class="res-title">Seattle Data Guy — YouTube канал</span><span class="res-meta">youtube.com</span></a>
+        </div>
+      </div>
+
+      <h4>Portfolio Checklist — що має бути в GitHub для успішної співбесіди</h4>
+      <div class="portfolio-check">
+        <div class="pf-item">
+          <div class="pf-icon">📁</div>
+          <div class="pf-text"><strong>README з архітектурою</strong>Діаграма системи (draw.io або Mermaid), quick-start інструкція, посилання на demo. Рекрутери дивляться README першими — не більше 1 хвилини читання.</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">🐳</div>
+          <div class="pf-text"><strong>docker-compose.yml</strong>Локальний запуск всього стеку за 1 командою: Kafka + Spark + Airflow + ClickHouse + DataHub. <code>make dev-up</code> = все.</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">⚡</div>
+          <div class="pf-text"><strong>Реальні Spark Jobs</strong>bronze_to_silver.py + silver_to_gold.py з pytest тестами. Мінімум 100 рядків коду, реальна логіка (не "hello world").</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">🔄</div>
+          <div class="pf-text"><strong>Kafka Producer + Consumer</strong>З Avro schema, error handling, DLQ. Показує розуміння streaming patterns.</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">🗃️</div>
+          <div class="pf-text"><strong>dbt Project</strong>Мінімум 5 моделей (staging + marts), schema.yml з тестами, README як запустити. dbt docs generate → опублікований сайт.</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">🌊</div>
+          <div class="pf-text"><strong>Airflow DAG</strong>Реальний DAG з dependencies, sensors, error handling. Не просто BashOperator з echo.</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">🏗️</div>
+          <div class="pf-text"><strong>Terraform Infrastructure</strong>S3 buckets, IAM roles, EKS або GKE cluster. Remote state у S3 + DynamoDB lock. Хоча б 200 рядків HCL.</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">⚙️</div>
+          <div class="pf-text"><strong>GitHub Actions CI/CD</strong>Lint → test → build → push → deploy. Бейджи статусу у README (green = credibility).</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">📋</div>
+          <div class="pf-text"><strong>Architecture Decision Records</strong>12 ADR-ів у docs/architecture/. Показує що ви думаєте як архітектор, а не просто "кодите".</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">📊</div>
+          <div class="pf-text"><strong>BI Dashboard screenshot</strong>Metabase або Superset дашборд з реальними даними. Один скріншот у README = 1000 слів.</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">🎬</div>
+          <div class="pf-text"><strong>Demo video (3-5 хв)</strong>Loom або YouTube. Покажіть як все запускається і що робить. Більшість кандидатів не мають — це одразу виділяє.</div>
+        </div>
+        <div class="pf-item">
+          <div class="pf-icon">✍️</div>
+          <div class="pf-text"><strong>Стаття на Medium/DOU</strong>"Як я побудував big data платформу за 20 тижнів". SEO + portfolio + показує communication skills.</div>
+        </div>
+      </div>
+
+      <h4>Топ-10 питань фінального технічного інтерв'ю</h4>
+      <div class="interview-qa">
+        <h5>🎯 Фінальний Interview Prep — системний дизайн і глибина</h5>
+        <div class="qa-item">
+          <div class="qa-q">Спроектуйте real-time аналітичну платформу для e-commerce з 10M events/day</div>
+          <div class="qa-a">Системний дизайн: Sources (mobile app, web, payment) → Kafka (3 brokers, replication=3, retention 7d) → Flink (real-time aggregations: GMV/5min window by country, fraud detection, session tracking) → Kafka sink topics + Iceberg silver layer. Batch: Airflow DAG щоночі: Iceberg silver → dbt models → gold layer → ClickHouse DWH + BigQuery для ad-hoc. Storage: S3 medallion (bronze/silver/gold), Iceberg для ACID. Metadata: Schema Registry для Avro schemas, DataHub для lineage. Infrastructure: K8s (Spark operator, Airflow на K8sExecutor, Kafka StatefulSet), Terraform, ArgoCD. Моніторинг: Prometheus + Grafana, Kafka consumer lag alerts, dbt tests post-run. 10M events/day = ~115 events/sec → Kafka topic з 6 партиціями, 3 Flink task managers вистачить.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як би ви оптимізували Spark job що виконується 4 години?</div>
+          <div class="qa-a">Послідовність: 1) Spark UI → знайти найповільніший stage, 2) Перевірити на skew (один task набагато повільніший), 3) Перевірити shuffle size (якщо &gt;50GB — щось не так з join або groupBy), 4) Перевірити кількість partition (якщо 2 partitions на 200GB → repartition(200)), 5) Перевірити join type — broadcast? sort-merge? cartesian? 6) Column pruning — чи читаємо тільки потрібні колонки? 7) Predicate pushdown — чи фільтри застосовуються до читання? Типові фікси: partition skew → salting або AQE skew join, join без broadcast → перевірити розмір таблиць і підвищити autoBroadcastJoinThreshold, schema inference на CSV → explicit schema definition, collect() on large df → замінити на write + subsequent read, repartition(1) → remove або coalesce(n).</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Чим відрізняється Data Engineer від Data Scientist та Analytics Engineer?</div>
+          <div class="qa-a">Data Engineer: будує та підтримує infrastructure — pipelines, data lakes, streaming, DWH. Мова: Python, SQL, Scala. Знання: distributed systems, Kafka, Spark, K8s. Output: надійні, масштабовані data pipelines. Analytics Engineer: будує data models у DWH (dbt), collaborates with analysts. SQL-heavy. Знання: dimensional modeling, dbt, BI tools. Output: clean, documented, tested data models для BI. Data Scientist: аналізує дані, будує ML-моделі. Python, R, Jupyter. Знання: statistics, ML algorithms, feature engineering. Output: ML models, insights, experiments. ML Engineer: деплоює ML моделі у production, monitoring, serving. Як Data Engineer але для моделей. У малих компаніях — одна людина робить все. У великих — чітке розділення ролей. Data Engineer є у кожній компанії з серйозними даними — найбільший ринок праці з чотирьох.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як боротись з дублікатами у streaming pipeline?</div>
+          <div class="qa-a">Дублікати у streaming — неминуче: producer retry, consumer at-least-once, network issues. Стратегії: 1) Idempotent Producer (Kafka): enable.idempotence=true — Kafka дедуплікує на broker рівні (в межах сесії). 2) Unique constraint у sink: INSERT INTO ... ON CONFLICT (event_id) DO NOTHING — RDBMS відкине дублікат. 3) Window deduplication у Flink/Spark: DISTINCT by event_id в межах вікна часу (якщо retry приходить протягом 10 хв). 4) Iceberg MERGE: MERGE INTO target USING source ON target.event_id = source.event_id WHEN MATCHED THEN UPDATE SET ... WHEN NOT MATCHED THEN INSERT — upsert семантика. 5) Redis bloom filter: перед INSERT перевірити чи є event_id вже (O(1), ~10MB на 1M IDs). Кращий підхід: event_id генерується на клієнті (UUID v4), є у кожному повідомленні, всі sink-операції ідемпотентні за event_id.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Розкажіть про найскладнішу технічну проблему яку ви вирішили</div>
+          <div class="qa-a">Це поведінкове питання — але у технічному контексті. Структура відповіді за STAR (Situation, Task, Action, Result): Situation — контекст, що за система, масштаб. Task — яка конкретна проблема виникла (production outage, performance degradation, data quality issue). Action — як ви діагностували: які інструменти використали, як звузили проблему, яке рішення обрали і чому саме воно. Result — результат у цифрах: зменшили latency з 4год до 30хв, зекономили $5k/місяць, знайшли дублікати що спотворювали GMV на 3%. Якщо немає production experience — використовуйте ShopWave: "При розробці capstone project я зіткнувся з..." Важливо: показати систематичний підхід до debugging, а не "пощастило вгадати".</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке schema evolution і як її підтримувати у продакшн?</div>
+          <div class="qa-a">Schema evolution = зміна структури даних не ламаючи існуючих producers/consumers. Типові зміни: add column, rename column, change type, remove column. Safe changes (backward/forward compatible): додати nullable колонку (нові рядки мають значення, старі — null), видалити колонку (старі readers просто ігнорують). Unsafe: rename column (старі readers шукають за старим ім'ям), змінити тип (int → string може зламати aggregations). Schema Registry (Confluent): forward/backward/full compatibility mode — registry відхилить несумісну зміну. Iceberg: column-based ID mapping — перейменування не ломає планів запитів. dbt: on_schema_change='append_new_columns' у incremental моделях. Best practice: завжди backward compatible зміни, версіонування топіків при breaking changes (orders-v2), feature flags для поступового rollout нових полів.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як виглядає "good data pipeline" з точки зору quality?</div>
+          <div class="qa-a">Hімецька якість у data pipeline: 1) Idempotency — перезапуск не дублює дані, не пропускає, дає той самий результат. 2) Observability — logging, metrics, alerting. Знаєте про проблему ДО того як бізнес помітив. 3) Data quality tests — dbt tests або Great Expectations: not_null, unique, row count bounds, freshness SLA. 4) Error handling — DLQ для невалідних даних, retry з backoff, circuit breaker для downstream failures. 5) Documentation — source + schema + business meaning. Новий інженер розбирається без вас. 6) Backfill-friendly — pipeline може переобробити будь-який день за --date параметром. 7) Cost-aware — partition pruning, column pruning, incremental processing. 8) Version-controlled — код + config у Git, deployment через CI/CD. Якщо будь-який з пунктів відсутній — pipeline технічно працює, але в enterprise не виживе.</div>
+        </div>
+      </div>
+
+      <div class="milestone">
+        <div class="m-label">Final Deliverable · ShopWave</div>
+        <h5>Готовий проект для співбесід</h5>
+        <ul>
+          <li><strong>Public GitHub repo</strong> <code>github.com/yourname/shopwave-platform</code> з MIT ліцензією</li>
+          <li>README з архітектурною діаграмою, quick-start, посиланнями на demo</li>
+          <li>12 ADR-ів у <code>docs/architecture/</code></li>
+          <li>Terraform усієї інфраструктури (AWS + GCP DR)</li>
+          <li>Helm charts для всіх сервісів</li>
+          <li>GitHub Actions CI/CD full pipeline</li>
+          <li>5-хвилинне demo video у Loom або YouTube unlisted</li>
+          <li><code>docs/portfolio.md</code> — коротке резюме-опис для HR (1 сторінка)</li>
+          <li>Публікація на Medium/DOU з ретроспективою: що дізнався, головні висновки</li>
+          <li>Поділитися на LinkedIn і в профільних спільнотах (DataTalks Club, UA DE Slack)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COURSE FINALE -->
+<section class="finale">
+  <div class="container">
+    <div class="section-label">Курс завершено</div>
+    <h2><em>Fin.</em><br>Ви — <span class="red">Data Engineer.</span></h2>
+    <p>Двадцять тижнів тому ви, можливо, не знали різниці між HDFS і S3. Тепер у вас у GitHub — робоча платформа з batch+streaming, Iceberg, Kubernetes, Terraform, DataHub, моніторингом, CI/CD і документацією. Цього достатньо, щоб впевнено проходити співбесіди на Middle Data Engineer.</p>
+    <p style="margin-top:8px">Не зупиняйтесь. Спільнота, open-source, спільне блогінгування, менторство інших — це те, що відокремить вас від 90% інженерів, які просто «роблять свою роботу».</p>
+
+    <div class="finale-stats">
+      <div class="stat"><div class="n">20</div><div class="l">тижнів пройдено</div></div>
+      <div class="stat"><div class="n">12</div><div class="l">модулів</div></div>
+      <div class="stat"><div class="n">30+</div><div class="l">технологій</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">production-ready проект</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    © Big Data Infrastructure Course · Фінальна частина · <a href="#">ShopWave Platform</a>
+    &nbsp;·&nbsp; <a href="bigdata_part1_foundations.html">Частина 1</a> &nbsp;·&nbsp; <a href="bigdata_part2_processing.html">Частина 2</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var bar = document.getElementById('reading-progress');
+  if(!bar) return;
+  window.addEventListener('scroll', function(){
+    var pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    bar.style.width = Math.min(pct, 100) + '%';
+  }, {passive: true});
+})();
+
+document.querySelectorAll('pre').forEach(function(pre){
+  var wrap = pre.parentElement;
+  if(!wrap.classList.contains('pre-wrap')){
+    var w = document.createElement('div');
+    w.className = 'pre-wrap';
+    pre.parentNode.insertBefore(w, pre);
+    w.appendChild(pre);
+    wrap = w;
+  }
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'copy';
+  wrap.appendChild(btn);
+  btn.addEventListener('click', function(){
+    navigator.clipboard.writeText(pre.textContent).then(function(){
+      btn.textContent = 'copied ✓';
+      btn.classList.add('copied');
+      setTimeout(function(){ btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  });
+});
+
+document.querySelectorAll('.qa-q').forEach(function(q){
+  q.addEventListener('click', function(){
+    var a = q.nextElementSibling;
+    var isOpen = a.classList.contains('open');
+    var container = q.closest('.interview-qa');
+    container.querySelectorAll('.qa-a').forEach(function(el){ el.classList.remove('open'); });
+    container.querySelectorAll('.qa-q').forEach(function(el){ el.classList.remove('active'); });
+    if(!isOpen){ a.classList.add('open'); q.classList.add('active'); }
+  });
+});
+
+(function(){
+  var sidebar = document.getElementById('toc-sidebar');
+  if(!sidebar) return;
+  var modules = document.querySelectorAll('.module');
+  modules.forEach(function(mod, i){
+    var heading = mod.querySelector('h2');
+    if(!heading) return;
+    var dot = document.createElement('a');
+    dot.className = 'toc-dot';
+    dot.href = '#' + (mod.id || 'module-'+(i+1));
+    dot.title = heading.textContent.trim().replace(/\s+/g,' ');
+    dot.setAttribute('data-target', mod.id || 'module-'+(i+1));
+    sidebar.appendChild(dot);
+  });
+  var dots = sidebar.querySelectorAll('.toc-dot');
+  var targets = Array.from(dots).map(function(d){ return document.getElementById(d.getAttribute('data-target')); });
+  window.addEventListener('scroll', function(){
+    var scrollY = window.scrollY + window.innerHeight * 0.35;
+    var active = 0;
+    targets.forEach(function(t, i){ if(t && t.getBoundingClientRect().top + window.scrollY <= scrollY) active = i; });
+    dots.forEach(function(d, i){ d.classList.toggle('active', i === active); });
+  }, {passive: true});
+})();
+</script>
+</body>
+</html>
