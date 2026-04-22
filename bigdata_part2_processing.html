@@ -260,6 +260,50 @@ footer a{color:var(--fg-muted)}
 .mat-card{padding:16px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}
 .mat-card .name{font-family:var(--mono);font-size:13px;color:var(--accent-2);font-weight:600;margin-bottom:6px}
 .mat-card p{font-size:13px;color:var(--fg-muted);margin:0;line-height:1.5}
+
+/* ── Diagram zoom + SVG tooltips ─────────────────────── */
+.diagram{position:relative}
+.diagram-zoom-btn{
+  position:absolute;top:10px;right:10px;z-index:10;
+  background:rgba(26,26,29,.92);border:1px solid var(--border);
+  color:var(--fg-muted);font-family:var(--mono);font-size:10px;
+  padding:4px 12px;border-radius:4px;cursor:pointer;
+  opacity:0;transition:opacity .2s;letter-spacing:.08em;
+}
+.diagram:hover .diagram-zoom-btn{opacity:1}
+.diagram-zoom-btn:hover{background:rgba(78,205,196,.12);color:var(--info);border-color:rgba(78,205,196,.3)}
+.dz-overlay{
+  position:fixed;inset:0;z-index:900;
+  background:rgba(0,0,0,.92);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;cursor:zoom-out;
+}
+.dz-box{
+  background:var(--bg-3);border:1px solid var(--border);
+  border-radius:14px;padding:32px;
+  max-width:96vw;max-height:93vh;overflow:auto;
+  position:relative;cursor:default;
+}
+.dz-box svg{width:100%;min-width:min(1400px,88vw);height:auto;display:block}
+.dz-close{
+  position:absolute;top:10px;right:14px;
+  background:none;border:none;color:var(--fg-muted);
+  font-size:22px;cursor:pointer;line-height:1;
+}
+.dz-close:hover{color:var(--fg)}
+#svgtip{
+  position:fixed;z-index:1100;pointer-events:none;
+  background:var(--bg-3);border:1px solid var(--border);
+  border-left:3px solid var(--info);border-radius:8px;
+  padding:12px 16px;width:280px;
+  font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--fg);
+  box-shadow:0 8px 32px rgba(0,0,0,.7);opacity:0;transition:opacity .15s;
+}
+#svgtip.on{opacity:1}
+#svgtip .tt{
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--info);margin-bottom:6px;
+}
 </style>
 </head>
 <body>
@@ -339,10 +383,10 @@ footer a{color:var(--fg-muted)}
       <p>До цього моменту ShopWave виглядав так: Spark-джоба читає раз на ніч сирі JSON з bronze-шару, очищує, агрегує, пише результат у gold. BI-команда бачить дані з учорашньою свіжістю. У частині 2 ми додаємо шість великих шматків: <strong>(1)</strong> Kafka як центральну шину подій і Flink для обробки у реальному часі; <strong>(2)</strong> переводимо curated-шар на Apache Iceberg заради ACID, time travel і коректних upsertів; <strong>(3)</strong> піднімаємо ClickHouse або BigQuery як аналітичний DWH з star-схемою і SCD2 для історії клієнтів; <strong>(4)</strong> оркеструємо усі batch-процеси через Airflow; <strong>(5)</strong> зберігаємо user-профайли у MongoDB; <strong>(6)</strong> додаємо перші дашборди для BI-користувачів.</p>
     </div>
 
-    <h5 class="mono" style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:48px 0 16px">Що додається у Частині 2</h5>
+    <h5 class="mono" style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--p2);margin:48px 0 16px">Що буде вивчено у Частині 2</h5>
     <ul style="margin:0 0 0 24px;max-width:860px">
-      <li><strong>М5:</strong> Kafka cluster у docker-compose, producer-сервіс генерує <code>order_events</code>, Flink job рахує виторг у скляюче вікно 5 хв</li>
-      <li><strong>М6:</strong> міграція silver/gold шарів на <strong>Apache Iceberg</strong>: upsert-и, час-травел для аудиту, автоматична компакція</li>
+      <li><strong>М5:</strong> Kafka cluster у docker-compose, producer-сервіс генерує <code>order_events</code>, Flink job рахує виторг у ковзне вікно 5 хв</li>
+      <li><strong>М6:</strong> міграція silver/gold шарів на <strong>Apache Iceberg</strong>: upsert-и, time travel для аудиту, автоматична компакція</li>
       <li><strong>М7:</strong> <strong>ClickHouse або BigQuery</strong> як DWH: star-schema (fact_orders + dim_customer/product/geo/time), SCD2 для customer</li>
       <li><strong>М8:</strong> повний <strong>Airflow DAG</strong> оркеструє всі ETL, <strong>MongoDB</strong> зберігає user profiles з гнучкою схемою для рекомендацій</li>
     </ul>
@@ -386,7 +430,7 @@ footer a{color:var(--fg-muted)}
       <div class="diagram">
         <svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
           <!-- Producers -->
-          <g>
+          <g data-tip="PRODUCERS||Будь-який сервіс що публікує події у Kafka. Продюсер надсилає повідомлення у конкретний topic. Kafka SDK сам вибирає партицію (якщо не задано key → round-robin; якщо є key → hash(key) % partitions). Продюсер отримує підтвердження після того, як брокер записав повідомлення (acks=all → підтвердження від усіх ISR-реплік).">
             <rect x="20" y="30" width="140" height="40" fill="#131316" stroke="#26262b" rx="6"/>
             <text x="90" y="55" text-anchor="middle" fill="#9a9a95" font-size="11">Web service</text>
             <rect x="20" y="80" width="140" height="40" fill="#131316" stroke="#26262b" rx="6"/>
@@ -397,7 +441,7 @@ footer a{color:var(--fg-muted)}
           </g>
 
           <!-- Kafka cluster -->
-          <g>
+          <g data-tip="KAFKA CLUSTER (3 BROKERS)||Kafka-кластер складається з брокерів — це звичайні JVM-процеси на серверах. Кожен брокер зберігає певні партиції топіків. ZooKeeper (Kafka < 3.0) або KRaft (Kafka ≥ 3.3) координують вибір лідера та метадані. Мінімум 3 брокери для виробничого кластера: забезпечує кворум при відмові одного. Partition leader обробляє всі reads/writes, replicas — гарячий резерв.">
             <rect x="220" y="30" width="440" height="320" fill="rgba(78,205,196,.04)" stroke="#4ecdc4" stroke-width="2" rx="10"/>
             <text x="440" y="20" text-anchor="middle" fill="#4ecdc4" font-size="11" letter-spacing="1">KAFKA CLUSTER (3 BROKERS)</text>
 
@@ -429,7 +473,7 @@ footer a{color:var(--fg-muted)}
 
             <!-- log visualization -->
             <text x="240" y="260" fill="#6a6a66" font-size="10" letter-spacing="1">offset →</text>
-            <g>
+            <g data-tip="COMMIT LOG / OFFSET||Kafka зберігає повідомлення як append-only лог — нові записи тільки в кінець, нічого не видаляється. Кожне повідомлення має унікальний offset у своїй партиції. Consumer запам'ятовує offset де він зупинився (commit). Повідомлення зберігаються відповідно до retention.ms (за замовчуванням 7 днів) або retention.bytes. Темніший колір = новіші повідомлення.">
               <rect x="240" y="270" width="28" height="28" fill="rgba(78,205,196,.3)"/><text x="254" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">0</text>
               <rect x="270" y="270" width="28" height="28" fill="rgba(78,205,196,.3)"/><text x="284" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">1</text>
               <rect x="300" y="270" width="28" height="28" fill="rgba(78,205,196,.3)"/><text x="314" y="288" text-anchor="middle" fill="#f4f4f2" font-size="10">2</text>
@@ -445,7 +489,7 @@ footer a{color:var(--fg-muted)}
           </g>
 
           <!-- Consumers -->
-          <g>
+          <g data-tip="CONSUMERS (Consumer Groups)||Кожен consumer читає з Kafka незалежно — топік не видаляється після прочитання (на відміну від черги). Consumer group — це кілька екземплярів одного сервісу: Kafka ділить партиції між ними для паралельності. Якщо Flink-job відстає → consumer lag зростає. Consumer lag — головна метрика здоров'я streaming-системи. Різні consumer groups читають один топік незалежно (кожна з offset 0).">
             <text x="810" y="15" text-anchor="middle" fill="#b794f6" font-size="10" letter-spacing="1">CONSUMERS</text>
             <rect x="720" y="30" width="170" height="40" fill="#131316" stroke="#26262b" rx="6"/>
             <text x="805" y="48" text-anchor="middle" fill="#9a9a95" font-size="11">Flink job (real-time)</text>
@@ -2468,6 +2512,52 @@ document.querySelectorAll('.qa-q').forEach(function(q){
     targets.forEach(function(t, i){ if(t && t.getBoundingClientRect().top + window.scrollY <= scrollY) active = i; });
     dots.forEach(function(d, i){ d.classList.toggle('active', i === active); });
   }, {passive: true});
+})();
+
+// ── Diagram zoom modal ────────────────────────────────
+(function(){
+  var ov=document.createElement('div');ov.className='dz-overlay';ov.style.display='none';
+  var bx=document.createElement('div');bx.className='dz-box';
+  var cl=document.createElement('button');cl.className='dz-close';cl.textContent='✕';
+  bx.appendChild(cl);ov.appendChild(bx);document.body.appendChild(ov);
+  document.querySelectorAll('.diagram').forEach(function(d){
+    var svg=d.querySelector('svg');if(!svg)return;
+    var btn=document.createElement('button');btn.className='diagram-zoom-btn';btn.textContent='⤢ збільшити';
+    d.appendChild(btn);
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      while(bx.children.length>1)bx.removeChild(bx.lastChild);
+      var c=svg.cloneNode(true);c.removeAttribute('style');bx.appendChild(c);
+      ov.style.display='flex';document.body.style.overflow='hidden';
+    });
+  });
+  function close(){ov.style.display='none';document.body.style.overflow='';}
+  cl.addEventListener('click',close);
+  ov.addEventListener('click',function(e){if(e.target===ov)close();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+})();
+
+// ── SVG hover tooltips ────────────────────────────────
+(function(){
+  var tip=document.createElement('div');tip.id='svgtip';
+  tip.innerHTML='<div class="tt"></div><div class="tb"></div>';
+  document.body.appendChild(tip);
+  document.querySelectorAll('[data-tip]').forEach(function(el){
+    el.style.cursor='help';
+    el.addEventListener('mouseenter',function(){
+      var p=el.getAttribute('data-tip').split('||');
+      tip.querySelector('.tt').textContent=p[0]||'';
+      tip.querySelector('.tb').textContent=p[1]||p[0];
+      tip.classList.add('on');
+    });
+    el.addEventListener('mousemove',function(e){
+      var x=e.clientX+18,y=e.clientY+14;
+      if(x+295>window.innerWidth)x=e.clientX-298;
+      if(y+170>window.innerHeight)y=e.clientY-140;
+      tip.style.left=x+'px';tip.style.top=y+'px';
+    });
+    el.addEventListener('mouseleave',function(){tip.classList.remove('on');});
+  });
 })();
 </script>
 </body>

@@ -265,6 +265,50 @@ footer a{color:var(--fg-muted)}
 .pf-item .pf-icon{font-size:20px;flex-shrink:0;margin-top:2px}
 .pf-item .pf-text{font-size:14px;color:var(--fg);line-height:1.5}
 .pf-item .pf-text strong{color:var(--accent);display:block;margin-bottom:4px}
+
+/* ── Diagram zoom + SVG tooltips ─────────────────────── */
+.diagram{position:relative}
+.diagram-zoom-btn{
+  position:absolute;top:10px;right:10px;z-index:10;
+  background:rgba(26,26,29,.92);border:1px solid var(--border);
+  color:var(--fg-muted);font-family:var(--mono);font-size:10px;
+  padding:4px 12px;border-radius:4px;cursor:pointer;
+  opacity:0;transition:opacity .2s;letter-spacing:.08em;
+}
+.diagram:hover .diagram-zoom-btn{opacity:1}
+.diagram-zoom-btn:hover{background:rgba(127,219,165,.12);color:var(--pro);border-color:rgba(127,219,165,.3)}
+.dz-overlay{
+  position:fixed;inset:0;z-index:900;
+  background:rgba(0,0,0,.92);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;cursor:zoom-out;
+}
+.dz-box{
+  background:var(--bg-3);border:1px solid var(--border);
+  border-radius:14px;padding:32px;
+  max-width:96vw;max-height:93vh;overflow:auto;
+  position:relative;cursor:default;
+}
+.dz-box svg{width:100%;min-width:min(1400px,88vw);height:auto;display:block}
+.dz-close{
+  position:absolute;top:10px;right:14px;
+  background:none;border:none;color:var(--fg-muted);
+  font-size:22px;cursor:pointer;line-height:1;
+}
+.dz-close:hover{color:var(--fg)}
+#svgtip{
+  position:fixed;z-index:1100;pointer-events:none;
+  background:var(--bg-3);border:1px solid var(--border);
+  border-left:3px solid var(--pro);border-radius:8px;
+  padding:12px 16px;width:280px;
+  font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--fg);
+  box-shadow:0 8px 32px rgba(0,0,0,.7);opacity:0;transition:opacity .15s;
+}
+#svgtip.on{opacity:1}
+#svgtip .tt{
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--pro);margin-bottom:6px;
+}
 </style>
 </head>
 <body>
@@ -345,10 +389,10 @@ footer a{color:var(--fg-muted)}
       <p>Два місяці тому ShopWave був набором Python-скриптів у вашому ноутбуці. Тепер це готова платформа, яка читає потік замовлень через Kafka, обробляє їх Flink-ом у real-time, архівує у Iceberg, завантажує у ClickHouse для BI і все оркеструється Airflow-ом. Але все це все ще живе у вашому <code>docker-compose.yml</code>. У цій частині переносимо все <strong>у справжнє хмарне середовище</strong>: Kubernetes-кластер на AWS EKS або GKE, S3 як data lake, managed-сервіси для того, що не варто тримати самому. Пишемо <strong>Terraform</strong>, щоб усю інфраструктуру можна було знищити і за 30 хвилин підняти з нуля. Додаємо <strong>DataHub</strong> для lineage, <strong>PII-маскування</strong> для email/phone, <strong>RBAC</strong> для розмежування доступу між ролями. Наприкінці презентуєте фінал — і маєте projektn-ready repo для GitHub, який справді демонструє рівень Middle Data Engineer.</p>
     </div>
 
-    <h5 class="mono" style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:48px 0 16px">Що додається у Частині 3</h5>
+    <h5 class="mono" style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--p3);margin:48px 0 16px">Що буде вивчено у Частині 3</h5>
     <ul style="margin:0 0 0 24px;max-width:860px">
       <li><strong>М9:</strong> контейнеризація всіх сервісів, Helm-чарти, деплой у Kubernetes, повний Terraform-модуль, GitHub Actions CI/CD</li>
-      <li><strong>М10:</strong> мультихмарний референс-деплой — AWS prod + GCP disaster-recovery, порахувати TCO, вибрати compromise</li>
+      <li><strong>М10:</strong> мультихмарний референс-деплой — AWS prod + GCP disaster-recovery, порахувати TCO, вибрати компроміс</li>
       <li><strong>М11:</strong> DataHub зі схемами таблиць і lineage, PII detection + column-level encryption, IAM/RBAC політики</li>
       <li><strong>М12 · Capstone:</strong> фінальна презентація, архітектурна документація (ADR), load testing, code review, готовий GitHub-repo для співбесід</li>
     </ul>
@@ -389,25 +433,25 @@ footer a{color:var(--fg-muted)}
           <!-- Control plane -->
           <rect x="40" y="30" width="820" height="110" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="2" rx="10"/>
           <text x="60" y="20" fill="#7fdba5" font-size="11" letter-spacing="1">CONTROL PLANE (MASTER)</text>
-          <g>
+          <g data-tip="kube-apiserver||Єдина точка входу до кластера — всі команди (kubectl, CI/CD, оператори) йдуть через нього. Перевіряє автентифікацію (OIDC, сертифікати), авторизацію (RBAC), валідує ресурси і зберігає state в etcd. Горизонтально масштабується для HA. Якщо apiserver недоступний — kubectl не працює, але вже запущені pods продовжують роботу.">
             <rect x="60" y="50" width="170" height="70" fill="#131316" stroke="#26262b" rx="6"/>
             <text x="145" y="75" text-anchor="middle" fill="#7fdba5" font-size="11" font-weight="700">kube-apiserver</text>
             <text x="145" y="95" text-anchor="middle" fill="#9a9a95" font-size="10">REST API</text>
             <text x="145" y="109" text-anchor="middle" fill="#6a6a66" font-size="10">точка входу</text>
           </g>
-          <g>
+          <g data-tip="etcd||Розподілена key-value база даних (Raft-консенсус), зберігає весь стан Kubernetes кластера: pod specs, secrets, configmaps, RBAC. Це найкритичніший компонент — без etcd кластер не функціонує. Для data-платформ критично: etcd НЕ призначений для зберігання великих даних (ліміт 8 MB на запис). Backup etcd → обов'язковий щоденний ритуал для production.">
             <rect x="250" y="50" width="170" height="70" fill="#131316" stroke="#26262b" rx="6"/>
             <text x="335" y="75" text-anchor="middle" fill="#7fdba5" font-size="11" font-weight="700">etcd</text>
             <text x="335" y="95" text-anchor="middle" fill="#9a9a95" font-size="10">KV-store</text>
             <text x="335" y="109" text-anchor="middle" fill="#6a6a66" font-size="10">state кластера</text>
           </g>
-          <g>
+          <g data-tip="scheduler||Вирішує на якому Worker Node запустити новий Pod. Враховує: resource requests (CPU/RAM), node affinity/anti-affinity, taints/tolerations, topology spread. Для Spark executors важливо: якщо немає вузла з достатніми ресурсами → Pod стає Pending. Data-специфіка: spot-вузли позначаються taint, Spark tolerations — дозволяє використовувати spot для executors але не для driver.">
             <rect x="440" y="50" width="170" height="70" fill="#131316" stroke="#26262b" rx="6"/>
             <text x="525" y="75" text-anchor="middle" fill="#7fdba5" font-size="11" font-weight="700">scheduler</text>
             <text x="525" y="95" text-anchor="middle" fill="#9a9a95" font-size="10">розміщує pods</text>
             <text x="525" y="109" text-anchor="middle" fill="#6a6a66" font-size="10">resource-aware</text>
           </g>
-          <g>
+          <g data-tip="controller-manager||Набір reconciliation loops що підтримують бажаний стан кластера. Deployment Controller: якщо pod впав → автоматично піднімає новий. ReplicaSet Controller: підтримує кількість реплік. StatefulSet Controller: для Kafka, ZooKeeper з persistent identity. Spark Operator — це CRD + custom controller що розуміє SparkApplication ресурс і сам керує driver/executor pods.">
             <rect x="630" y="50" width="210" height="70" fill="#131316" stroke="#26262b" rx="6"/>
             <text x="735" y="75" text-anchor="middle" fill="#7fdba5" font-size="11" font-weight="700">controller-manager</text>
             <text x="735" y="95" text-anchor="middle" fill="#9a9a95" font-size="10">reconciliation loops</text>
@@ -416,7 +460,7 @@ footer a{color:var(--fg-muted)}
 
           <!-- Worker nodes -->
           <text x="60" y="170" fill="#ff5a5f" font-size="11" letter-spacing="1">WORKER NODES</text>
-          <g>
+          <g data-tip="NODE 1 — Airflow + Spark||kubelet: агент на кожному вузлі, виконує інструкції від control plane, запускає контейнери. kube-proxy: управляє iptables-правилами для мережі між pods. Тут живуть: Airflow scheduler (серце оркестрації — не треба давати багато CPU, але має бути stale-proof), Airflow webserver (UI), Spark driver (легкий pod що координує job), Spark executors (важкі поди з RAM).">
             <rect x="40" y="180" width="260" height="200" fill="rgba(255,90,95,.04)" stroke="#ff5a5f" rx="10"/>
             <text x="170" y="205" text-anchor="middle" fill="#ff5a5f" font-size="12" font-weight="700">NODE 1</text>
             <rect x="60" y="220" width="100" height="28" fill="#131316" stroke="#26262b"/><text x="110" y="238" text-anchor="middle" fill="#9a9a95" font-size="9">kubelet</text>
@@ -428,7 +472,7 @@ footer a{color:var(--fg-muted)}
             <text x="170" y="334" text-anchor="middle" fill="#b794f6" font-size="10">spark-executor-1</text>
             <text x="170" y="352" text-anchor="middle" fill="#b794f6" font-size="10">spark-executor-2</text>
           </g>
-          <g>
+          <g data-tip="NODE 2 — Kafka + Flink||Kafka brokers у K8s розгортаються як StatefulSet (не Deployment!) — pods мають стабільні імена kafka-0, kafka-1 і окремі PVC. Strimzi Kafka Operator спрощує управління. Flink JobManager координує задачу, TaskManagers — виконують. Ключова вимога: Kafka pods потребують SSD-диски (StorageClass з SSD), інакше throughput буде низьким.">
             <rect x="320" y="180" width="260" height="200" fill="rgba(255,90,95,.04)" stroke="#ff5a5f" rx="10"/>
             <text x="450" y="205" text-anchor="middle" fill="#ff5a5f" font-size="12" font-weight="700">NODE 2</text>
             <rect x="340" y="220" width="100" height="28" fill="#131316" stroke="#26262b"/><text x="390" y="238" text-anchor="middle" fill="#9a9a95" font-size="9">kubelet</text>
@@ -439,7 +483,7 @@ footer a{color:var(--fg-muted)}
             <text x="450" y="316" text-anchor="middle" fill="#4ecdc4" font-size="10">flink-jobmanager</text>
             <text x="450" y="334" text-anchor="middle" fill="#4ecdc4" font-size="10">flink-taskmanager</text>
           </g>
-          <g>
+          <g data-tip="NODE 3 — ClickHouse + Observability||ClickHouse — OLAP база для аналітики, потребує NVMe-диски і щедрий RAM (50% для page cache). DataHub GMS (Generalized Metadata Service) — серце data catalog, потребує окремого ElasticSearch. Prometheus збирає метрики з усіх pods, Grafana візуалізує. Порада: виділіть окремий node pool для ClickHouse з SSD через nodeAffinity — IO-intensive workloads не мають ділити вузол з Airflow.">
             <rect x="600" y="180" width="260" height="200" fill="rgba(255,90,95,.04)" stroke="#ff5a5f" rx="10"/>
             <text x="730" y="205" text-anchor="middle" fill="#ff5a5f" font-size="12" font-weight="700">NODE 3</text>
             <rect x="620" y="220" width="100" height="28" fill="#131316" stroke="#26262b"/><text x="670" y="238" text-anchor="middle" fill="#9a9a95" font-size="9">kubelet</text>
@@ -2395,6 +2439,52 @@ document.querySelectorAll('.qa-q').forEach(function(q){
     targets.forEach(function(t, i){ if(t && t.getBoundingClientRect().top + window.scrollY <= scrollY) active = i; });
     dots.forEach(function(d, i){ d.classList.toggle('active', i === active); });
   }, {passive: true});
+})();
+
+// ── Diagram zoom modal ────────────────────────────────
+(function(){
+  var ov=document.createElement('div');ov.className='dz-overlay';ov.style.display='none';
+  var bx=document.createElement('div');bx.className='dz-box';
+  var cl=document.createElement('button');cl.className='dz-close';cl.textContent='✕';
+  bx.appendChild(cl);ov.appendChild(bx);document.body.appendChild(ov);
+  document.querySelectorAll('.diagram').forEach(function(d){
+    var svg=d.querySelector('svg');if(!svg)return;
+    var btn=document.createElement('button');btn.className='diagram-zoom-btn';btn.textContent='⤢ збільшити';
+    d.appendChild(btn);
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      while(bx.children.length>1)bx.removeChild(bx.lastChild);
+      var c=svg.cloneNode(true);c.removeAttribute('style');bx.appendChild(c);
+      ov.style.display='flex';document.body.style.overflow='hidden';
+    });
+  });
+  function close(){ov.style.display='none';document.body.style.overflow='';}
+  cl.addEventListener('click',close);
+  ov.addEventListener('click',function(e){if(e.target===ov)close();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+})();
+
+// ── SVG hover tooltips ────────────────────────────────
+(function(){
+  var tip=document.createElement('div');tip.id='svgtip';
+  tip.innerHTML='<div class="tt"></div><div class="tb"></div>';
+  document.body.appendChild(tip);
+  document.querySelectorAll('[data-tip]').forEach(function(el){
+    el.style.cursor='help';
+    el.addEventListener('mouseenter',function(){
+      var p=el.getAttribute('data-tip').split('||');
+      tip.querySelector('.tt').textContent=p[0]||'';
+      tip.querySelector('.tb').textContent=p[1]||p[0];
+      tip.classList.add('on');
+    });
+    el.addEventListener('mousemove',function(e){
+      var x=e.clientX+18,y=e.clientY+14;
+      if(x+295>window.innerWidth)x=e.clientX-298;
+      if(y+170>window.innerHeight)y=e.clientY-140;
+      tip.style.left=x+'px';tip.style.top=y+'px';
+    });
+    el.addEventListener('mouseleave',function(){tip.classList.remove('on');});
+  });
 })();
 </script>
 </body>

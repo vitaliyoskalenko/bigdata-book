@@ -341,6 +341,50 @@ footer a{color:var(--fg-muted)}
 .bm-cell .bm-val{font-family:var(--serif);font-size:28px;font-weight:300;line-height:1;color:var(--fg);margin-bottom:4px}
 .bm-cell .bm-val em{color:var(--accent);font-style:italic}
 .bm-cell .bm-sub{font-family:var(--mono);font-size:11px;color:var(--fg-muted)}
+
+/* ── Diagram zoom + SVG tooltips ─────────────────────── */
+.diagram{position:relative}
+.diagram-zoom-btn{
+  position:absolute;top:10px;right:10px;z-index:10;
+  background:rgba(26,26,29,.92);border:1px solid var(--border);
+  color:var(--fg-muted);font-family:var(--mono);font-size:10px;
+  padding:4px 12px;border-radius:4px;cursor:pointer;
+  opacity:0;transition:opacity .2s;letter-spacing:.08em;
+}
+.diagram:hover .diagram-zoom-btn{opacity:1}
+.diagram-zoom-btn:hover{background:rgba(255,182,39,.12);color:var(--accent);border-color:rgba(255,182,39,.3)}
+.dz-overlay{
+  position:fixed;inset:0;z-index:900;
+  background:rgba(0,0,0,.92);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;cursor:zoom-out;
+}
+.dz-box{
+  background:var(--bg-3);border:1px solid var(--border);
+  border-radius:14px;padding:32px;
+  max-width:96vw;max-height:93vh;overflow:auto;
+  position:relative;cursor:default;
+}
+.dz-box svg{width:100%;min-width:min(1400px,88vw);height:auto;display:block}
+.dz-close{
+  position:absolute;top:10px;right:14px;
+  background:none;border:none;color:var(--fg-muted);
+  font-size:22px;cursor:pointer;line-height:1;
+}
+.dz-close:hover{color:var(--fg)}
+#svgtip{
+  position:fixed;z-index:1100;pointer-events:none;
+  background:var(--bg-3);border:1px solid var(--border);
+  border-left:3px solid var(--accent);border-radius:8px;
+  padding:12px 16px;width:280px;
+  font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--fg);
+  box-shadow:0 8px 32px rgba(0,0,0,.7);opacity:0;transition:opacity .15s;
+}
+#svgtip.on{opacity:1}
+#svgtip .tt{
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:6px;
+}
 </style>
 </head>
 <body>
@@ -436,7 +480,7 @@ footer a{color:var(--fg-muted)}
       </div>
     </div>
 
-    <h5 class="mono" style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:48px 0 16px">Що додається у Частині 1</h5>
+    <h5 class="mono" style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:48px 0 16px">Що буде вивчено у Частині 1</h5>
     <ul style="margin:0 0 0 24px;max-width:860px">
       <li><strong>М1:</strong> vision-документ, діаграма архітектури, вибір стеку</li>
       <li><strong>М2:</strong> Data Lake на MinIO/S3 з bronze/silver/gold-шарами та партиціями за датою/країною</li>
@@ -1400,58 +1444,121 @@ footer a{color:var(--fg-muted)}
       <p>Hadoop Distributed File System був стандартом 2008-2018. Зараз його повільно витісняє object storage, але: (а) легасі-системи досі живі, (б) принципи HDFS пояснюють, як взагалі працюють distributed storage, (в) це обов'язкове питання на співбесіді.</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
-          <!-- Client -->
-          <rect x="40" y="150" width="120" height="60" fill="#131316" stroke="#26262b" rx="8"/>
-          <text x="100" y="175" text-anchor="middle" fill="#ffb627" font-size="11" letter-spacing="1">CLIENT</text>
-          <text x="100" y="195" text-anchor="middle" fill="#9a9a95" font-size="10">read/write</text>
+        <svg viewBox="0 0 1160 450" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto">
+          <defs>
+            <marker id="arrowY" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ffb627" opacity=".8"/></marker>
+            <marker id="arrowT" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4ecdc4" opacity=".8"/></marker>
+            <marker id="arrowG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#6a6a66"/></marker>
+          </defs>
 
-          <!-- NameNode -->
-          <rect x="340" y="30" width="200" height="90" fill="#1a1a1d" stroke="#ffb627" stroke-width="2" rx="8"/>
-          <text x="440" y="60" text-anchor="middle" fill="#ffb627" font-size="12" font-weight="700" letter-spacing="1">NAMENODE</text>
-          <text x="440" y="80" text-anchor="middle" fill="#f4f4f2" font-size="10">metadata · fsimage · edits</text>
-          <text x="440" y="98" text-anchor="middle" fill="#9a9a95" font-size="10">«карта» блоків</text>
-
-          <!-- Secondary NameNode -->
-          <rect x="600" y="30" width="200" height="90" fill="#131316" stroke="#26262b" rx="8" stroke-dasharray="4 4"/>
-          <text x="700" y="60" text-anchor="middle" fill="#9a9a95" font-size="12" font-weight="700" letter-spacing="1">SECONDARY NN</text>
-          <text x="700" y="80" text-anchor="middle" fill="#9a9a95" font-size="10">чекпоїнти + standby</text>
-
-          <!-- DataNodes -->
-          <g>
-            <rect x="250" y="240" width="140" height="90" fill="#131316" stroke="#26262b" rx="8"/>
-            <text x="320" y="270" text-anchor="middle" fill="#ffb627" font-size="11" letter-spacing="1">DATANODE 1</text>
-            <rect x="265" y="285" width="20" height="20" fill="#ffb627" opacity=".6"/>
-            <rect x="295" y="285" width="20" height="20" fill="#4ecdc4" opacity=".6"/>
-            <rect x="325" y="285" width="20" height="20" fill="#b794f6" opacity=".6"/>
-            <rect x="355" y="285" width="20" height="20" fill="#ff6b35" opacity=".6"/>
-          </g>
-          <g>
-            <rect x="410" y="240" width="140" height="90" fill="#131316" stroke="#26262b" rx="8"/>
-            <text x="480" y="270" text-anchor="middle" fill="#ffb627" font-size="11" letter-spacing="1">DATANODE 2</text>
-            <rect x="425" y="285" width="20" height="20" fill="#ffb627" opacity=".6"/>
-            <rect x="455" y="285" width="20" height="20" fill="#4ecdc4" opacity=".6"/>
-            <rect x="485" y="285" width="20" height="20" fill="#b794f6" opacity=".6"/>
-            <rect x="515" y="285" width="20" height="20" fill="#ff6b35" opacity=".6"/>
-          </g>
-          <g>
-            <rect x="570" y="240" width="140" height="90" fill="#131316" stroke="#26262b" rx="8"/>
-            <text x="640" y="270" text-anchor="middle" fill="#ffb627" font-size="11" letter-spacing="1">DATANODE 3</text>
-            <rect x="585" y="285" width="20" height="20" fill="#ffb627" opacity=".6"/>
-            <rect x="615" y="285" width="20" height="20" fill="#4ecdc4" opacity=".6"/>
-            <rect x="645" y="285" width="20" height="20" fill="#b794f6" opacity=".6"/>
-            <rect x="675" y="285" width="20" height="20" fill="#ff6b35" opacity=".6"/>
+          <!-- CLIENT -->
+          <g data-tip="CLIENT (Hadoop Client)||Будь-яка програма що читає або пише файли у HDFS через Hadoop API або WebHDFS REST. Спочатку запитує NameNode: де блоки? Потім безпосередньо читає/пише блоки на DataNodes. Ніколи не йде через NameNode при передачі даних — це ключовий принцип масштабованості.">
+            <rect x="30" y="170" width="150" height="80" fill="#131316" stroke="#26262b" stroke-width="1.5" rx="8"/>
+            <text x="105" y="200" text-anchor="middle" fill="#ffb627" font-size="12" font-weight="700" letter-spacing="1">CLIENT</text>
+            <text x="105" y="218" text-anchor="middle" fill="#9a9a95" font-size="10">Hadoop API</text>
+            <text x="105" y="234" text-anchor="middle" fill="#9a9a95" font-size="10">read / write</text>
           </g>
 
-          <!-- Arrows -->
-          <line x1="160" y1="170" x2="340" y2="85" stroke="#ffb627" stroke-width="1.5" opacity=".7"/>
-          <text x="230" y="120" fill="#9a9a95" font-size="10">1. де файл?</text>
-          <line x1="160" y1="180" x2="250" y2="270" stroke="#4ecdc4" stroke-width="1.5" opacity=".7"/>
-          <text x="180" y="235" fill="#9a9a95" font-size="10">2. читає блок</text>
-          <line x1="540" y1="85" x2="600" y2="85" stroke="#9a9a95" stroke-width="1" stroke-dasharray="3 3"/>
-          <text x="130" y="320" fill="#6a6a66" font-size="10">Блок 128 MB · replication factor = 3 · rack-aware placement</text>
+          <!-- NAMENODE -->
+          <g data-tip="NAMENODE (Active)||Мозок HDFS. Зберігає ТІЛЬКИ metadata у RAM: назви файлів, дозволи, розбиття на блоки та карту «який блок → які DataNodes». Самих даних не тримає. При відмові NameNode — весь кластер недоступний (SPOF). В production завжди розгортають HA пару з QJM (Quorum Journal Manager): Active + Standby. Failover займає ~30 с автоматично через ZKFC.">
+            <rect x="420" y="30" width="230" height="110" fill="#1a1a1d" stroke="#ffb627" stroke-width="2" rx="8"/>
+            <text x="535" y="62" text-anchor="middle" fill="#ffb627" font-size="13" font-weight="700" letter-spacing="1">NAMENODE</text>
+            <text x="535" y="80" text-anchor="middle" fill="#f4f4f2" font-size="10">metadata · fsimage · edit log</text>
+            <text x="535" y="97" text-anchor="middle" fill="#9a9a95" font-size="10">«карта блоків» → у RAM</text>
+            <text x="535" y="114" text-anchor="middle" fill="#ef6b6b" font-size="9">SPOF → HA mode обов'язковий</text>
+          </g>
+
+          <!-- SECONDARY NAMENODE -->
+          <g data-tip="SECONDARY NAMENODE||НЕ є резервним NameNode — це поширена помилка новачків! Виконує роль checkpoint-сервісу: кожні N хвилин об'єднує fsimage + edit log щоб скоротити час відновлення після рестарту. В сучасних кластерах Hadoop 3.x замінений Standby NameNode + JournalNodes (QJM), який може взяти роль Active при відмові. Secondary NN залишився тільки у legacy-установках.">
+            <rect x="830" y="30" width="230" height="110" fill="#131316" stroke="#26262b" stroke-width="1.5" rx="8" stroke-dasharray="6 4"/>
+            <text x="945" y="62" text-anchor="middle" fill="#9a9a95" font-size="12" font-weight="700" letter-spacing="1">SECONDARY NN</text>
+            <text x="945" y="80" text-anchor="middle" fill="#6a6a66" font-size="10">checkpoint fsimage + edits</text>
+            <text x="945" y="97" text-anchor="middle" fill="#6a6a66" font-size="10">НЕ backup NameNode!</text>
+            <text x="945" y="114" text-anchor="middle" fill="#6a6a66" font-size="9">legacy · замінений Standby NN</text>
+          </g>
+
+          <!-- DATANODE 1 -->
+          <g data-tip="DATANODE 1 — Rack A, Node 1||Зберігає реальні блоки даних (128 MB за замовчуванням). Кожні 3 секунди надсилає heartbeat NameNode. Якщо heartbeat відсутній 10 хвилин — NameNode вважає DN мертвим і реплікує його блоки на інші вузли. Кожну годину DN надсилає повний Block Report для верифікації цілісності. Кольорові прямокутники = різні блоки одного файлу (A1,B1,C1,D1 = перші копії блоків A,B,C,D).">
+            <rect x="200" y="310" width="200" height="110" fill="#131316" stroke="#26262b" stroke-width="1.5" rx="8"/>
+            <text x="300" y="342" text-anchor="middle" fill="#ffb627" font-size="11" font-weight="600" letter-spacing="1">DATANODE 1</text>
+            <text x="300" y="358" text-anchor="middle" fill="#6a6a66" font-size="9">Rack A · Node 1</text>
+            <rect x="218" y="368" width="32" height="26" fill="#ffb627" opacity=".7" rx="3"/>
+            <text x="234" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">A1</text>
+            <rect x="258" y="368" width="32" height="26" fill="#4ecdc4" opacity=".7" rx="3"/>
+            <text x="274" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">B1</text>
+            <rect x="298" y="368" width="32" height="26" fill="#b794f6" opacity=".7" rx="3"/>
+            <text x="314" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">C1</text>
+            <rect x="338" y="368" width="32" height="26" fill="#ff6b35" opacity=".7" rx="3"/>
+            <text x="354" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">D1</text>
+          </g>
+
+          <!-- DATANODE 2 -->
+          <g data-tip="DATANODE 2 — Rack A, Node 2||Rack-aware replication: перша копія — на тому ж вузлі де пишеться файл, друга — на іншому вузлі того ж rack (DN2), третя — на вузлі з іншого rack (DN3). Цей баланс мінімізує мережевий трафік між rack-ами при записі, але забезпечує захист від відмови цілого rack. Якщо DN1 впаде — DN2 і DN3 мають повний набір блоків.">
+            <rect x="480" y="310" width="200" height="110" fill="#131316" stroke="#26262b" stroke-width="1.5" rx="8"/>
+            <text x="580" y="342" text-anchor="middle" fill="#ffb627" font-size="11" font-weight="600" letter-spacing="1">DATANODE 2</text>
+            <text x="580" y="358" text-anchor="middle" fill="#6a6a66" font-size="9">Rack A · Node 2</text>
+            <rect x="498" y="368" width="32" height="26" fill="#ffb627" opacity=".7" rx="3"/>
+            <text x="514" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">A2</text>
+            <rect x="538" y="368" width="32" height="26" fill="#4ecdc4" opacity=".7" rx="3"/>
+            <text x="554" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">B2</text>
+            <rect x="578" y="368" width="32" height="26" fill="#b794f6" opacity=".7" rx="3"/>
+            <text x="594" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">C2</text>
+            <rect x="618" y="368" width="32" height="26" fill="#ff6b35" opacity=".7" rx="3"/>
+            <text x="634" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">D2</text>
+          </g>
+
+          <!-- DATANODE 3 -->
+          <g data-tip="DATANODE 3 — Rack B (інший rack!)||Третя копія завжди на іншому фізичному rack — це rack-aware placement policy. Якщо цілий rack вийде з ладу (обрив мережевого комутатора, аварія живлення), треті копії блоків на Rack B залишаться доступними. Block Scanner: кожен DN регулярно перевіряє CRC-суми блоків і повідомляє NameNode про corrupted блоки для реплікації.">
+            <rect x="760" y="310" width="200" height="110" fill="#131316" stroke="#26262b" stroke-width="1.5" rx="8"/>
+            <text x="860" y="342" text-anchor="middle" fill="#ffb627" font-size="11" font-weight="600" letter-spacing="1">DATANODE 3</text>
+            <text x="860" y="358" text-anchor="middle" fill="#6a6a66" font-size="9">Rack B · Node 1</text>
+            <rect x="778" y="368" width="32" height="26" fill="#ffb627" opacity=".7" rx="3"/>
+            <text x="794" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">A3</text>
+            <rect x="818" y="368" width="32" height="26" fill="#4ecdc4" opacity=".7" rx="3"/>
+            <text x="834" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">B3</text>
+            <rect x="858" y="368" width="32" height="26" fill="#b794f6" opacity=".7" rx="3"/>
+            <text x="874" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">C3</text>
+            <rect x="898" y="368" width="32" height="26" fill="#ff6b35" opacity=".7" rx="3"/>
+            <text x="914" y="385" text-anchor="middle" fill="#0a0a0b" font-size="8" font-weight="700">D3</text>
+          </g>
+
+          <!-- Arrows: Client → NameNode (step 1) -->
+          <line x1="180" y1="196" x2="418" y2="95" stroke="#ffb627" stroke-width="1.5" opacity=".8" marker-end="url(#arrowY)"/>
+          <text x="270" y="145" fill="#ffb627" font-size="10">① де блоки файлу?</text>
+
+          <!-- Arrow: NameNode → Client (response, dashed) -->
+          <line x1="420" y1="108" x2="182" y2="214" stroke="#ffb627" stroke-width="1.2" opacity=".5" stroke-dasharray="6 4"/>
+          <text x="230" y="185" fill="#9a9a95" font-size="9">адреси DataNodes</text>
+
+          <!-- Arrow: Client → DataNode 1 (step 2) -->
+          <line x1="180" y1="228" x2="238" y2="308" stroke="#4ecdc4" stroke-width="1.5" opacity=".8" marker-end="url(#arrowT)"/>
+          <text x="130" y="276" fill="#4ecdc4" font-size="10">② читає блок</text>
+
+          <!-- Heartbeat lines: DataNodes → NameNode (dashed gray) -->
+          <line x1="300" y1="310" x2="480" y2="140" stroke="#26262b" stroke-width="1" stroke-dasharray="4 3"/>
+          <line x1="580" y1="310" x2="548" y2="140" stroke="#26262b" stroke-width="1" stroke-dasharray="4 3"/>
+          <line x1="860" y1="310" x2="648" y2="140" stroke="#26262b" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="370" y="246" fill="#6a6a66" font-size="9" transform="rotate(-38,370,246)">heartbeat 3s</text>
+          <text x="558" y="260" fill="#6a6a66" font-size="9">heartbeat</text>
+          <text x="720" y="248" fill="#6a6a66" font-size="9" transform="rotate(30,720,248)">heartbeat 3s</text>
+
+          <!-- NameNode → Secondary NN -->
+          <line x1="650" y1="80" x2="828" y2="80" stroke="#26262b" stroke-width="1" stroke-dasharray="5 4" marker-end="url(#arrowG)"/>
+          <text x="710" y="72" fill="#6a6a66" font-size="9">checkpoint</text>
+
+          <!-- Rack brackets -->
+          <rect x="185" y="295" width="515" height="140" fill="none" stroke="rgba(255,182,39,.12)" stroke-width="1.5" rx="10" stroke-dasharray="8 5"/>
+          <text x="195" y="290" fill="rgba(255,182,39,.4)" font-size="10" letter-spacing="1">RACK A</text>
+          <rect x="745" y="295" width="230" height="140" fill="none" stroke="rgba(78,205,196,.12)" stroke-width="1.5" rx="10" stroke-dasharray="8 5"/>
+          <text x="755" y="290" fill="rgba(78,205,196,.4)" font-size="10" letter-spacing="1">RACK B</text>
+
+          <!-- Legend -->
+          <rect x="30" y="425" width="16" height="12" fill="#ffb627" opacity=".7" rx="2"/><text x="52" y="435" fill="#6a6a66" font-size="9">Блок A (копії A1·A2·A3)</text>
+          <rect x="200" y="425" width="16" height="12" fill="#4ecdc4" opacity=".7" rx="2"/><text x="222" y="435" fill="#6a6a66" font-size="9">Блок B</text>
+          <rect x="290" y="425" width="16" height="12" fill="#b794f6" opacity=".7" rx="2"/><text x="312" y="435" fill="#6a6a66" font-size="9">Блок C</text>
+          <rect x="380" y="425" width="16" height="12" fill="#ff6b35" opacity=".7" rx="2"/><text x="402" y="435" fill="#6a6a66" font-size="9">Блок D · 128 MB / блок · replication factor = 3</text>
         </svg>
-        <div class="diagram-caption">HDFS архітектура · NameNode + DataNodes</div>
+        <div class="diagram-caption">HDFS архітектура · NameNode + 3 DataNodes · rack-aware replication · (наведіть на блок для опису)</div>
       </div>
 
       <ul>
@@ -1736,6 +1843,273 @@ df_cleaned.write \
       <div class="pitfall">
         <div class="pt-label">Типова помилка</div>
         <p>Партиціонування по полю з високою кардинальністю (user_id, order_id) = <strong>мільйони папок у S3</strong>. Кожна папка — окремий LIST-запит. При 1 млн партицій: Spark витрачає хвилини тільки на LIST і metadata discovery, ще до обчислень. Партиціонуйте за полями з малим числом унікальних значень: date, country, status.</p>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- НОВА СЕКЦІЯ: ПІД КАПОТОМ — АЛГОРИТМИ І ПРИНЦИПИ -->
+      <!-- ══════════════════════════════════════════════════ -->
+
+      <h4>Під капотом: як великі дані зберігаються і доставляються</h4>
+      <p>Знати «що робить HDFS» недостатньо для розуміння системи. Тут пояснимо <strong>чому</strong> системи влаштовані саме так — через алгоритми зберігання, принципи масштабування та обмеження CAP теореми.</p>
+
+      <h5 style="margin:32px 0 12px;font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)">① B-Tree vs LSM Tree — два підходи до зберігання</h5>
+      <p>Усі системи зберігання даних будуються на одній з двох фундаментальних структур. Вибір між ними визначає, для чого система підходить краще.</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 1100 340" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto">
+
+          <!-- B-TREE side -->
+          <g data-tip="B-Tree (Balanced Tree)||Дерево з вузлами що зберігають впорядковані ключі. Гарантує O(log n) для читання І запису. Оновлення in-place: при зміні запису система знаходить його на диску і переписує. Це означає random I/O — повільно на HDD, прийнятно на SSD. Використовується: PostgreSQL, MySQL InnoDB, SQLite. Проблема при великих writes: багато дискових I/O → bottle-neck.">
+            <rect x="20" y="20" width="490" height="300" fill="rgba(255,182,39,.03)" stroke="rgba(255,182,39,.2)" stroke-width="1.5" rx="10"/>
+            <text x="265" y="14" text-anchor="middle" fill="#ffb627" font-size="11" letter-spacing="1">B-TREE (PostgreSQL, MySQL)</text>
+
+            <!-- Tree visualization -->
+            <rect x="210" y="40" width="110" height="36" fill="#1a1a1d" stroke="#ffb627" stroke-width="1.5" rx="5"/>
+            <text x="265" y="62" text-anchor="middle" fill="#ffb627" font-size="11" font-weight="700">ROOT [50]</text>
+
+            <rect x="80" y="110" width="110" height="36" fill="#131316" stroke="#26262b" rx="5"/>
+            <text x="135" y="132" text-anchor="middle" fill="#9a9a95" font-size="11">[10 · 30]</text>
+            <rect x="210" y="110" width="110" height="36" fill="#131316" stroke="#26262b" rx="5"/>
+            <text x="265" y="132" text-anchor="middle" fill="#9a9a95" font-size="11">[50 · 70]</text>
+            <rect x="340" y="110" width="110" height="36" fill="#131316" stroke="#26262b" rx="5"/>
+            <text x="395" y="132" text-anchor="middle" fill="#9a9a95" font-size="11">[80 · 95]</text>
+
+            <line x1="265" y1="76" x2="135" y2="110" stroke="#26262b" stroke-width="1"/>
+            <line x1="265" y1="76" x2="265" y2="110" stroke="#26262b" stroke-width="1"/>
+            <line x1="265" y1="76" x2="395" y2="110" stroke="#26262b" stroke-width="1"/>
+
+            <!-- Leaf nodes -->
+            <rect x="40" y="190" width="80" height="30" fill="#131316" stroke="#26262b" rx="4"/>
+            <text x="80" y="209" text-anchor="middle" fill="#6a6a66" font-size="10">[5·8·9]</text>
+            <rect x="130" y="190" width="80" height="30" fill="#131316" stroke="#26262b" rx="4"/>
+            <text x="170" y="209" text-anchor="middle" fill="#6a6a66" font-size="10">[12·20]</text>
+            <rect x="220" y="190" width="80" height="30" fill="#131316" stroke="#26262b" rx="4"/>
+            <text x="260" y="209" text-anchor="middle" fill="#6a6a66" font-size="10">[55·60]</text>
+            <rect x="310" y="190" width="80" height="30" fill="#131316" stroke="#26262b" rx="4"/>
+            <text x="350" y="209" text-anchor="middle" fill="#6a6a66" font-size="10">[75·78]</text>
+            <rect x="400" y="190" width="80" height="30" fill="#131316" stroke="#26262b" rx="4"/>
+            <text x="440" y="209" text-anchor="middle" fill="#6a6a66" font-size="10">[82·90]</text>
+
+            <line x1="135" y1="146" x2="80" y2="190" stroke="#26262b" stroke-width="1"/>
+            <line x1="135" y1="146" x2="170" y2="190" stroke="#26262b" stroke-width="1"/>
+            <line x1="265" y1="146" x2="260" y2="190" stroke="#26262b" stroke-width="1"/>
+            <line x1="395" y1="146" x2="350" y2="190" stroke="#26262b" stroke-width="1"/>
+            <line x1="395" y1="146" x2="440" y2="190" stroke="#26262b" stroke-width="1"/>
+
+            <!-- DISK UPDATE arrow (random I/O) -->
+            <text x="265" y="252" text-anchor="middle" fill="#ef6b6b" font-size="10">UPDATE = random I/O на диску</text>
+            <text x="265" y="270" text-anchor="middle" fill="#9a9a95" font-size="10">✓ швидке читання  ✗ повільний запис під навантаженням</text>
+            <text x="265" y="290" text-anchor="middle" fill="#9a9a95" font-size="10">✓ OLTP / транзакції  ✓ SSD-дружній</text>
+          </g>
+
+          <!-- LSM TREE side -->
+          <g data-tip="LSM Tree (Log-Structured Merge Tree)||Ідея: всі записи спочатку йдуть у RAM (MemTable, зазвичай 64–512 MB). Коли MemTable заповнена — flush на диск як незмінний SSTable-файл. Записи завжди sequential I/O — дуже швидко! Але читання складніше: треба перевірити MemTable + кілька SSTable-ів. Bloom filter на кожному SSTable зменшує кількість перевірок. Compaction: фоновий процес об'єднує SSTable-и для видалення tombstones і скорочення числа файлів. Використовується: Cassandra, HBase, RocksDB, ClickHouse MergeTree.">
+            <rect x="590" y="20" width="490" height="300" fill="rgba(78,205,196,.03)" stroke="rgba(78,205,196,.2)" stroke-width="1.5" rx="10"/>
+            <text x="835" y="14" text-anchor="middle" fill="#4ecdc4" font-size="11" letter-spacing="1">LSM TREE (Cassandra, RocksDB, ClickHouse)</text>
+
+            <!-- MemTable (RAM) -->
+            <rect x="660" y="40" width="340" height="50" fill="rgba(78,205,196,.1)" stroke="#4ecdc4" stroke-width="1.5" rx="6"/>
+            <text x="830" y="60" text-anchor="middle" fill="#4ecdc4" font-size="11" font-weight="700">MemTable (RAM)</text>
+            <text x="830" y="78" text-anchor="middle" fill="#9a9a95" font-size="10">всі нові записи → sorted in memory</text>
+
+            <!-- Arrow: MemTable → SSTable -->
+            <line x1="830" y1="90" x2="830" y2="115" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arrowT2)"/>
+            <text x="870" y="110" fill="#6a6a66" font-size="9">flush (sequential write!)</text>
+
+            <!-- SSTables -->
+            <rect x="660" y="118" width="100" height="32" fill="#131316" stroke="#4ecdc4" stroke-width="1" rx="4"/>
+            <text x="710" y="138" text-anchor="middle" fill="#4ecdc4" font-size="10">SSTable L0</text>
+            <rect x="770" y="118" width="100" height="32" fill="#131316" stroke="#26262b" rx="4"/>
+            <text x="820" y="138" text-anchor="middle" fill="#9a9a95" font-size="10">SSTable L0</text>
+            <rect x="880" y="118" width="100" height="32" fill="#131316" stroke="#26262b" rx="4"/>
+            <text x="930" y="138" text-anchor="middle" fill="#6a6a66" font-size="10">SSTable L0</text>
+
+            <!-- Compaction arrow -->
+            <line x1="830" y1="150" x2="830" y2="175" stroke="#26262b" stroke-width="1" stroke-dasharray="4 3"/>
+            <text x="870" y="170" fill="#6a6a66" font-size="9">compaction</text>
+
+            <rect x="680" y="178" width="300" height="32" fill="#131316" stroke="#26262b" rx="4"/>
+            <text x="830" y="198" text-anchor="middle" fill="#9a9a95" font-size="10">SSTable L1 (merged + sorted)</text>
+
+            <line x1="830" y1="210" x2="830" y2="230" stroke="#26262b" stroke-width="1" stroke-dasharray="4 3"/>
+
+            <rect x="660" y="233" width="340" height="32" fill="#131316" stroke="#26262b" rx="4"/>
+            <text x="830" y="253" text-anchor="middle" fill="#6a6a66" font-size="10">SSTable L2 (largest, rarely read)</text>
+
+            <text x="830" y="278" text-anchor="middle" fill="#7fdba5" font-size="10">✓ sequential write (дуже швидко!)  ✓ масштабується</text>
+            <text x="830" y="296" text-anchor="middle" fill="#9a9a95" font-size="10">✗ write amplification · читання = кілька файлів</text>
+
+            <defs><marker id="arrowT2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4ecdc4"/></marker></defs>
+          </g>
+
+          <!-- Label: де використовується -->
+          <text x="550" y="170" text-anchor="middle" fill="#6a6a66" font-size="18" font-weight="300">vs</text>
+        </svg>
+        <div class="diagram-caption">B-Tree vs LSM Tree · два фундаментальних підходи до зберігання даних · (наведіть для пояснення)</div>
+      </div>
+
+      <h5 style="margin:32px 0 12px;font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)">② Consistent Hashing — як дані розподіляються між вузлами</h5>
+      <p>Уявіть ring з числами 0..2³² по колу. Кожен вузол кластера займає позицію на ring (через hash від IP/ID). Кожен ключ даних теж хешується і потрапляє до ближнього за годинниковою стрілкою вузла.</p>
+
+      <div class="cards" style="margin:16px 0">
+        <div class="card">
+          <div class="ic">⊕</div>
+          <h6>Проблема звичайного hashing</h6>
+          <p><code>node = hash(key) % N</code> — при зміні N (додали/видалили вузол) ≈ 100% ключів перерозподіляються. На кластері з ТБ даних це катастрофа.</p>
+        </div>
+        <div class="card">
+          <div class="ic">◯</div>
+          <h6>Consistent hashing — рішення</h6>
+          <p>При додаванні вузла перерозподіляється тільки ≈ 1/N частина ключів (від попереднього вузла до нового). Cassandra, DynamoDB, Redis Cluster — всі використовують цей принцип.</p>
+        </div>
+        <div class="card">
+          <div class="ic">↔</div>
+          <h6>Virtual nodes (vnodes)</h6>
+          <p>Кожен фізичний вузол займає кілька позицій на ring (128+ vnode). Забезпечує рівномірний розподіл навіть коли вузли різної потужності. Cassandra: за замовчуванням 256 vnode/вузол.</p>
+        </div>
+        <div class="card">
+          <div class="ic">🔑</div>
+          <h6>Partitioning key вибір</h6>
+          <p>Від partition key залежить де лежать дані. Погано: <code>user_status</code> (hot partition — 90% users = active). Добре: <code>user_id</code> (рівномірний розподіл через хеш).</p>
+        </div>
+      </div>
+
+      <h5 style="margin:32px 0 12px;font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)">③ CAP теорема — фундаментальне обмеження розподілених систем</h5>
+      <p>Теорема Брюера (2000): розподілена система може одночасно гарантувати лише <strong>два</strong> з трьох властивостей.</p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Властивість</th><th>Що означає</th><th>Системи що жертвують нею</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong style="color:#7fdba5">C — Consistency</strong></td>
+              <td>Кожен читач бачить останній запис або помилку. Всі вузли відповідають однаковими даними.</td>
+              <td>DynamoDB, Cassandra (eventual consistency за замовчуванням)</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#4ecdc4">A — Availability</strong></td>
+              <td>Кожен запит отримує відповідь (не обов'язково останні дані). Система не повертає timeout/error.</td>
+              <td>HBase, Zookeeper, etcd (жертвують A при network partition)</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#ffb627">P — Partition Tolerance</strong></td>
+              <td>Система продовжує роботу при обриві мережі між вузлами (network partition).</td>
+              <td>Ніхто — в реальних розподілених системах P є обов'язковим</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Практичне правило</div>
+        <p>Оскільки P (partition tolerance) — неминучий у будь-якій реальній мережі, вибір насправді між <strong>CP vs AP</strong>: або відмовляємо в обслуговуванні при збої (CP), або відповідаємо застарілими даними (AP). Для Big Data систем: HDFS/HBase = CP, Cassandra = AP (конфігурується через <code>ConsistencyLevel</code>), Kafka = CP (partition leader — єдине джерело правди).</p>
+      </div>
+
+      <h5 style="margin:32px 0 12px;font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)">④ Replication: як дані захищаються від втрати</h5>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Стратегія</th><th>Принцип</th><th>Де застосовується</th><th>Trade-off</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Leader-Follower</strong></td><td>Всі записи → leader. Followers реплікують. Читання можна розподілити.</td><td>Kafka, MySQL Replication, HDFS</td><td>Failover = вибір нового leader (downtime ~30 с)</td></tr>
+            <tr><td><strong>Multi-Leader</strong></td><td>Кілька вузлів приймають записи. Потрібна conflict resolution.</td><td>CockroachDB, Cassandra (LWW)</td><td>Конфлікти записів — складна обробка</td></tr>
+            <tr><td><strong>Leaderless (quorum)</strong></td><td>Запис вважається успішним якщо підтвердив W з N вузлів. Читання — R з N.</td><td>DynamoDB, Cassandra (R+W&gt;N)</td><td>Tunable consistency: R=1,W=1 = fast но AP; R=N,W=N = CP але повільно</td></tr>
+            <tr><td><strong>Synchronous replication</strong></td><td>Транзакція підтверджена тільки коли ВСІ репліки записали.</td><td>PostgreSQL sync standby, Kafka acks=all</td><td>Висока durability, але latency зростає при повільних репліках</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h5 style="margin:32px 0 12px;font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)">⑤ Write-Ahead Log (WAL) і Bloom Filter</h5>
+      <div class="cards" style="margin:16px 0">
+        <div class="card">
+          <div class="ic">📋</div>
+          <h6>Write-Ahead Log (WAL)</h6>
+          <p>Перед будь-якою зміною даних — спочатку записуємо намір у лог (sequential write на диск). Якщо система впала — при відновленні читаємо WAL і повторюємо операції. Використовується у PostgreSQL, Kafka (commitlog), HDFS edit log, HBase HLog. Гарантує durability навіть при crash.</p>
+        </div>
+        <div class="card">
+          <div class="ic">🌸</div>
+          <h6>Bloom Filter</h6>
+          <p>Probabilistic structure: швидко відповідає «точно немає» або «можливо є». Розмір: 10 байт на мільйон ключів! Cassandra і RocksDB тримають Bloom Filter для кожного SSTable — перед читанням перевіряємо фільтр: якщо «точно немає» → не відкриваємо файл взагалі. False positive rate &lt; 1%.</p>
+        </div>
+        <div class="card">
+          <div class="ic">🗜️</div>
+          <h6>Compaction стратегії</h6>
+          <p>LSM-системи накопичують SSTable-файли. Compaction об'єднує їх: видаляє tombstones (deleted records), merge sorted runs → менше файлів = швидше читання. Стратегії: SizeTiered (Cassandra default, агресивний), Leveled (LevelDB/RocksDB, менше read amplification), TimeWindow (Cassandra для time-series).</p>
+        </div>
+        <div class="card">
+          <div class="ic">📊</div>
+          <h6>Column Store vs Row Store</h6>
+          <p>Row store (PostgreSQL): один рядок — поряд на диску. Добре для OLTP (читаємо весь рядок). Column store (Parquet, ClickHouse): одна колонка — поряд. Добре для OLAP (SELECT amount, country — читаємо тільки 2 колонки з 50). Compression 5-10× краще в column store (схожі значення поряд).</p>
+        </div>
+      </div>
+
+      <h5 style="margin:32px 0 12px;font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)">⑥ Безпека big data систем — обов'язковий мінімум</h5>
+      <p>Більшість data breaches відбуваються через неправильну конфігурацію, а не через складні атаки. Ось що має бути на кожній платформі:</p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Рівень захисту</th><th>Що захищає</th><th>Інструменти</th><th>Типова помилка</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Шифрування at rest</strong></td>
+              <td>Дані на диску / в S3</td>
+              <td>SSE-S3, SSE-KMS, Parquet encryption, LUKS</td>
+              <td>S3 bucket без encryption за замовчуванням</td>
+            </tr>
+            <tr>
+              <td><strong>Шифрування in transit</strong></td>
+              <td>Дані між сервісами по мережі</td>
+              <td>TLS 1.3, mTLS між Kafka brokers/clients</td>
+              <td>Kafka без SSL у внутрішній мережі («нас ніхто не бачить»)</td>
+            </tr>
+            <tr>
+              <td><strong>Автентифікація</strong></td>
+              <td>Хто може підключитись</td>
+              <td>IAM Roles, Kerberos (HDFS), SASL/SCRAM (Kafka), OIDC</td>
+              <td>Сервісні акаунти з паролями у коді / env vars у Git</td>
+            </tr>
+            <tr>
+              <td><strong>Авторизація (RBAC)</strong></td>
+              <td>Що може робити кожна роль</td>
+              <td>IAM Policies, Ranger (Hadoop), ClickHouse RBAC, Snowflake roles</td>
+              <td>Всі data engineers читають production PII дані напряму</td>
+            </tr>
+            <tr>
+              <td><strong>PII маскування</strong></td>
+              <td>Персональні дані</td>
+              <td>Presidio, Faker для test data, column masking у DWH</td>
+              <td>Email/phone у gold-шарі доступні BI-аналітикам</td>
+            </tr>
+            <tr>
+              <td><strong>Audit log</strong></td>
+              <td>Хто що дивився/змінював</td>
+              <td>CloudTrail (AWS), BigQuery audit log, Snowflake query history</td>
+              <td>Немає логів → неможливо розслідувати incident</td>
+            </tr>
+            <tr>
+              <td><strong>Network isolation</strong></td>
+              <td>Мережевий доступ</td>
+              <td>VPC private subnets, Security Groups, K8s NetworkPolicy</td>
+              <td>S3 bucket publicly accessible, Kafka без IP-whitelist</td>
+            </tr>
+            <tr>
+              <td><strong>Secrets management</strong></td>
+              <td>Паролі, API ключі, сертифікати</td>
+              <td>AWS Secrets Manager, HashiCorp Vault, K8s Sealed Secrets</td>
+              <td>DB_PASSWORD=... у docker-compose.yml в публічному репо</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pitfall">
+        <div class="pt-label">Обмеження і ризики, які треба знати</div>
+        <ul style="margin-top:8px;padding-left:20px">
+          <li><strong>HDFS NameNode bottleneck</strong>: весь namespace у RAM одного процесу. При 100M+ файлів — NameNode стає вузьким місцем по пам'яті (кожен файл ≈ 150 bytes метаданих). Рішення: Federation, namespace quotas.</li>
+          <li><strong>Kafka partition count</strong>: більше партицій ≠ завжди краще. 10 000 партицій на брокер → вузьке місце при відновленні після перезапуску (leader election для кожної). Правило: max 4000 партицій / брокер.</li>
+          <li><strong>S3 rate limiting</strong>: за замовчуванням 3500 PUT/s і 5500 GET/s на prefix. При Spark з тисячами виконавців — можливий 503 SlowDown. Рішення: розподіляти файли по різних prefix-ах (не всі у <code>year=2026/</code>).</li>
+          <li><strong>Small files problem</strong>: мільйон файлів по 1 KB — катастрофа для HDFS (NameNode RAM) і S3 (LIST API calls). Рішення: compaction, Iceberg/Delta auto-compaction, Spark coalesce перед записом.</li>
+          <li><strong>Clock skew у distributed systems</strong>: різний час на серверах → неправильний порядок подій. Kafka, Flink використовують event-time + watermarks, не processing time. NTP синхронізація ≤ 10ms — обов'язкова.</li>
+        </ul>
       </div>
 
       <div class="resources">
@@ -2456,19 +2830,23 @@ result = df.filter(col("country") == "UA").groupBy("month").agg(sum("amount"))
       <div class="diagram">
         <svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
           <!-- Driver -->
+          <g data-tip="DRIVER||Процес де запускається ваш Python/Scala код. Тримає SparkSession/SparkContext. Будує логічний план (DataFrame operations) → оптимізує через Catalyst Optimizer → перетворює на DAG фізичних stages → роздає tasks executors. ВАЖЛИВО: Driver не обробляє дані сам — тільки координує. Якщо робите collect() великого DataFrame на Driver → OOM. Розмір Driver: 2-4 GB типово. При K8s: Driver = один Pod що живе весь час job.">
           <rect x="330" y="30" width="240" height="90" fill="#1a1a1d" stroke="#ffb627" stroke-width="2" rx="8"/>
           <text x="450" y="58" text-anchor="middle" fill="#ffb627" font-size="13" font-weight="700" letter-spacing="1">DRIVER</text>
           <text x="450" y="78" text-anchor="middle" fill="#f4f4f2" font-size="10">SparkSession · SparkContext</text>
           <text x="450" y="95" text-anchor="middle" fill="#9a9a95" font-size="10">plan execution · DAG scheduler</text>
           <text x="450" y="110" text-anchor="middle" fill="#9a9a95" font-size="10">task scheduler · здійснює collect()</text>
+          </g>
 
           <!-- Cluster Manager -->
+          <g data-tip="CLUSTER MANAGER||Виділяє ресурси (CPU, RAM) для Executors на Worker nodes. Не бере участі в обробці даних. YARN: legacy, частина Hadoop. Kubernetes (рекомендовано 2026): кожен Executor = окремий K8s Pod, автоматичне масштабування через Dynamic Allocation. Standalone: простий, для dev/staging. Mesos: практично мертвий. На AWS: EMR використовує YARN під капотом; Databricks — кастомний cluster manager.">
           <rect x="330" y="150" width="240" height="56" fill="#131316" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
           <text x="450" y="175" text-anchor="middle" fill="#4ecdc4" font-size="12" font-weight="700" letter-spacing="1">CLUSTER MANAGER</text>
           <text x="450" y="193" text-anchor="middle" fill="#9a9a95" font-size="10">YARN · Kubernetes · Standalone · Mesos</text>
+          </g>
 
           <!-- Workers -->
-          <g>
+          <g data-tip="WORKER 1 — Executor (JVM)||Executor — JVM процес що запускається на Worker ноді. Виконує tasks паралельно (1 task = 1 core). Зберігає кешовані RDD/DataFrames у пам'яті між stages. Кожен Executor = один процес з кількома threads (cores). Типовий розмір: 4-8 cores, 16-32 GB RAM. При spark.dynamicAllocation.enabled=true — K8s додає/видаляє Executor pods на льоту. Кольорові квадрати = окремі tasks що виконуються паралельно.">
             <rect x="60" y="240" width="200" height="80" fill="#131316" stroke="#26262b" rx="8"/>
             <text x="160" y="265" text-anchor="middle" fill="#ffb627" font-size="11" letter-spacing="1">WORKER 1</text>
             <text x="160" y="285" text-anchor="middle" fill="#9a9a95" font-size="10">Executor (JVM)</text>
@@ -2478,7 +2856,7 @@ result = df.filter(col("country") == "UA").groupBy("month").agg(sum("amount"))
             <rect x="170" y="295" width="25" height="18" fill="#ffb627" opacity=".4" rx="2"/>
             <rect x="200" y="295" width="25" height="18" fill="#ffb627" opacity=".4" rx="2"/>
           </g>
-          <g>
+          <g data-tip="WORKER 2 — Executor||Data locality: Spark намагається запустити task на тому вузлі де лежать дані (для HDFS). Для S3 — locality неможлива, тому Spark читає дані по мережі. Саме тому S3 дещо повільніший за HDFS для Spark (але зручніший операційно). Shuffle: при groupBy/join дані переміщуються між executors по мережі. Це найповільніша операція — намагайтесь мінімізувати shuffle.">
             <rect x="350" y="240" width="200" height="80" fill="#131316" stroke="#26262b" rx="8"/>
             <text x="450" y="265" text-anchor="middle" fill="#ffb627" font-size="11" letter-spacing="1">WORKER 2</text>
             <text x="450" y="285" text-anchor="middle" fill="#9a9a95" font-size="10">Executor (JVM)</text>
@@ -2913,6 +3291,53 @@ document.querySelectorAll('.qa-q').forEach(function(q){
     });
     dots.forEach(function(d, i){ d.classList.toggle('active', i === active); });
   }, {passive: true});
+})();
+
+// ── Diagram zoom modal ────────────────────────────────
+(function(){
+  var ov=document.createElement('div');ov.className='dz-overlay';ov.style.display='none';
+  var bx=document.createElement('div');bx.className='dz-box';
+  var cl=document.createElement('button');cl.className='dz-close';cl.textContent='✕';
+  bx.appendChild(cl);ov.appendChild(bx);document.body.appendChild(ov);
+
+  document.querySelectorAll('.diagram').forEach(function(d){
+    var svg=d.querySelector('svg');if(!svg)return;
+    var btn=document.createElement('button');btn.className='diagram-zoom-btn';btn.textContent='⤢ збільшити';
+    d.appendChild(btn);
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      while(bx.children.length>1)bx.removeChild(bx.lastChild);
+      var c=svg.cloneNode(true);c.removeAttribute('style');bx.appendChild(c);
+      ov.style.display='flex';document.body.style.overflow='hidden';
+    });
+  });
+  function close(){ov.style.display='none';document.body.style.overflow='';}
+  cl.addEventListener('click',close);
+  ov.addEventListener('click',function(e){if(e.target===ov)close();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+})();
+
+// ── SVG hover tooltips ────────────────────────────────
+(function(){
+  var tip=document.createElement('div');tip.id='svgtip';
+  tip.innerHTML='<div class="tt"></div><div class="tb"></div>';
+  document.body.appendChild(tip);
+  document.querySelectorAll('[data-tip]').forEach(function(el){
+    el.style.cursor='help';
+    el.addEventListener('mouseenter',function(){
+      var p=el.getAttribute('data-tip').split('||');
+      tip.querySelector('.tt').textContent=p[0]||'';
+      tip.querySelector('.tb').textContent=p[1]||p[0];
+      tip.classList.add('on');
+    });
+    el.addEventListener('mousemove',function(e){
+      var x=e.clientX+18,y=e.clientY+14;
+      if(x+295>window.innerWidth)x=e.clientX-298;
+      if(y+170>window.innerHeight)y=e.clientY-140;
+      tip.style.left=x+'px';tip.style.top=y+'px';
+    });
+    el.addEventListener('mouseleave',function(){tip.classList.remove('on');});
+  });
 })();
 </script>
 </body>
