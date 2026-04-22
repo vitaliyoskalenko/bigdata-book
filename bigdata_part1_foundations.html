@@ -385,6 +385,14 @@ footer a{color:var(--fg-muted)}
   letter-spacing:.14em;text-transform:uppercase;
   color:var(--accent);margin-bottom:6px;
 }
+/* Code block collapse */
+.pre-collapsed{max-height:130px;overflow:hidden}
+.pre-collapsed::after{content:'';position:absolute;bottom:0;left:0;right:0;height:70px;background:linear-gradient(transparent,var(--bg-3));pointer-events:none;z-index:1;border-radius:0 0 8px 8px}
+.code-expand-btn{display:block;width:100%;padding:7px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-top:none;color:var(--fg-dim);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-align:center;cursor:pointer;border-radius:0 0 6px 6px;margin-bottom:24px;transition:background .15s,color .15s}
+.code-expand-btn:hover{background:rgba(255,255,255,.06);color:var(--fg-muted)}
+/* Milestone architecture diagrams */
+.ms-diagram{margin-top:22px;border-top:1px solid var(--border-soft);padding-top:16px}
+.ms-diagram-hdr{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -499,7 +507,7 @@ footer a{color:var(--fg-muted)}
         <div class="reading-time">~20 хв читання</div>
         <div class="mod-week">Тиждень 1 · ~15 год навчання</div>
         <h2 class="mod-title">Вступ до <em>Big Data Infrastructure</em></h2>
-        <p class="mod-lead">Розбираємось, чому «великі дані» — це не просто «багато даних», коли класичний PostgreSQL справді не витягує, і як з 2004 року сформувався сучасний Modern Data Stack.</p>
+        <p class="mod-lead">Big Data — клас інженерних задач, де обсяг, швидкість або різноманітність даних унеможливлюють використання однієї реляційної БД. Розбираємо, де пролягає ця межа, чому вона існує технічно, і як з 2004 року сформувався сучасний Modern Data Stack із десятків інструментів, які навчились між собою ладнати.</p>
       </div>
     </div>
 
@@ -728,6 +736,32 @@ footer a{color:var(--fg-muted)}
           <li>Намалювати high-level архітектурну діаграму того, що будемо будувати 20 тижнів</li>
           <li>Зафіксувати перший ADR (Architecture Decision Record): <code>ADR-001-technology-stack.md</code></li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М1 — тільки планування, даних поки немає</div>
+          <svg viewBox="0 0 860 115" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs><marker id="arM1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4ecdc4"/></marker></defs>
+            <circle cx="22" cy="15" r="4" fill="#4ecdc4"/><text x="32" y="19" fill="#4ecdc4" font-size="9" letter-spacing=".08em">НОВЕ В М1</text>
+            <rect x="20" y="28" width="168" height="72" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+            <text x="104" y="52" text-anchor="middle" fill="#4ecdc4" font-size="11" font-weight="700">GitHub Repo</text>
+            <text x="104" y="67" text-anchor="middle" fill="#9a9a95" font-size="9">shopwave-platform</text>
+            <text x="104" y="81" text-anchor="middle" fill="#6a6a66" font-size="8">src/ · docs/ · schemas/ · tests/</text>
+            <line x1="188" y1="64" x2="213" y2="64" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arM1)"/>
+            <rect x="213" y="28" width="168" height="72" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+            <text x="297" y="52" text-anchor="middle" fill="#4ecdc4" font-size="11" font-weight="700">Vision Document</text>
+            <text x="297" y="67" text-anchor="middle" fill="#9a9a95" font-size="9">7-10 бізнес-питань · SLA</text>
+            <text x="297" y="81" text-anchor="middle" fill="#6a6a66" font-size="8">очікуваний events/day</text>
+            <line x1="381" y1="64" x2="406" y2="64" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arM1)"/>
+            <rect x="406" y="28" width="168" height="72" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+            <text x="490" y="52" text-anchor="middle" fill="#4ecdc4" font-size="11" font-weight="700">ADR-001</text>
+            <text x="490" y="67" text-anchor="middle" fill="#9a9a95" font-size="9">technology-stack.md</text>
+            <text x="490" y="81" text-anchor="middle" fill="#6a6a66" font-size="8">чому Kafka · Spark · Iceberg</text>
+            <line x1="574" y1="64" x2="599" y2="64" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arM1)"/>
+            <rect x="599" y="28" width="241" height="72" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+            <text x="719" y="52" text-anchor="middle" fill="#4ecdc4" font-size="11" font-weight="700">High-level Arch Diagram</text>
+            <text x="719" y="67" text-anchor="middle" fill="#9a9a95" font-size="9">target state на 20 тижнів</text>
+            <text x="719" y="81" text-anchor="middle" fill="#6a6a66" font-size="8">Excalidraw / draw.io</text>
+          </svg>
+        </div>
       </div>
       <!-- ARCHITECTURE SECTION -->
       <h4>Архітектури за рівнем зрілості компанії</h4>
@@ -840,7 +874,7 @@ footer a{color:var(--fg-muted)}
           <div class="ca-diagram diagram">
             <svg viewBox="0 0 860 320" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <!-- Sources -->
-              <g>
+              <g data-tip="ДЖЕРЕЛА подій Netflix||700 мільярдів подій на день. TV clients: смарт-ТВ, PlayStation, Chromecast — кожен старт відео, пауза, перемотка. Mobile apps: iOS/Android — події прогресу перегляду кожні 10 сек. Microservices: 1000+ мікросервісів генерують infrastructure-події. CDN logs: Akamai/AWS CloudFront — мережеві метрики, помилки відтворення.">
                 <text x="60" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">SOURCES</text>
                 <rect x="10" y="25" width="100" height="30" fill="#131316" stroke="#E50914" stroke-width="1.5" rx="5"/>
                 <text x="60" y="44" text-anchor="middle" fill="#f4f4f2" font-size="10">TV clients</text>
@@ -857,7 +891,7 @@ footer a{color:var(--fg-muted)}
               <line x1="110" y1="116" x2="160" y2="100" stroke="#6a6a66" stroke-width="1"/>
               <line x1="110" y1="154" x2="160" y2="110" stroke="#6a6a66" stroke-width="1"/>
               <!-- Kafka -->
-              <rect x="160" y="40" width="130" height="120" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+              <rect x="160" y="40" width="130" height="120" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8" data-tip="KAFKA (Netflix)||Центральна шина даних Netflix. 700 мільярдів подій/день через Apache Kafka. Три ключові топіки: playback-events (кожна дія при відтворенні), viewing-history (що і скільки дивились), infrastructure-events (стан сервісів). Netflix запускає тисячі партицій. Власний інструмент Hollow для кешування master data (каталог фільмів) без Kafka-overhead."/>
               <text x="225" y="58" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700" letter-spacing="1">KAFKA</text>
               <text x="225" y="73" text-anchor="middle" fill="#9a9a95" font-size="9">700B events/day</text>
               <rect x="172" y="82" width="106" height="16" fill="#131316" stroke="#26262b" rx="3"/><text x="225" y="93" text-anchor="middle" fill="#9a9a95" font-size="8">playback-events</text>
@@ -868,17 +902,17 @@ footer a{color:var(--fg-muted)}
               <line x1="290" y1="100" x2="340" y2="120" stroke="#6a6a66" stroke-width="1"/>
               <line x1="290" y1="130" x2="340" y2="190" stroke="#6a6a66" stroke-width="1"/>
               <!-- Flink (real-time) -->
-              <rect x="340" y="30" width="120" height="55" fill="rgba(183,148,246,.08)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+              <rect x="340" y="30" width="120" height="55" fill="rgba(183,148,246,.08)" stroke="#b794f6" stroke-width="1.5" rx="8" data-tip="Apache Flink (Netflix)||Real-time обробка для alertів і anomaly detection. Приклад: якщо encoding-сервер починає генерувати помилки — Flink виявляє це за 10 секунд і автоматично перемаршрутизує трафік. Також: real-time A/B тести — Flink рахує конверсію нового UI прямо під час rollout. Latency обробки < 1 секунди."/>
               <text x="400" y="48" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">Apache Flink</text>
               <text x="400" y="62" text-anchor="middle" fill="#9a9a95" font-size="9">real-time alerts</text>
               <text x="400" y="74" text-anchor="middle" fill="#9a9a95" font-size="9">anomaly detection</text>
               <!-- Spark (batch/ML) -->
-              <rect x="340" y="98" width="120" height="55" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+              <rect x="340" y="98" width="120" height="55" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8" data-tip="Apache Spark (Netflix)||Нічний batch ETL і ML feature engineering. Spark читає raw events з Iceberg, очищує, агрегує у silver/gold шари. Feature engineering для рекомендаційних моделей: co-view matrix (що дивляться разом), user embedding (вектор смаків). Spark MLlib + TensorFlow на GPU для тренування моделей. Кастомний Genie — система планування Spark-джобів."/>
               <text x="400" y="116" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">Apache Spark</text>
               <text x="400" y="130" text-anchor="middle" fill="#9a9a95" font-size="9">batch ETL + ML</text>
               <text x="400" y="142" text-anchor="middle" fill="#9a9a95" font-size="9">training features</text>
               <!-- S3 Sink -->
-              <rect x="340" y="168" width="120" height="35" fill="#131316" stroke="#26262b" rx="8"/>
+              <rect x="340" y="168" width="120" height="35" fill="#131316" stroke="#26262b" rx="8" data-tip="S3 Sink Connector||Kafka Connect S3 Sink — автоматично архівує всі Kafka-події у raw-форматі на AWS S3 (Parquet). Це bronze-шар: нічого не видаляємо, нічого не змінюємо. Retention у Kafka — 7 днів, але в S3 — назавжди. Дозволяє «відмотати» будь-яку помилку в pipeline через reprocessing з сирих даних."/>
               <text x="400" y="183" text-anchor="middle" fill="#9a9a95" font-size="9">S3 Sink Connector</text>
               <text x="400" y="195" text-anchor="middle" fill="#6a6a66" font-size="9">raw archive</text>
               <!-- Arrows -->
@@ -886,7 +920,7 @@ footer a{color:var(--fg-muted)}
               <line x1="460" y1="125" x2="500" y2="110" stroke="#6a6a66" stroke-width="1"/>
               <line x1="460" y1="185" x2="500" y2="195" stroke="#6a6a66" stroke-width="1"/>
               <!-- Iceberg Lake -->
-              <rect x="500" y="40" width="135" height="180" fill="rgba(127,219,165,.04)" stroke="#7fdba5" stroke-width="1.5" rx="8"/>
+              <rect x="500" y="40" width="135" height="180" fill="rgba(127,219,165,.04)" stroke="#7fdba5" stroke-width="1.5" rx="8" data-tip="ICEBERG LAKE (Netflix)||450 петабайт на AWS S3 у форматі Apache Iceberg. Netflix — один зі співавторів Iceberg (разом з Apple/LinkedIn). Iceberg дає: ACID транзакції (безпечні upserts), time travel (читати дані «як вони були тиждень тому»), hidden partitioning (Spark не знає про партиції — Iceberg сам оптимізує). Metacat — власний data catalog поверх Iceberg для discovery і lineage."/>
               <text x="567" y="58" text-anchor="middle" fill="#7fdba5" font-size="10" font-weight="700" letter-spacing="1">ICEBERG LAKE</text>
               <text x="567" y="70" text-anchor="middle" fill="#9a9a95" font-size="9">450 PB · AWS S3</text>
               <rect x="512" y="78" width="111" height="20" fill="rgba(139,90,43,.3)" stroke="#26262b" rx="3"/><text x="567" y="91" text-anchor="middle" fill="#9a9a95" font-size="8">Bronze: raw events</text>
@@ -898,20 +932,20 @@ footer a{color:var(--fg-muted)}
               <line x1="635" y1="100" x2="670" y2="80" stroke="#6a6a66" stroke-width="1"/>
               <line x1="635" y1="130" x2="670" y2="130" stroke="#6a6a66" stroke-width="1"/>
               <line x1="635" y1="160" x2="670" y2="180" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="670" y="50" width="100" height="35" fill="#131316" stroke="#b794f6" rx="6"/>
+              <rect x="670" y="50" width="100" height="35" fill="#131316" stroke="#b794f6" rx="6" data-tip="Apache Druid (Netflix)||Real-time OLAP для sub-second запитів по мільярдах подій. Druid зберігає дані у колонковому форматі з pre-aggregation у пам'яті. Запит «скільки переглядів фільму X за останні 5 хвилин» — відповідь < 100ms. Netflix Studio використовує Druid для live дашбордів: метрики нового релізу прямо в день прем'єри."/>
               <text x="720" y="65" text-anchor="middle" fill="#b794f6" font-size="9">Druid</text>
               <text x="720" y="77" text-anchor="middle" fill="#6a6a66" font-size="8">sub-sec queries</text>
-              <rect x="670" y="110" width="100" height="35" fill="#131316" stroke="#26262b" rx="6"/>
+              <rect x="670" y="110" width="100" height="35" fill="#131316" stroke="#26262b" rx="6" data-tip="Presto / Trino (Netflix)||Distributed SQL engine для ad-hoc аналітики по всьому Iceberg Lake. Аналітики пишуть звичайний SQL — Presto/Trino транслює у distributed scan по S3. Netflix запускає тисячі одночасних запитів через Presto. Типовий запит: «порівняй retention cohort для двох thumbnail варіантів A/B тесту за останні 30 днів»."/>
               <text x="720" y="125" text-anchor="middle" fill="#9a9a95" font-size="9">Presto/Trino</text>
               <text x="720" y="137" text-anchor="middle" fill="#6a6a66" font-size="8">ad-hoc SQL</text>
-              <rect x="670" y="165" width="100" height="35" fill="#131316" stroke="#26262b" rx="6"/>
+              <rect x="670" y="165" width="100" height="35" fill="#131316" stroke="#26262b" rx="6" data-tip="Spark MLlib / ML (Netflix)||Рекомендаційний движок — серце бізнесу Netflix (80% переглядів через рекомендації). Алгоритм: матрична факторизація (ALS) для collaborative filtering + content-based filtering. Input: viewing history з Iceberg gold-шару. Output: personalized rankings для ~300M users. Тренування щодня. TensorFlow додатково для deep learning моделей thumbnail оптимізації."/>
               <text x="720" y="180" text-anchor="middle" fill="#9a9a95" font-size="9">Spark MLlib</text>
               <text x="720" y="192" text-anchor="middle" fill="#6a6a66" font-size="8">рекомендації</text>
               <!-- BI -->
               <line x1="770" y1="67" x2="800" y2="80" stroke="#6a6a66" stroke-width="1"/>
               <line x1="770" y1="127" x2="800" y2="110" stroke="#6a6a66" stroke-width="1"/>
               <line x1="770" y1="182" x2="800" y2="150" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="800" y="60" width="50" height="100" fill="rgba(229,9,20,.08)" stroke="#E50914" stroke-width="1" rx="6"/>
+              <rect x="800" y="60" width="50" height="100" fill="rgba(229,9,20,.08)" stroke="#E50914" stroke-width="1" rx="6" data-tip="Netflix Studio / Consumers||Кінцеві споживачі аналітики: Studio teams (контентні рішення — яке шоу знімати, за скільки), A/B testing platform (100+ одночасних експериментів), Personalization (рекомендації), BI для executive dashboards. Data Mesh: кожна команда — окремий domain із власними data products. Інженери команди самі відповідають за якість своїх pipeline — не централізована data team."/>
               <text x="825" y="82" text-anchor="middle" fill="#E50914" font-size="8" font-weight="700">Studio</text>
               <text x="825" y="94" text-anchor="middle" fill="#6a6a66" font-size="8">BI tools</text>
               <text x="825" y="106" text-anchor="middle" fill="#6a6a66" font-size="8">A/B tests</text>
@@ -919,7 +953,7 @@ footer a{color:var(--fg-muted)}
               <text x="825" y="130" text-anchor="middle" fill="#6a6a66" font-size="8">content</text>
               <text x="825" y="142" text-anchor="middle" fill="#6a6a66" font-size="8">scoring</text>
               <!-- Data Mesh label -->
-              <rect x="10" y="245" width="840" height="50" fill="rgba(127,219,165,.03)" stroke="rgba(127,219,165,.2)" stroke-dasharray="4,3" rx="8"/>
+              <rect x="10" y="245" width="840" height="50" fill="rgba(127,219,165,.03)" stroke="rgba(127,219,165,.2)" stroke-dasharray="4,3" rx="8" data-tip="DATA MESH (Netflix, з 2019)||Архітектурний підхід: замість центральної data team — кожна продуктова команда (Streaming, Studio, Ads, Personalization) «власник» своїх даних і відповідає за їх якість. Інструменти: Metacat (data catalog), Hollow (change data propagation), Maestro (workflow), Genie (Spark job scheduler). Переваги: масштабується на 100+ команд. Недолік: складна координація стандартів."/>
               <text x="430" y="264" text-anchor="middle" fill="#7fdba5" font-size="10" letter-spacing="1">DATA MESH — кожна domain-команда (Streaming, Studio, Personalization, Infrastructure) має власні data products</text>
               <text x="430" y="283" text-anchor="middle" fill="#6a6a66" font-size="9">Metacat (data catalog) · Hollow (data change events) · Maestro (workflow orchestration) · Genie (Spark/Hive jobs)</text>
             </svg>
@@ -962,7 +996,7 @@ footer a{color:var(--fg-muted)}
               <line x1="110" y1="74" x2="155" y2="90" stroke="#6a6a66" stroke-width="1"/>
               <line x1="110" y1="109" x2="155" y2="100" stroke="#6a6a66" stroke-width="1"/>
               <line x1="110" y1="144" x2="155" y2="110" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="155" y="35" width="120" height="105" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+              <rect x="155" y="35" width="120" height="105" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8" data-tip="KAFKA (Uber)||Uber у пік має 6000+ Kafka брокерів і обробляє трильйони повідомлень на місяць. Раніше Uber мав власну систему Cherami (Go), але перейшов на Kafka. uReplicator — власний Kafka MirrorMaker замінник для cross-datacenter реплікації без lag. Топік trips: координати, статус, водій+пасажир. Топік location-updates: GPS кожні 4 секунди від кожного водія."/>
               <text x="215" y="52" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">KAFKA</text>
               <text x="215" y="65" text-anchor="middle" fill="#9a9a95" font-size="9">Cherami (prev)</text>
               <rect x="166" y="73" width="98" height="15" fill="#131316" stroke="#26262b" rx="2"/><text x="215" y="83" text-anchor="middle" fill="#9a9a95" font-size="8">trips</text>
@@ -971,13 +1005,13 @@ footer a{color:var(--fg-muted)}
               <!-- Flink -->
               <line x1="275" y1="65" x2="310" y2="50" stroke="#6a6a66" stroke-width="1"/>
               <line x1="275" y1="100" x2="310" y2="160" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="310" y="18" width="120" height="65" fill="rgba(183,148,246,.08)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+              <rect x="310" y="18" width="120" height="65" fill="rgba(183,148,246,.08)" stroke="#b794f6" stroke-width="1.5" rx="8" data-tip="Apache Flink / AthenaX (Uber)||AthenaX — Uber's SQL-on-Flink платформа. Data engineers пишуть SQL, AthenaX компілює у Flink jobs. Головний use case: surge pricing — аналіз попиту/пропозиції в реальному часі по географічних зонах, перерахунок ціни кожні 30 секунд. Fraud detection: аномальні паттерни замовлень (кількість cancelled trips від одного джерела). Latency < 100ms."/>
               <text x="370" y="35" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">Apache Flink</text>
               <text x="370" y="48" text-anchor="middle" fill="#9a9a95" font-size="9">(AthenaX SQL platform)</text>
               <text x="370" y="61" text-anchor="middle" fill="#9a9a95" font-size="9">surge pricing · fraud detect</text>
               <text x="370" y="73" text-anchor="middle" fill="#6a6a66" font-size="8">latency: &lt; 100ms</text>
               <!-- Apache Pinot (real-time OLAP) -->
-              <rect x="310" y="130" width="120" height="65" fill="rgba(255,182,39,.08)" stroke="#ffb627" stroke-width="1.5" rx="8"/>
+              <rect x="310" y="130" width="120" height="65" fill="rgba(255,182,39,.08)" stroke="#ffb627" stroke-width="1.5" rx="8" data-tip="Apache Pinot (Uber)||Uber розробив Apache Pinot для user-facing real-time analytics — тобто аналітика прямо в продукті. Driver dashboard: «скільки ти заробив сьогодні» — Pinot відповідає за < 100ms навіть при мільйонах водіїв що одночасно перевіряють статистику. uReplicator подає дані з Kafka напряму в Pinot без batch. Star-tree index: pre-aggregated rollups для швидких агрегатів. Rider app: «де мій водій» ETA — теж через Pinot."/>
               <text x="370" y="148" text-anchor="middle" fill="#ffb627" font-size="10" font-weight="700">Apache Pinot</text>
               <text x="370" y="162" text-anchor="middle" fill="#9a9a95" font-size="9">real-time OLAP</text>
               <text x="370" y="176" text-anchor="middle" fill="#9a9a95" font-size="9">uReplicator (Kafka→Pinot)</text>
@@ -987,7 +1021,7 @@ footer a{color:var(--fg-muted)}
               <line x1="430" y1="163" x2="470" y2="130" stroke="#6a6a66" stroke-width="1"/>
               <line x1="275" y1="88" x2="470" y2="115" stroke="#6a6a66" stroke-width="1" stroke-dasharray="3,2"/>
               <!-- Hudi Lake -->
-              <rect x="470" y="38" width="130" height="150" fill="rgba(127,219,165,.04)" stroke="#7fdba5" stroke-width="1.5" rx="8"/>
+              <rect x="470" y="38" width="130" height="150" fill="rgba(127,219,165,.04)" stroke="#7fdba5" stroke-width="1.5" rx="8" data-tip="Apache Hudi Lakehouse (Uber)||Uber — творці Apache Hudi (Hadoop Upserts Deletes and Incrementals). Hudi дозволяє CDC upserts у data lake: оновлення запису про поїздку після завершення (ціна, оцінка) без перезапису всього Parquet файлу. Copy-on-Write (CoW): новий Parquet при кожному upsert, швидке читання. Merge-on-Read (MoR): delta logs + base, швидкий запис. GDPR: right-to-be-forgotten через Hudi delete API."/>
               <text x="535" y="55" text-anchor="middle" fill="#7fdba5" font-size="10" font-weight="700">APACHE HUDI</text>
               <text x="535" y="67" text-anchor="middle" fill="#9a9a95" font-size="9">Lakehouse · HDFS/S3</text>
               <rect x="481" y="75" width="108" height="16" fill="rgba(139,90,43,.3)" stroke="#26262b" rx="2"/><text x="535" y="86" text-anchor="middle" fill="#9a9a95" font-size="8">raw_trips (upsert CDC)</text>
@@ -998,20 +1032,20 @@ footer a{color:var(--fg-muted)}
               <!-- Query -->
               <line x1="600" y1="90" x2="635" y2="70" stroke="#6a6a66" stroke-width="1"/>
               <line x1="600" y1="130" x2="635" y2="140" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="635" y="40" width="105" height="40" fill="#131316" stroke="#26262b" rx="6"/>
+              <rect x="635" y="40" width="105" height="40" fill="#131316" stroke="#26262b" rx="6" data-tip="Presto / Spark SQL (Uber)||Ad-hoc аналітика для data scientists і analytics engineers. Uber запускає тисячі Presto queries/день. Типові запити: аналіз поїздок по районах міста, сегментація водіїв по заробітку, cohort retention для нових ринків. QueryBook — власний Uber query editor з sharing та versioning."/>
               <text x="687" y="57" text-anchor="middle" fill="#9a9a95" font-size="9">Presto / Spark SQL</text>
               <text x="687" y="70" text-anchor="middle" fill="#6a6a66" font-size="8">ad-hoc analytics</text>
-              <rect x="635" y="120" width="105" height="40" fill="#131316" stroke="#4ecdc4" rx="6"/>
+              <rect x="635" y="120" width="105" height="40" fill="#131316" stroke="#4ecdc4" rx="6" data-tip="Uber Internal BI + DataVis||Власні BI дашборди для operations команди: стан ринку по містах в реальному часі, driver supply vs rider demand heat map, city-level P&L. Tableau для executive reporting. Собственний Uber DataViz platform для глибокого аналізу. City operations managers щодня дивляться на ці дашборди для прийняття рішень про промо та ціноутворення."/>
               <text x="687" y="137" text-anchor="middle" fill="#4ecdc4" font-size="9">Uber internal BI</text>
               <text x="687" y="150" text-anchor="middle" fill="#6a6a66" font-size="8">DataVis + Tableau</text>
               <!-- ML -->
-              <rect x="635" y="175" width="105" height="40" fill="#131316" stroke="#b794f6" rx="6"/>
+              <rect x="635" y="175" width="105" height="40" fill="#131316" stroke="#b794f6" rx="6" data-tip="Michelangelo ML (Uber)||Власна ML платформа Uber для навчання та обслуговування моделей у продакшені. Задачі: ETA (estimated time of arrival) — точність ±90 сек у 90% випадків; surge pricing — динамічна ціна за попитом за секунди; fraud detection; driver churn prediction. Feature store зберігає 10,000+ features. Щодня переучуються сотні моделей."/>
               <text x="687" y="191" text-anchor="middle" fill="#b794f6" font-size="9">Michelangelo ML</text>
               <text x="687" y="204" text-anchor="middle" fill="#6a6a66" font-size="8">ETA / demand forecast</text>
               <line x1="600" y1="155" x2="635" y2="195" stroke="#6a6a66" stroke-width="1"/>
               <!-- Pinot → Driver app -->
               <line x1="430" y1="163" x2="760" y2="163" stroke="#ffb627" stroke-width="1.5" stroke-dasharray="4,2"/>
-              <rect x="760" y="148" width="90" height="30" fill="rgba(255,182,39,.1)" stroke="#ffb627" rx="5"/>
+              <rect x="760" y="148" width="90" height="30" fill="rgba(255,182,39,.1)" stroke="#ffb627" rx="5" data-tip="Driver App — Real-time Stats||Мобільний застосунок водія отримує live-статистику через Apache Pinot з затримкою &lt;100 мс: скільки поїздок сьогодні, поточний заробіток, рейтинг, бонусні умови. Дані йдуть напряму з Pinot через WebSocket — без проміжних шарів. Це і є унікальність Uber: user-facing analytics у реальному часі для мільйонів водіїв одночасно."/>
               <text x="805" y="161" text-anchor="middle" fill="#ffb627" font-size="9">Driver App</text>
               <text x="805" y="172" text-anchor="middle" fill="#6a6a66" font-size="8">real-time stats</text>
               <text x="580" y="155" text-anchor="middle" fill="#ffb627" font-size="8">Pinot→Driver: &lt;100ms latency</text>
@@ -1042,17 +1076,17 @@ footer a{color:var(--fg-muted)}
             <svg viewBox="0 0 860 250" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <!-- Sources -->
               <text x="55" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">SOURCES</text>
-              <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="Client Apps — Spotify Frontend||iOS/Android/Web застосунки Spotify генерують потік подій: play, pause, skip, like, search, ad impression. Кожна взаємодія — це event у Pub/Sub. ~600M MAU × кілька дій/хв = мільярди подій/день. Ці дані — основа для Discover Weekly та персоналізації."/>
               <text x="55" y="42" text-anchor="middle" fill="#9a9a95" font-size="10">Client apps</text>
-              <rect x="8" y="58" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="58" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="Backend Services||Мікросервіси Spotify (Golang, Java, Python) публікують бізнес-події: плейлист збережено, підписку оновлено, плейлист відтворено до кінця. Кожен сервіс — незалежний producer у Pub/Sub. Spotify використовує gRPC між сервісами та Pub/Sub для асинхронної комунікації між командами."/>
               <text x="55" y="75" text-anchor="middle" fill="#9a9a95" font-size="10">Backend svcs</text>
-              <rect x="8" y="91" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="91" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="Ad Platform||Рекламна платформа Spotify: impression events (показ реклами), click events, audio ad completion. Ці дані критичні для billing рекламодавців та оптимізації CPM (cost per mille). Дані йдуть в окремий Pub/Sub topic для швидшого виставлення рахунків."/>
               <text x="55" y="108" text-anchor="middle" fill="#9a9a95" font-size="10">Ad platform</text>
               <!-- Pub/Sub -->
               <line x1="102" y1="38" x2="140" y2="65" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="71" x2="140" y2="75" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="104" x2="140" y2="85" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="140" y="30" width="110" height="90" fill="rgba(29,185,84,.08)" stroke="#1DB954" stroke-width="1.5" rx="8"/>
+              <rect x="140" y="30" width="110" height="90" fill="rgba(29,185,84,.08)" stroke="#1DB954" stroke-width="1.5" rx="8" data-tip="GCP Pub/Sub — Serverless Messaging||Повністю managed message broker від Google. На відміну від Kafka не потребує кластер-менеджменту. Topics: play-events, user-actions, ad-impressions. Auto-scaling під будь-який трафік. Gарантує at-least-once delivery. Spotify обрав Pub/Sub замість Kafka щоб не тримати команду Kafka-ops — «не будуй те, що вже є managed у cloud»."/>
               <text x="195" y="48" text-anchor="middle" fill="#1DB954" font-size="10" font-weight="700">GCP Pub/Sub</text>
               <text x="195" y="63" text-anchor="middle" fill="#9a9a95" font-size="9">serverless messaging</text>
               <rect x="151" y="73" width="88" height="14" fill="#131316" stroke="#26262b" rx="2"/><text x="195" y="83" text-anchor="middle" fill="#9a9a95" font-size="8">play-events</text>
@@ -1060,19 +1094,19 @@ footer a{color:var(--fg-muted)}
               <!-- Dataflow -->
               <line x1="250" y1="75" x2="285" y2="60" stroke="#6a6a66" stroke-width="1"/>
               <line x1="250" y1="85" x2="285" y2="120" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="285" y="20" width="120" height="65" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+              <rect x="285" y="20" width="120" height="65" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8" data-tip="GCP Dataflow — Apache Beam||Managed serverless обробка на основі Apache Beam. Spotify розробив власний Scala DSL — Scio — що дозволяє писати однаковий код для streaming і batch. Pipeline: Pub/Sub → Dataflow (enrichment, sessionization, dedup) → BigQuery/GCS. Auto-scales від 0 до тисяч worker'ів. Ключова перевага: unified model — той самий pipeline для real-time і historical reprocessing."/>
               <text x="345" y="37" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">GCP Dataflow</text>
               <text x="345" y="51" text-anchor="middle" fill="#9a9a95" font-size="9">(Apache Beam)</text>
               <text x="345" y="63" text-anchor="middle" fill="#9a9a95" font-size="9">Scio (Scala DSL)</text>
               <text x="345" y="75" text-anchor="middle" fill="#6a6a66" font-size="8">stream + batch unified</text>
-              <rect x="285" y="100" width="120" height="50" fill="rgba(183,148,246,.06)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+              <rect x="285" y="100" width="120" height="50" fill="rgba(183,148,246,.06)" stroke="#b794f6" stroke-width="1.5" rx="8" data-tip="Cloud Composer — Managed Airflow||Google Cloud Composer = Apache Airflow as a service. Orchestrates batch pipelines: щоденна матрична факторизація для Discover Weekly, нічний rebuild рекомендацій, тижневий retraining ML-моделей. DAGs зберігаються в GCS. Composer керує worker scaling автоматично. Spotify не тримає Airflow кластер самостійно — цим займається Google."/>
               <text x="345" y="117" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">Cloud Composer</text>
               <text x="345" y="131" text-anchor="middle" fill="#9a9a95" font-size="9">(managed Airflow)</text>
               <text x="345" y="143" text-anchor="middle" fill="#6a6a66" font-size="8">orchestration</text>
               <!-- BigQuery -->
               <line x1="405" y1="52" x2="440" y2="80" stroke="#6a6a66" stroke-width="1"/>
               <line x1="405" y1="125" x2="440" y2="110" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="440" y="30" width="130" height="130" fill="rgba(66,133,244,.06)" stroke="#4285F4" stroke-width="1.5" rx="8"/>
+              <rect x="440" y="30" width="130" height="130" fill="rgba(66,133,244,.06)" stroke="#4285F4" stroke-width="1.5" rx="8" data-tip="BigQuery DWH — Serverless SQL||Серце Spotify data платформи. Serverless columnar DWH — не треба керувати кластером. Зберігає: raw_streams (GCS Parquet), user_profiles, listening_history (петабайти), ml_track_features. BigQuery автоматично партиціонує та кластеризує таблиці. Discover Weekly щотижня читає listening_history для 600M+ юзерів за хвилини — це неможливо у традиційних DWH. Cost: платиш за scan, не за storage."/>
               <text x="505" y="48" text-anchor="middle" fill="#4285F4" font-size="10" font-weight="700">BigQuery DWH</text>
               <text x="505" y="63" text-anchor="middle" fill="#9a9a95" font-size="9">serverless SQL · GCS</text>
               <rect x="451" y="72" width="108" height="15" fill="rgba(139,90,43,.3)" stroke="#26262b" rx="2"/><text x="505" y="83" text-anchor="middle" fill="#9a9a95" font-size="8">raw_streams (GCS Parquet)</text>
@@ -1082,14 +1116,14 @@ footer a{color:var(--fg-muted)}
               <!-- Looker + Vertex AI -->
               <line x1="570" y1="80" x2="605" y2="65" stroke="#6a6a66" stroke-width="1"/>
               <line x1="570" y1="120" x2="605" y2="140" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="605" y="35" width="110" height="45" fill="#131316" stroke="#26262b" rx="6"/>
+              <rect x="605" y="35" width="110" height="45" fill="#131316" stroke="#26262b" rx="6" data-tip="Looker / Tableau — BI Layer||Business Intelligence для внутрішніх команд Spotify: content teams аналізують подкасти та треки, marketing відстежує кампанії, фінанси — MRR/ARR. Looker підключений до BigQuery через Looker ML (semantic layer). Tableau — для ad-hoc exploration. Обидва інструменти коннектяться напряму до BigQuery — жодного data extract."/>
               <text x="660" y="53" text-anchor="middle" fill="#9a9a95" font-size="9">Looker / Tableau</text>
               <text x="660" y="67" text-anchor="middle" fill="#6a6a66" font-size="8">BI + content teams</text>
-              <rect x="605" y="115" width="110" height="45" fill="rgba(29,185,84,.08)" stroke="#1DB954" rx="6"/>
+              <rect x="605" y="115" width="110" height="45" fill="rgba(29,185,84,.08)" stroke="#1DB954" rx="6" data-tip="Vertex AI — ML Platform||Google Vertex AI для навчання і деплою моделей. Discover Weekly: матрична факторизація (ALS) на 600M юзерів × 100M треків щотижня — один з найбільших ML jobs у світі. Vertex AI Pipelines автоматизує: feature extraction → training → evaluation → deployment → A/B test. Модель оновлюється щонеділю, персональний плейлист для кожного з 600M+ юзерів."/>
               <text x="660" y="133" text-anchor="middle" fill="#1DB954" font-size="9">Vertex AI</text>
               <text x="660" y="147" text-anchor="middle" fill="#6a6a66" font-size="8">Discover Weekly ML</text>
               <!-- Backstage -->
-              <rect x="740" y="55" width="110" height="50" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" rx="6"/>
+              <rect x="740" y="55" width="110" height="50" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" rx="6" data-tip="Backstage — Developer Portal||Open-source developer portal, створений Spotify і переданий CNCF (10k+ GitHub stars). Вирішує проблему «де що знаходиться» у великих організаціях: каталог всіх сервісів, pipelines, datasets з власниками і документацією. Data catalog: кожен BigQuery dataset і Dataflow job зареєстрований у Backstage з lineage. 2000+ інженерів Spotify користуються щодня."/>
               <text x="795" y="73" text-anchor="middle" fill="#4ecdc4" font-size="9">Backstage</text>
               <text x="795" y="85" text-anchor="middle" fill="#6a6a66" font-size="8">(OSS dev portal)</text>
               <text x="795" y="97" text-anchor="middle" fill="#6a6a66" font-size="8">data catalog</text>
@@ -1120,20 +1154,20 @@ footer a{color:var(--fg-muted)}
           <div class="ca-diagram diagram">
             <svg viewBox="0 0 860 230" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <text x="55" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">ДЖЕРЕЛА</text>
-              <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#4ecdc4" stroke-width="1.5" rx="5"/>
+              <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#4ecdc4" stroke-width="1.5" rx="5" data-tip="App Events — monobank Mobile||iOS/Android застосунок monobank генерує події: відкриття картки, перегляд транзакцій, переказ коштів, активація cashback. ~7M активних юзерів, пікове навантаження — початок місяця (ЗП) та вихідні. App написаний на Erlang/OTP — забезпечує 99.999% availability навіть під пік."/>
               <text x="55" y="42" text-anchor="middle" fill="#4ecdc4" font-size="10">App events</text>
-              <rect x="8" y="58" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="58" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="Card Transactions||Кожне списання/поповнення картки — це транзакція з унікальним ID, сумою, MCC-кодом (категорія продавця), локацією термінала. Обробляється у мілісекунди через Erlang core banking. Транзакція одночасно публікується в Kafka для real-time аналізу (fraud, аналітика) і записується в PostgreSQL як source of truth."/>
               <text x="55" y="75" text-anchor="middle" fill="#9a9a95" font-size="10">Card transactions</text>
-              <rect x="8" y="91" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="91" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="NFC / POS Термінали||Безконтактні оплати через NFC (Apple Pay, Google Pay) та POS-термінали у магазинах. Транзакція авторизується через Visa/Mastercard мережу (~2-3 сек), потім потрапляє в core banking. Ці дані мають геолокацію продавця — важливо для fraud detection (незвичайна геолокація = підозріло)."/>
               <text x="55" y="108" text-anchor="middle" fill="#9a9a95" font-size="10">NFC/POS термінали</text>
-              <rect x="8" y="124" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="124" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="Visa / Mastercard Network||Міжнародні карткові мережі авторизують транзакції за кордоном і онлайн. monobank — member bank Visa/MC. Кожна міжнародна транзакція проходить через їхній авторизаційний сервер. Дані settlement надходять щодня batch-файлом. AML (anti-money laundering) перевірки — частково на стороні Visa/MC, частково власні."/>
               <text x="55" y="141" text-anchor="middle" fill="#9a9a95" font-size="10">Visa/MC network</text>
               <!-- Kafka -->
               <line x1="102" y1="38" x2="140" y2="70" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="71" x2="140" y2="80" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="104" x2="140" y2="90" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="137" x2="140" y2="100" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="140" y="30" width="115" height="110" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+              <rect x="140" y="30" width="115" height="110" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8" data-tip="KAFKA — Transaction Bus||Центральна шина подій monobank. On-prem + cloud hybrid (частина інфраструктури в Україні через вимоги НБУ до локалізації даних). Topics: transactions (партиціонується по card_id), user-events, fraud-signals. Retention: 7 днів для operational, 90 днів для compliance. Kafka Connect читає з PostgreSQL через Debezium CDC."/>
               <text x="197" y="48" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">KAFKA</text>
               <text x="197" y="63" text-anchor="middle" fill="#9a9a95" font-size="9">on-prem + cloud hybrid</text>
               <rect x="151" y="72" width="93" height="14" fill="#131316" stroke="#26262b" rx="2"/><text x="197" y="82" text-anchor="middle" fill="#9a9a95" font-size="8">transactions</text>
@@ -1141,43 +1175,41 @@ footer a{color:var(--fg-muted)}
               <rect x="151" y="108" width="93" height="14" fill="#131316" stroke="#26262b" rx="2"/><text x="197" y="118" text-anchor="middle" fill="#9a9a95" font-size="8">fraud-signals</text>
               <!-- Fraud detection (real-time) -->
               <line x1="255" y1="65" x2="288" y2="45" stroke="#ef6b6b" stroke-width="1.5"/>
-              <rect x="288" y="18" width="125" height="60" fill="rgba(239,107,107,.08)" stroke="#ef6b6b" stroke-width="1.5" rx="8"/>
+              <rect x="288" y="18" width="125" height="60" fill="rgba(239,107,107,.08)" stroke="#ef6b6b" stroke-width="1.5" rx="8" data-tip="Fraud Detection — Real-time Engine||SLA &lt;200 мс від транзакції до рішення про блокування. Два шари: (1) Rules engine — детерміновані правила (транзакція &gt;X000 грн вночі, незвичайна країна, 5 транзакцій за хвилину); (2) ML model scoring — gradient boosting на features з ClickHouse та профілю юзера. Якщо score &gt; threshold → автоматичний Block card API виклик. Точність: &gt;99% (на основі публічних заяв monobank)."/>
               <text x="350" y="35" text-anchor="middle" fill="#ef6b6b" font-size="10" font-weight="700">Fraud Detection</text>
               <text x="350" y="50" text-anchor="middle" fill="#9a9a95" font-size="9">ML model scoring</text>
               <text x="350" y="63" text-anchor="middle" fill="#9a9a95" font-size="9">rules engine</text>
               <text x="350" y="73" text-anchor="middle" fill="#6a6a66" font-size="8">&lt; 200ms SLA</text>
               <!-- ClickHouse (analytics) -->
               <line x1="255" y1="90" x2="288" y2="115" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="288" y="90" width="125" height="65" fill="rgba(255,182,39,.08)" stroke="#ffb627" stroke-width="1.5" rx="8"/>
+              <rect x="288" y="90" width="125" height="65" fill="rgba(255,182,39,.08)" stroke="#ffb627" stroke-width="1.5" rx="8" data-tip="ClickHouse — Real-time OLAP||Columnar database для миттєвої аналітики транзакцій. MergeTree engine: дані записуються частинами і об'єднуються у фоні — insert не блокує reads. Subsecond відповідь на типові запити: «скільки витрачено в Сільпо за місяць», «топ категорій по юзеру», аналіз тренду по всіх картках. Internal BI команда дивиться на live дашборди. Fraud features — ковзаючі вікна по card_id за останні 1/5/60 хвилин."/>
               <text x="350" y="107" text-anchor="middle" fill="#ffb627" font-size="10" font-weight="700">ClickHouse</text>
               <text x="350" y="122" text-anchor="middle" fill="#9a9a95" font-size="9">real-time OLAP</text>
               <text x="350" y="136" text-anchor="middle" fill="#9a9a95" font-size="9">transaction analytics</text>
               <text x="350" y="148" text-anchor="middle" fill="#6a6a66" font-size="8">MergeTree · subsecond</text>
               <!-- PostgreSQL (core banking) -->
               <line x1="255" y1="110" x2="288" y2="170" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="288" y="163" width="125" height="45" fill="rgba(78,205,196,.04)" stroke="#26262b" rx="8"/>
+              <rect x="288" y="163" width="125" height="45" fill="rgba(78,205,196,.04)" stroke="#26262b" rx="8" data-tip="PostgreSQL Cluster — Core Banking||Source of truth для всіх фінансових даних. Citus extension перетворює PostgreSQL на distributed database — sharding по user_id. Транзакції записуються тут зі ACID гарантіями — банківська надійність. Primary + hot standby для failover &lt;30 сек. Данні звідси реплікуються в ClickHouse (через Kafka CDC) та S3 (нічний dump) для аналітики."/>
               <text x="350" y="181" text-anchor="middle" fill="#9a9a95" font-size="9">PostgreSQL cluster</text>
               <text x="350" y="195" text-anchor="middle" fill="#6a6a66" font-size="8">core banking · Citus sharding</text>
               <!-- Analytics outputs -->
               <line x1="413" y1="48" x2="445" y2="48" stroke="#ef6b6b" stroke-width="1.5"/>
               <line x1="413" y1="122" x2="445" y2="100" stroke="#6a6a66" stroke-width="1"/>
               <line x1="413" y1="130" x2="445" y2="155" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="445" y="28" width="110" height="40" fill="rgba(239,107,107,.08)" stroke="#ef6b6b" rx="6"/>
+              <rect x="445" y="28" width="110" height="40" fill="rgba(239,107,107,.08)" stroke="#ef6b6b" rx="6" data-tip="Block Card API — Auto-Block||Коли Fraud Detection підвищує тривогу — цей API викликається автоматично за &lt;1 секунду. Блокує картку в core banking PostgreSQL + відправляє push-сповіщення в App. Юзер одночасно отримує: «Ваша картка заблокована через підозрілу транзакцію. Розблокувати?» Розблокування — теж через API з верифікацією. Цей flow повністю автоматизований без участі оператора."/>
               <text x="500" y="45" text-anchor="middle" fill="#ef6b6b" font-size="9">Block card API</text>
               <text x="500" y="58" text-anchor="middle" fill="#6a6a66" font-size="8">auto-block у &lt;1сек</text>
-              <rect x="445" y="80" width="110" height="40" fill="#131316" stroke="#ffb627" rx="6"/>
+              <rect x="445" y="80" width="110" height="40" fill="#131316" stroke="#ffb627" rx="6" data-tip="Internal BI — Transaction Dashboards||Дашборди для внутрішньої аналітики: live транзакційні потоки, по-годинна динаміка, географія операцій, cashback витрати по категоріях. Побудовані на ClickHouse — subsecond відповідь. Product managers та finance team стежать за health метриками в реальному часі. Пік навантаження на дашборди — кінець місяця (зарплатний день)."/>
               <text x="500" y="97" text-anchor="middle" fill="#ffb627" font-size="9">Internal BI</text>
               <text x="500" y="110" text-anchor="middle" fill="#6a6a66" font-size="8">transaction dashboards</text>
-              <rect x="445" y="135" width="110" height="40" fill="#131316" stroke="#26262b" rx="6"/>
-              <text x="500" y="152" text-anchor="middle" fill="#9a9a95" font-size="9">App API (Erlang)</text>
-              <text x="500" y="165" text-anchor="middle" fill="#6a6a66" font-size="8">balance, history</text>
+              <rect x="445" y="135" width="110" height="40" fill="#131316" stroke="#26262b" rx="6" data-tip="App API — Erlang Backend||REST/WebSocket API для мобільного застосунку, написаний на Erlang/OTP. Запити: поточний баланс, історія транзакцій, cashback нарахування. Erlang обрали за unmatched concurrency: 1 Erlang process ~1KB RAM, можна тримати мільйони одночасних з'єднань. Actor model — кожен юзер = окремий lightweight process. Саме Erlang дає monobank 99.999% uptime."/>
               <!-- Spark batch -->
               <line x1="413" y1="185" x2="580" y2="185" stroke="#6a6a66" stroke-width="1" stroke-dasharray="3,2"/>
-              <rect x="580" y="165" width="115" height="45" fill="rgba(183,148,246,.08)" stroke="#b794f6" rx="8"/>
+              <rect x="580" y="165" width="115" height="45" fill="rgba(183,148,246,.08)" stroke="#b794f6" rx="8" data-tip="Spark Batch — Нічний ETL||Щоночі (2:00-5:00) Spark job читає дані з PostgreSQL та Kafka і формує: compliance звіти для НБУ (AML транзакції, підозрілі клієнти), Єдину державну систему фінансового моніторингу (СМФМ), статистику для Нацбанку. Також нічний rebuild ML features: агрегати по юзерах за 30/90/365 днів для fraud і credit scoring моделей."/>
               <text x="637" y="183" text-anchor="middle" fill="#b794f6" font-size="9">Spark batch (нічний)</text>
               <text x="637" y="197" text-anchor="middle" fill="#6a6a66" font-size="8">compliance reports · NBU</text>
               <!-- ML Retraining -->
-              <rect x="580" y="80" width="115" height="65" fill="rgba(127,219,165,.06)" stroke="#7fdba5" rx="8"/>
+              <rect x="580" y="80" width="115" height="65" fill="rgba(127,219,165,.06)" stroke="#7fdba5" rx="8" data-tip="ML Platform — monobank AI||Три ключові ML задачі: (1) Fraud model — gradient boosting (XGBoost), retraining щотижня на нових labeled даних; (2) Credit scoring — чи схвалювати кредит/розстрочку (monobank кредити), LightGBM + логістична регресія; (3) Cashback personalization — які cashback категорії запропонувати кожному юзеру на наступний місяць (matrix factorization). Features зберігаються в ClickHouse."/>
               <text x="637" y="97" text-anchor="middle" fill="#7fdba5" font-size="9">ML Platform</text>
               <text x="637" y="112" text-anchor="middle" fill="#9a9a95" font-size="8">fraud model retraining</text>
               <text x="637" y="127" text-anchor="middle" fill="#9a9a95" font-size="8">credit scoring</text>
@@ -1185,7 +1217,7 @@ footer a{color:var(--fg-muted)}
               <line x1="555" y1="97" x2="580" y2="112" stroke="#6a6a66" stroke-width="1"/>
               <line x1="555" y1="125" x2="580" y2="125" stroke="#6a6a66" stroke-width="1"/>
               <!-- NBU regulatory -->
-              <rect x="730" y="80" width="120" height="50" fill="rgba(78,205,196,.04)" stroke="rgba(78,205,196,.2)" stroke-dasharray="3,2" rx="6"/>
+              <rect x="730" y="80" width="120" height="50" fill="rgba(78,205,196,.04)" stroke="rgba(78,205,196,.2)" stroke-dasharray="3,2" rx="6" data-tip="НБУ / Регулювання||Національний банк України вимагає щоденні звіти: Form 711 (транзакції), AML (підозрілі операції &gt;150,000 грн або ознаки відмивання), FATCA/CRS для міжнародних рахунків. Дані мають зберігатись в Україні (вимога НБУ) — тому частина інфраструктури on-prem. Звіти формує нічний Spark batch і відправляє через захищений канал у Систему моніторингу фінансових транзакцій (СМФТ)."/>
               <text x="790" y="98" text-anchor="middle" fill="#4ecdc4" font-size="9">НБУ / Regulation</text>
               <text x="790" y="112" text-anchor="middle" fill="#6a6a66" font-size="8">compliance reports</text>
               <text x="790" y="124" text-anchor="middle" fill="#6a6a66" font-size="8">AML моніторинг</text>
@@ -1216,20 +1248,20 @@ footer a{color:var(--fg-muted)}
           <div class="ca-diagram diagram">
             <svg viewBox="0 0 860 220" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <text x="55" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">ДЖЕРЕЛА</text>
-              <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#8DC640" stroke-width="1.5" rx="5"/>
+              <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#8DC640" stroke-width="1.5" rx="5" data-tip="Web / Mobile — Rozetka Frontend||Веб-сайт і мобільний застосунок Rozetka генерують потік подій: перегляд товару, додавання в кошик, пошуковий запит, клік на рекламу. 5M+ відвідувачів/день у звичайний день, до 50M під час Black Friday. Ці clickstream дані — основа для рекомендаційного двигуна та персоналізованого ранжування пошуку."/>
               <text x="55" y="42" text-anchor="middle" fill="#8DC640" font-size="10">Web / Mobile</text>
-              <rect x="8" y="58" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="58" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="Checkout Service||Обробляє оформлення замовлень: перевірка наявності, розрахунок вартості доставки, payment processing. Кожне успішне замовлення — order_event в Kafka. Ці дані критичні для demand forecasting: що замовляють зараз → що потрібно завтра на склади. Checkout svc інтегрований з банківськими API та платіжними системами (Visa, Mastercard, monobank Pay)."/>
               <text x="55" y="75" text-anchor="middle" fill="#9a9a95" font-size="10">Checkout svc</text>
-              <rect x="8" y="91" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="91" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="Search / Catalog||Пошуковий движок і каталог 20M+ SKU. Пошукові запити — цінні дані: що люди шукають і не знаходять (gap analysis), тренди попиту, сезонність. Дані з search_queries topic у Kafka використовуються для: (1) реалтайм оновлення рейтингу в пошуку, (2) планування закупівель нових товарів, (3) ціноутворення на трендові SKU."/>
               <text x="55" y="108" text-anchor="middle" fill="#9a9a95" font-size="10">Search/catalog</text>
-              <rect x="8" y="124" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="124" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="3PL / Warehouse Systems||Third-party logistics та власні склади Rozetka. Warehouse Management System (WMS) передає: наявність товарів на складах, рух товарів (прихід/відвантаження), терміни доставки по регіонах. Ці дані критичні для demand forecasting — знаємо точні залишки і можемо розраховувати замовлення постачальникам за 2-4 тижні наперед."/>
               <text x="55" y="141" text-anchor="middle" fill="#9a9a95" font-size="10">3PL / warehouse</text>
               <!-- Kafka -->
               <line x1="102" y1="38" x2="138" y2="68" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="71" x2="138" y2="80" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="104" x2="138" y2="90" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="137" x2="138" y2="102" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="138" y="28" width="118" height="110" fill="rgba(141,198,64,.06)" stroke="#8DC640" stroke-width="1.5" rx="8"/>
+              <rect x="138" y="28" width="118" height="110" fill="rgba(141,198,64,.06)" stroke="#8DC640" stroke-width="1.5" rx="8" data-tip="KAFKA — Rozetka Event Bus||Topics: product_views (найбільший — мільярди подій/день), order_events (критичний — гарантований delivery), search_queries. Під Black Friday throughput зростає в 10×: Kafka auto-scaling по CPU/lag. Consumer groups: Spark Streaming (реалтайм персоналізація), Spark batch (нічний ETL до S3 lake), ClickHouse Kafka engine (пряма вставка в аналітику)."/>
               <text x="197" y="46" text-anchor="middle" fill="#8DC640" font-size="10" font-weight="700">KAFKA</text>
               <text x="197" y="62" text-anchor="middle" fill="#9a9a95" font-size="9">product-views, orders</text>
               <rect x="149" y="72" width="96" height="14" fill="#131316" stroke="#26262b" rx="2"/><text x="197" y="82" text-anchor="middle" fill="#9a9a95" font-size="8">product_views</text>
@@ -1237,20 +1269,20 @@ footer a{color:var(--fg-muted)}
               <rect x="149" y="108" width="96" height="14" fill="#131316" stroke="#26262b" rx="2"/><text x="197" y="118" text-anchor="middle" fill="#9a9a95" font-size="8">search_queries</text>
               <!-- Spark Streaming -->
               <line x1="256" y1="65" x2="288" y2="50" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="288" y="20" width="120" height="60" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+              <rect x="288" y="20" width="120" height="60" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8" data-tip="Spark Streaming — Real-time||Читає product_views та order_events з Kafka у micro-batch режимі (10-30 сек вікно). Два pipeline: (1) Personalization signals — оновлює user preference vector у Redis: «цей юзер цікавиться ноутбуками Lenovo» → персоналізований блок на головній; (2) Inventory alerts — якщо popular SKU падає нижче threshold → сигнал закупівельній команді. Spark Streaming обрали замість Flink через наявність Spark expertise в команді."/>
               <text x="348" y="38" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">Spark Streaming</text>
               <text x="348" y="53" text-anchor="middle" fill="#9a9a95" font-size="9">personalization signals</text>
               <text x="348" y="65" text-anchor="middle" fill="#9a9a95" font-size="9">inventory alerts</text>
               <!-- Spark Batch -->
               <line x1="256" y1="100" x2="288" y2="115" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="288" y="95" width="120" height="60" fill="rgba(183,148,246,.06)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+              <rect x="288" y="95" width="120" height="60" fill="rgba(183,148,246,.06)" stroke="#b794f6" stroke-width="1.5" rx="8" data-tip="Spark Batch — Нічний ETL||Щоночі великий Spark job (3:00-7:00): читає весь денний трафік з Kafka (через S3 компресований dump) і завантажує в S3 Data Lake у Parquet + Iceberg format. Demand forecasting pipeline: часові ряди продажів + сезонність + зовнішні фактори (погода, свята) → прогноз на 14 днів для кожного SKU → замовлення постачальникам. Prophet + custom моделі. Запускається через Airflow."/>
               <text x="348" y="113" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">Spark batch</text>
               <text x="348" y="128" text-anchor="middle" fill="#9a9a95" font-size="9">нічний ETL</text>
               <text x="348" y="143" text-anchor="middle" fill="#9a9a95" font-size="9">demand forecasting</text>
               <!-- S3 Lake -->
               <line x1="408" y1="50" x2="440" y2="80" stroke="#6a6a66" stroke-width="1"/>
               <line x1="408" y1="125" x2="440" y2="105" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="440" y="30" width="125" height="120" fill="rgba(127,219,165,.04)" stroke="#7fdba5" stroke-width="1.5" rx="8"/>
+              <rect x="440" y="30" width="125" height="120" fill="rgba(127,219,165,.04)" stroke="#7fdba5" stroke-width="1.5" rx="8" data-tip="S3 Data Lake — Medallion Architecture||Центральне сховище даних Rozetka на AWS S3 з Apache Iceberg table format. Bronze: raw clicks і order events 1:1 з Kafka. Silver: очищені user sessions (деdup, sessionization), товари з master catalog. Gold: product_metrics (conv rate, revenue per view) та recsys_features (user embeddings, product embeddings). ACID transactions через Iceberg: можна перерахувати будь-який шар не боячись corruption. 12+ місяців history."/>
               <text x="502" y="48" text-anchor="middle" fill="#7fdba5" font-size="10" font-weight="700">S3 DATA LAKE</text>
               <text x="502" y="63" text-anchor="middle" fill="#9a9a95" font-size="9">Parquet + Iceberg</text>
               <rect x="451" y="72" width="103" height="14" fill="rgba(139,90,43,.3)" stroke="#26262b" rx="2"/><text x="502" y="82" text-anchor="middle" fill="#9a9a95" font-size="8">bronze: raw clicks</text>
@@ -1259,18 +1291,18 @@ footer a{color:var(--fg-muted)}
               <rect x="451" y="126" width="103" height="14" fill="rgba(141,198,64,.15)" stroke="#26262b" rx="2"/><text x="502" y="136" text-anchor="middle" fill="#9a9a95" font-size="8">recsys features</text>
               <!-- ClickHouse -->
               <line x1="565" y1="80" x2="595" y2="65" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="595" y="30" width="110" height="55" fill="rgba(255,182,39,.08)" stroke="#ffb627" stroke-width="1.5" rx="8"/>
+              <rect x="595" y="30" width="110" height="55" fill="rgba(255,182,39,.08)" stroke="#ffb627" stroke-width="1.5" rx="8" data-tip="ClickHouse — Product Analytics||OLAP для merchandiser дашбордів. Читає з S3 gold layer через ClickHouse S3 engine або Kafka engine напряму. Типові запити: конверсія по категоріях за тиждень, revenue per visit по трафік-джерелам, top-100 SKU за останні 24 год. Merchandisers (закупщики) щодня дивляться: що добре продається → замовити більше; що погано → знизити ціну або зняти."/>
               <text x="650" y="47" text-anchor="middle" fill="#ffb627" font-size="10" font-weight="700">ClickHouse</text>
               <text x="650" y="62" text-anchor="middle" fill="#9a9a95" font-size="9">product analytics</text>
               <text x="650" y="73" text-anchor="middle" fill="#6a6a66" font-size="8">merchandiser dashboards</text>
               <!-- Recsys -->
               <line x1="565" y1="120" x2="595" y2="120" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="595" y="98" width="110" height="55" fill="rgba(141,198,64,.08)" stroke="#8DC640" rx="8"/>
+              <rect x="595" y="98" width="110" height="55" fill="rgba(141,198,64,.08)" stroke="#8DC640" rx="8" data-tip="Recsys Engine — Collaborative Filtering||Рекомендаційний двигун Rozetka. Використовує implicit feedback: переглянув товар, купив, додав в список бажань. Алгоритм: матрична факторизація (ALS) — user_embedding × item_embedding → score. «Схожі товари» (item-to-item): cosine similarity між embedding векторами. «Вас також може зацікавити»: user-to-item scoring. 20M+ SKU × мільйони юзерів. Щотижневий rebuild embeddings на Spark, щоденний fine-tuning."/>
               <text x="650" y="115" text-anchor="middle" fill="#8DC640" font-size="9">Recsys Engine</text>
               <text x="650" y="130" text-anchor="middle" fill="#9a9a95" font-size="8">collaborative filtering</text>
               <text x="650" y="143" text-anchor="middle" fill="#9a9a95" font-size="8">"схожі товари"</text>
               <!-- Airflow -->
-              <rect x="720" y="50" width="120" height="50" fill="rgba(78,205,196,.04)" stroke="#26262b" rx="6"/>
+              <rect x="720" y="50" width="120" height="50" fill="rgba(78,205,196,.04)" stroke="#26262b" rx="6" data-tip="Airflow — Orchestration||Apache Airflow координує всі batch pipeline. DAGs: (1) daily_etl — Kafka dump → S3 bronze → silver → gold (нічний, 4 год); (2) demand_forecast — щоденно о 6:00, формує замовлення постачальникам на 14 днів; (3) recsys_rebuild — щотижня суботу, rebuild embeddings; (4) inventory_sync — кожні 2 год, синхронізація залишків між складами. SLA alerts у Slack якщо DAG не завершився вчасно."/>
               <text x="780" y="68" text-anchor="middle" fill="#9a9a95" font-size="9">Airflow orchestration</text>
               <text x="780" y="82" text-anchor="middle" fill="#6a6a66" font-size="8">щоденний ETL · demand forecast</text>
               <text x="780" y="94" text-anchor="middle" fill="#6a6a66" font-size="8">inventory sync</text>
@@ -1301,20 +1333,20 @@ footer a{color:var(--fg-muted)}
           <div class="ca-diagram diagram">
             <svg viewBox="0 0 860 210" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <text x="55" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">IoT СЕНСОРИ</text>
-              <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#0057A8" stroke-width="1.5" rx="5"/>
+              <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#0057A8" stroke-width="1.5" rx="5" data-tip="Генератори SCADA||SCADA (Supervisory Control and Data Acquisition) — промислова система моніторингу електростанцій ДТЕК (теплових, сонячних, вітрових). Знімає показники кожні 1-10 секунд: потужність MW, частота Гц, температура обладнання, тиск. ДТЕК Енерго управляє ~11 GW встановленої потужності. Критичний контекст: під час ракетних атак 2022-2024 ця система допомагала швидко перерозподіляти навантаження між уцілілими генераторами."/>
               <text x="55" y="42" text-anchor="middle" fill="#4ecdc4" font-size="9">Генератори (SCADA)</text>
-              <rect x="8" y="58" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="58" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="Трансформатори — High Voltage||Силові трансформатори 110-750 кВ на підстанціях ДТЕК. Сенсори відстежують: температуру масла, ступінь зносу ізоляції, навантаження. Predictive maintenance тут особливо критичний: заміна великого трансформатора — 6-18 місяців очікування і $1-5M. ML модель може передбачити відмову за 72+ год — час замовити запчастини або плановий ремонт."/>
               <text x="55" y="75" text-anchor="middle" fill="#9a9a95" font-size="9">Трансформатори</text>
-              <rect x="8" y="91" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="91" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="Smart Meters — Розумні лічильники||Побутові та промислові smart meters збирають погодинне споживання електроенергії. ДТЕК розгортає AMI (Advanced Metering Infrastructure) по Україні. Дані дозволяють: точне прогнозування попиту для балансування мережі, виявлення крадіжок електроенергії (anomaly detection), dynamic tariffs. Обсяг: мільйони точок × 96 відліків/день."/>
               <text x="55" y="108" text-anchor="middle" fill="#9a9a95" font-size="9">Smart meters</text>
-              <rect x="8" y="124" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
+              <rect x="8" y="124" width="94" height="27" fill="#131316" stroke="#26262b" rx="5" data-tip="Підстанції RTU||RTU (Remote Terminal Unit) — промисловий контролер на підстанціях. Збирає: напруга/струм на лініях, стан вимикачів (відкрито/закрито), аварійні сигнали. Протокол: IEC 60870-5-104 або DNP3 (промислові протоколи SCADA) → MQTT bridge → Kafka. Latency критична: якщо підстанція втратила зв'язок і не надсилає heartbeat — автоматична тривога в диспетчерському центрі."/>
               <text x="55" y="141" text-anchor="middle" fill="#9a9a95" font-size="9">Підстанції (RTU)</text>
               <!-- Edge + MQTT -->
               <line x1="102" y1="38" x2="140" y2="70" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="71" x2="140" y2="80" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="104" x2="140" y2="90" stroke="#6a6a66" stroke-width="1"/>
               <line x1="102" y1="137" x2="140" y2="100" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="140" y="28" width="115" height="100" fill="rgba(0,87,168,.08)" stroke="#0057A8" stroke-width="1.5" rx="8"/>
+              <rect x="140" y="28" width="115" height="100" fill="rgba(0,87,168,.08)" stroke="#0057A8" stroke-width="1.5" rx="8" data-tip="KAFKA + MQTT Bridge||IoT gateway конвертує промислові MQTT повідомлення (легкий протокол для IoT) в Kafka topics. EMQX або HiveMQ як MQTT broker між field devices і Kafka. Topics: sensor-readings (кожні 10 сек від всіх пристроїв), equipment-alerts (аварійні сигнали — priority queue), power-flow (балансування навантаження). Retention: 7 днів hot, архів у TimescaleDB. Throughput: до 100,000 readings/сек у пік."/>
               <text x="197" y="46" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">KAFKA</text>
               <text x="197" y="61" text-anchor="middle" fill="#9a9a95" font-size="9">MQTT bridge</text>
               <rect x="151" y="70" width="93" height="14" fill="#131316" stroke="#26262b" rx="2"/><text x="197" y="80" text-anchor="middle" fill="#9a9a95" font-size="8">sensor-readings (10s)</text>
@@ -1322,14 +1354,14 @@ footer a{color:var(--fg-muted)}
               <rect x="151" y="106" width="93" height="14" fill="#131316" stroke="#26262b" rx="2"/><text x="197" y="116" text-anchor="middle" fill="#9a9a95" font-size="8">power-flow</text>
               <!-- Flink Anomaly Detection -->
               <line x1="255" y1="60" x2="285" y2="48" stroke="#ef6b6b" stroke-width="1.5"/>
-              <rect x="285" y="18" width="125" height="65" fill="rgba(239,107,107,.08)" stroke="#ef6b6b" stroke-width="1.5" rx="8"/>
+              <rect x="285" y="18" width="125" height="65" fill="rgba(239,107,107,.08)" stroke="#ef6b6b" stroke-width="1.5" rx="8" data-tip="Flink — Anomaly Detection||Apache Flink обробляє потік сенсорних даних у реальному часі з latency &lt;1 сек. Два типи обробки: (1) Rule-based anomaly: temperature &gt; threshold, power_drop &gt; 20% за 1 хв, voltage spike → негайний alert диспетчеру; (2) ML-based predictive maintenance: Flink читає rolling window features і скорить моделлю кожні 30 сек. SLA &lt;30 сек від події до SMS диспетчеру — критично для мінімізації blackout."/>
               <text x="347" y="35" text-anchor="middle" fill="#ef6b6b" font-size="10" font-weight="700">Flink</text>
               <text x="347" y="50" text-anchor="middle" fill="#9a9a95" font-size="9">anomaly detection</text>
               <text x="347" y="64" text-anchor="middle" fill="#9a9a95" font-size="9">predictive maintenance</text>
               <text x="347" y="76" text-anchor="middle" fill="#6a6a66" font-size="8">реакція &lt; 30 сек</text>
               <!-- TimescaleDB (time-series) -->
               <line x1="255" y1="100" x2="285" y2="125" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="285" y="103" width="125" height="65" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+              <rect x="285" y="103" width="125" height="65" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8" data-tip="TimescaleDB — Time-Series Storage||PostgreSQL extension оптимізований для time-series даних. Hypertable автоматично шардує дані по часу (chunks по 1 день) — запит «температура за останній тиждень» читає тільки 7 chunks, а не всю таблицю. Continuous aggregates: попередньо обчислені агрегати по годинах/днях для швидких дашбордів. Retention policy: 2 роки hot (SSD), 5 років cold (HDD/S3). До 100,000 inserts/сек на single node."/>
               <text x="347" y="120" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">TimescaleDB</text>
               <text x="347" y="135" text-anchor="middle" fill="#9a9a95" font-size="9">time-series storage</text>
               <text x="347" y="149" text-anchor="middle" fill="#9a9a95" font-size="9">hypertable sharding</text>
@@ -1337,18 +1369,18 @@ footer a{color:var(--fg-muted)}
               <!-- Grafana + Alerting -->
               <line x1="410" y1="50" x2="445" y2="55" stroke="#ef6b6b" stroke-width="1.5"/>
               <line x1="410" y1="135" x2="445" y2="105" stroke="#6a6a66" stroke-width="1"/>
-              <rect x="445" y="28" width="120" height="60" fill="rgba(239,107,107,.08)" stroke="#ef6b6b" rx="8"/>
+              <rect x="445" y="28" width="120" height="60" fill="rgba(239,107,107,.08)" stroke="#ef6b6b" rx="8" data-tip="Grafana Alerts — Аварійні Сповіщення||Критичний компонент безпеки. Рівні алертів: CRITICAL (обладнання під загрозою відмови, blackout risk) → автодзвінок диспетчеру + SMS чергового; WARNING → Slack/email черговій зміні; INFO → dashboard badge. Flink детектує аномалію → пише в Kafka alert-topic → Grafana Alertmanager підбирає → routing rules → PagerDuty → телефон. Середній час реакції диспетчерського центру: &lt;2 хвилини."/>
               <text x="505" y="46" text-anchor="middle" fill="#ef6b6b" font-size="10" font-weight="700">Grafana Alerts</text>
               <text x="505" y="61" text-anchor="middle" fill="#9a9a95" font-size="9">critical: SMS + call</text>
               <text x="505" y="73" text-anchor="middle" fill="#9a9a95" font-size="9">warning: Slack/email</text>
               <text x="505" y="82" text-anchor="middle" fill="#6a6a66" font-size="8">24/7 dispatch center</text>
-              <rect x="445" y="100" width="120" height="60" fill="rgba(0,87,168,.08)" stroke="#0057A8" rx="8"/>
+              <rect x="445" y="100" width="120" height="60" fill="rgba(0,87,168,.08)" stroke="#0057A8" rx="8" data-tip="Grafana Dashboards — Диспетчерський Центр||Real-time візуалізація стану енергомережі. Головний екран: карта України з кольором по регіонах (зелений = норма, жовтий = warning, червоний = аварія). Panel: поточна генерація vs споживання, частота мережі (має бути 50±0.2 Гц), equipment health score по підстанціях. TimescaleDB як datasource — Grafana робить SQL запити і отримує дані за секунди. 24/7 диспетчери стежать за цим дашбордом."/>
               <text x="505" y="118" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">Grafana Dashboards</text>
               <text x="505" y="133" text-anchor="middle" fill="#9a9a95" font-size="9">real-time energy grid</text>
               <text x="505" y="147" text-anchor="middle" fill="#9a9a95" font-size="9">equipment health</text>
               <text x="505" y="158" text-anchor="middle" fill="#6a6a66" font-size="8">диспетчерський центр</text>
               <!-- ML -->
-              <rect x="600" y="60" width="120" height="80" fill="rgba(183,148,246,.06)" stroke="#b794f6" rx="8"/>
+              <rect x="600" y="60" width="120" height="80" fill="rgba(183,148,246,.06)" stroke="#b794f6" rx="8" data-tip="ML Pipeline — Predictive Maintenance||Дві ключові ML задачі: (1) Predictive maintenance — XGBoost модель на rolling window features (температура, вібрація, навантаження за 30/60/168 год) → probability of failure у наступні 24/48/72 год. Accuracy ~85% на тестовій вибірці ДТЕК. (2) Energy demand forecast — LSTM нейронна мережа на часових рядах споживання + погода + день тижня + свята → прогноз на 24-168 год для балансування генерації. Retraining щомісяця новими даними."/>
               <text x="660" y="78" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">ML Pipeline</text>
               <text x="660" y="93" text-anchor="middle" fill="#9a9a95" font-size="9">predictive maintenance</text>
               <text x="660" y="108" text-anchor="middle" fill="#9a9a95" font-size="9">failure probability</text>
@@ -1356,7 +1388,7 @@ footer a{color:var(--fg-muted)}
               <text x="660" y="135" text-anchor="middle" fill="#6a6a66" font-size="8">XGBoost + LSTM</text>
               <line x1="565" y1="60" x2="600" y2="100" stroke="#6a6a66" stroke-width="1"/>
               <!-- NBU/NERC regulation -->
-              <rect x="755" y="65" width="95" height="50" fill="rgba(78,205,196,.04)" stroke="rgba(78,205,196,.2)" stroke-dasharray="3,2" rx="6"/>
+              <rect x="755" y="65" width="95" height="50" fill="rgba(78,205,196,.04)" stroke="rgba(78,205,196,.2)" stroke-dasharray="3,2" rx="6" data-tip="НКРЕКП — Регулятор||Національна комісія, що здійснює державне регулювання у сферах енергетики та комунальних послуг. ДТЕК зобов'язаний подавати: погодинні звіти про вироблену/відпущену електроенергію, дані про аварії та відновлення, інформацію про комерційний облік. Інтеграція з Ukrenergo API: системний оператор отримує прогноз генерації ДТЕК для балансування об'єднаної енергосистеми. Дані передаються через захищені канали зв'язку з шифруванням."/>
               <text x="802" y="83" text-anchor="middle" fill="#4ecdc4" font-size="9">НКРЕКП</text>
               <text x="802" y="97" text-anchor="middle" fill="#6a6a66" font-size="8">regulatory reports</text>
               <text x="802" y="109" text-anchor="middle" fill="#6a6a66" font-size="8">Ukrenergo API</text>
@@ -1435,7 +1467,7 @@ footer a{color:var(--fg-muted)}
         <div class="reading-time">~25 хв читання</div>
         <div class="mod-week">Тижні 2 – 3 · ~30 год навчання</div>
         <h2 class="mod-title">Системи <em>зберігання</em> даних</h2>
-        <p class="mod-lead">Фундамент будь-якої платформи — де і як лежать дані. Розбираємо HDFS, object storage (S3/GCS/Azure Blob) та три архітектурні підходи: Data Lake, Data Warehouse, Data Lakehouse.</p>
+        <p class="mod-lead">HDFS (Hadoop Distributed File System) — розподілена файлова система, що ділить файли на блоки по 128 MB і реплікує їх на 3 вузли кластеру. Amazon S3 і сумісні object storage (GCS, Azure Blob) — хмарна альтернатива: необмежений обсяг, плата за GiB, але без POSIX-семантики. Поверх цих сховищ формуються три архітектурних підходи — Data Lake, Data Warehouse, Data Lakehouse — кожен зі своїм компромісом між гнучкістю, швидкістю і надійністю.</p>
       </div>
     </div>
 
@@ -2179,6 +2211,49 @@ df_cleaned.write \
           <li>Визначити схему партиціонування для кожної сутності (наприклад, orders — по <code>order_date</code>, events — по <code>event_date/country</code>)</li>
           <li>Записати рішення в <code>ADR-002-storage-design.md</code></li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М2 — локальний Data Lake у Docker</div>
+          <svg viewBox="0 0 860 175" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arM2n" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4ecdc4"/></marker>
+              <marker id="arM2d" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#333"/></marker>
+            </defs>
+            <circle cx="22" cy="15" r="4" fill="#4ecdc4"/><text x="32" y="19" fill="#4ecdc4" font-size="9" letter-spacing=".08em">НОВЕ В М2</text>
+            <circle cx="150" cy="15" r="4" fill="#333"/><text x="160" y="19" fill="#555" font-size="9" letter-spacing=".08em">М1 ГОТОВО</text>
+            <!-- GitHub (dim) -->
+            <rect x="20" y="28" width="95" height="42" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" stroke-width="1" rx="7"/>
+            <text x="67" y="47" text-anchor="middle" fill="#484848" font-size="9">GitHub Repo</text>
+            <text x="67" y="61" text-anchor="middle" fill="#383838" font-size="8">M1 ✓</text>
+            <!-- Data Generators (new) -->
+            <line x1="115" y1="49" x2="140" y2="49" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arM2n)"/>
+            <rect x="140" y="28" width="160" height="42" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+            <text x="220" y="46" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">Data Generators</text>
+            <text x="220" y="61" text-anchor="middle" fill="#9a9a95" font-size="8">Faker: orders, events, users</text>
+            <!-- MinIO (new) -->
+            <line x1="300" y1="49" x2="330" y2="49" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arM2n)"/>
+            <rect x="330" y="18" width="200" height="148" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="10"/>
+            <text x="430" y="38" text-anchor="middle" fill="#4ecdc4" font-size="11" font-weight="700">MinIO (local S3)</text>
+            <text x="430" y="52" text-anchor="middle" fill="#9a9a95" font-size="8">docker-compose · порт 9000</text>
+            <rect x="345" y="60" width="170" height="26" fill="rgba(139,90,43,.25)" stroke="#26262b" rx="4"/>
+            <text x="430" y="77" text-anchor="middle" fill="#c8a87a" font-size="9">shopwave-bronze · raw events</text>
+            <rect x="345" y="92" width="170" height="26" fill="rgba(192,192,192,.12)" stroke="#26262b" rx="4"/>
+            <text x="430" y="109" text-anchor="middle" fill="#c8c8c8" font-size="9">shopwave-silver · cleaned</text>
+            <rect x="345" y="124" width="170" height="26" fill="rgba(255,215,0,.12)" stroke="#26262b" rx="4"/>
+            <text x="430" y="141" text-anchor="middle" fill="#ccad00" font-size="9">shopwave-gold · aggregated</text>
+            <!-- Coming: Spark -->
+            <rect x="560" y="28" width="120" height="55" fill="none" stroke="#232326" stroke-dasharray="4,3" stroke-width="1" rx="7"/>
+            <text x="620" y="51" text-anchor="middle" fill="#2e2e33" font-size="10">Spark ETL</text>
+            <text x="620" y="66" text-anchor="middle" fill="#252528" font-size="8">M4 →</text>
+            <!-- Coming: Kafka -->
+            <rect x="560" y="98" width="120" height="55" fill="none" stroke="#232326" stroke-dasharray="4,3" stroke-width="1" rx="7"/>
+            <text x="620" y="121" text-anchor="middle" fill="#2e2e33" font-size="10">Kafka + Flink</text>
+            <text x="620" y="136" text-anchor="middle" fill="#252528" font-size="8">M5 →</text>
+            <!-- Coming: BI -->
+            <rect x="710" y="58" width="130" height="55" fill="none" stroke="#232326" stroke-dasharray="4,3" stroke-width="1" rx="7"/>
+            <text x="775" y="81" text-anchor="middle" fill="#2e2e33" font-size="10">DWH + BI</text>
+            <text x="775" y="96" text-anchor="middle" fill="#252528" font-size="8">M7 →</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -2193,7 +2268,7 @@ df_cleaned.write \
         <div class="reading-time">~15 хв читання</div>
         <div class="mod-week">Тиждень 4 · ~15 год навчання</div>
         <h2 class="mod-title">Формати даних та <em>серіалізація</em></h2>
-        <p class="mod-lead">Parquet, ORC, Avro, JSON, CSV — той самий датасет може важити у 10 разів менше і читатись у 100 разів швидше залежно від формату. Розбираємось, чому.</p>
+        <p class="mod-lead">Серіалізація — перетворення структурованих даних у байти для зберігання або передачі. Вибір формату визначає стискання, схему і швидкість читання: Parquet і ORC зберігають дані по стовпцях — Spark читає тільки потрібні колонки, ігноруючи решту; Avro і Protobuf — рядково з вбудованою схемою, ідеально для Kafka; JSON і CSV — текст без схеми, зручний для людини, але дорогий для машини. Той самий датасет у Parquet займає в 5–10 разів менше місця і читається в 10–100 разів швидше, ніж у CSV.</p>
       </div>
     </div>
 
@@ -2498,6 +2573,126 @@ result = conn.execute(<span class="hl-str">"""
         <div class="deliverable"><strong>Deliverable:</strong> Jupyter notebook + графіки у <code>/assignments/m3/</code></div>
       </div>
 
+      <h4>Schema Evolution — сумісність версій схем</h4>
+      <p>Реальні системи живуть роками: схема таблиці або Kafka-топіку змінюється десятки разів. <strong>Schema evolution</strong> — здатність читати старі дані новим кодом і навпаки, не ламаючи pipeline.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:20px 0">
+        <div style="padding:18px;background:var(--bg-3);border:1px solid var(--border);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#4ecdc4;text-transform:uppercase;margin-bottom:10px">Backward Compatible</div>
+          <p style="font-size:13px;color:var(--fg-muted);line-height:1.5">Новий код читає старі дані. <strong>Дозволено:</strong> додати поле зі значенням за замовчуванням, видалити необов'язкове поле. <strong>Заборонено:</strong> видалити обов'язкове поле, змінити тип (int → string).</p>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:11px;color:#4ecdc4">✓ Споживач оновлюється першим</div>
+        </div>
+        <div style="padding:18px;background:var(--bg-3);border:1px solid var(--border);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#4ecdc4;text-transform:uppercase;margin-bottom:10px">Forward Compatible</div>
+          <p style="font-size:13px;color:var(--fg-muted);line-height:1.5">Старий код читає нові дані. <strong>Дозволено:</strong> додати нове поле (старий код ігнорує). <strong>Заборонено:</strong> видалити поле що старий код очікує, перейменувати поле.</p>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:11px;color:#4ecdc4">✓ Продюсер оновлюється першим</div>
+        </div>
+        <div style="padding:18px;background:var(--bg-3);border:1px solid rgba(127,219,165,.4);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#7fdba5;text-transform:uppercase;margin-bottom:10px">Full Compatible</div>
+          <p style="font-size:13px;color:var(--fg-muted);line-height:1.5">Обидва напрямки. <strong>Дозволено тільки:</strong> додати поле з default. Gold standard для production — не обмежує порядок деплою.</p>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:11px;color:#7fdba5">✓ Будь-який порядок деплою</div>
+        </div>
+      </div>
+
+      <h4 style="margin-top:32px">Avro Schema Evolution на практиці</h4>
+      <p>Avro — найкращий формат для schema evolution у Kafka. Схема вбудована або зберігається у Confluent Schema Registry.</p>
+
+      <div class="pre-wrap"><pre># Версія v1: оригінальна схема
+{
+  "type": "record",
+  "name": "OrderEvent",
+  "namespace": "com.shopwave",
+  "fields": [
+    {"name": "order_id",  "type": "string"},
+    {"name": "user_id",   "type": "string"},
+    {"name": "amount",    "type": "double"},
+    {"name": "currency",  "type": "string"}
+  ]
+}
+
+# Версія v2: додаємо нові поля (BACKWARD COMPATIBLE — є default)
+{
+  "type": "record",
+  "name": "OrderEvent",
+  "namespace": "com.shopwave",
+  "fields": [
+    {"name": "order_id",    "type": "string"},
+    {"name": "user_id",     "type": "string"},
+    {"name": "amount",      "type": "double"},
+    {"name": "currency",    "type": "string"},
+    {"name": "country",     "type": ["null", "string"], "default": null},   # нове поле
+    {"name": "platform",    "type": ["null", "string"], "default": null},   # нове поле
+    {"name": "schema_version", "type": "int", "default": 2}                 # версія схеми
+  ]
+}
+
+# Confluent Schema Registry — реєструємо та перевіряємо сумісність
+from confluent_kafka.schema_registry import SchemaRegistryClient
+from confluent_kafka.schema_registry.avro import AvroSerializer
+
+sr_client = SchemaRegistryClient({"url": "http://schema-registry:8081"})
+
+# Перевірка сумісності перед реєстрацією
+schema_str = open("order_event_v2.avsc").read()
+compat = sr_client.test_compatibility("shopwave.orders-value", schema_str)
+print(f"Compatible: {compat}")  # має бути True
+
+# Реєстрація нової версії
+schema_id = sr_client.register_schema(
+    "shopwave.orders-value",
+    Schema(schema_str, "AVRO")
+)
+print(f"Registered schema ID: {schema_id}")</pre></div>
+
+      <h4>Apache Iceberg Schema Evolution</h4>
+      <p>Iceberg підтримує schema evolution нативно — жодного переписування файлів. Операції виконуються миттєво через зміну метаданих.</p>
+
+      <div class="pre-wrap"><pre>from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
+    .getOrCreate()
+
+# Поточна схема таблиці
+spark.sql("DESCRIBE shopwave.silver.orders").show()
+
+# 1. Додати нове поле — SAFE, backward compatible
+spark.sql("""
+  ALTER TABLE shopwave.silver.orders
+  ADD COLUMN country STRING AFTER currency
+""")
+
+# 2. Перейменувати поле — SAFE, Iceberg зберігає ID колонки
+spark.sql("""
+  ALTER TABLE shopwave.silver.orders
+  RENAME COLUMN user_id TO customer_id
+""")
+# Старі Parquet-файли автоматично доступні як customer_id — магія column IDs
+
+# 3. Змінити тип — тільки безпечні промоції (int → long, float → double)
+spark.sql("""
+  ALTER TABLE shopwave.silver.orders
+  ALTER COLUMN amount TYPE double
+""")
+
+# 4. Видалити поле — залишається у файлах, прихований у схемі
+spark.sql("""
+  ALTER TABLE shopwave.silver.orders
+  DROP COLUMN legacy_flag
+""")
+
+# Перегляд еволюції схеми через snapshot history
+spark.sql("""
+  SELECT snapshot_id, committed_at, summary
+  FROM shopwave.silver.orders.snapshots
+  ORDER BY committed_at DESC
+  LIMIT 10
+""").show(truncate=False)</pre></div>
+
+      <div class="analogy" style="margin-top:24px">
+        <strong>Правило для Kafka + Schema Registry:</strong> встановіть COMPATIBILITY = FULL_TRANSITIVE на рівні subject. Це гарантує що будь-яка нова версія схеми сумісна з усіма попередніми — у будь-який напрямок. Ціна: не можна видаляти поля без default.
+      </div>
+
       <div class="interview-qa">
         <div class="interview-qa-header"><div class="iq-icon">Q</div><h5>Питання на співбесіді — Модуль 3</h5></div>
         <div class="qa-item">
@@ -2537,6 +2732,48 @@ result = conn.execute(<span class="hl-str">"""
           <li>Документувати схеми у <code>schemas/</code> (можна YAML або JSON Schema)</li>
           <li>Додати версіонування схем (semver) у файлах</li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М3 — формати та партиціонування</div>
+          <svg viewBox="0 0 860 175" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arM3n" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4ecdc4"/></marker>
+              <marker id="arM3d" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#333"/></marker>
+            </defs>
+            <circle cx="22" cy="15" r="4" fill="#4ecdc4"/><text x="32" y="19" fill="#4ecdc4" font-size="9">НОВЕ В М3</text>
+            <circle cx="130" cy="15" r="4" fill="#333"/><text x="140" y="19" fill="#555" font-size="9">ГОТОВО РАНІШЕ</text>
+            <!-- Generators dim -->
+            <rect x="20" y="30" width="130" height="42" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="85" y="48" text-anchor="middle" fill="#484848" font-size="9">Data Generators</text>
+            <text x="85" y="62" text-anchor="middle" fill="#383838" font-size="8">M2 ✓</text>
+            <line x1="150" y1="51" x2="170" y2="51" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM3d)"/>
+            <!-- Bronze dim -->
+            <rect x="170" y="30" width="130" height="42" fill="rgba(139,90,43,.15)" stroke="#2a2a2e" rx="7"/>
+            <text x="235" y="48" text-anchor="middle" fill="#484848" font-size="9">bronze: raw JSON</text>
+            <text x="235" y="62" text-anchor="middle" fill="#383838" font-size="8">M2 ✓</text>
+            <!-- New: converter -->
+            <line x1="300" y1="51" x2="325" y2="51" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arM3n)"/>
+            <rect x="325" y="20" width="150" height="105" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+            <text x="400" y="44" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">JSON → Parquet</text>
+            <text x="400" y="59" text-anchor="middle" fill="#9a9a95" font-size="9">ZSTD стиснення</text>
+            <text x="400" y="73" text-anchor="middle" fill="#9a9a95" font-size="9">partition: event_date/country</text>
+            <line x1="400" y1="95" x2="400" y2="125" stroke="#4ecdc4" stroke-width="1" stroke-dasharray="3,2"/>
+            <rect x="330" y="115" width="140" height="26" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1" rx="4"/>
+            <text x="400" y="132" text-anchor="middle" fill="#4ecdc4" font-size="8">schemas/ · semver</text>
+            <!-- New: silver Parquet -->
+            <line x1="475" y1="51" x2="500" y2="51" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arM3n)"/>
+            <rect x="500" y="20" width="160" height="110" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+            <text x="580" y="42" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">silver: Parquet+ZSTD</text>
+            <text x="580" y="57" text-anchor="middle" fill="#9a9a95" font-size="8">typed schema · deduplicated</text>
+            <rect x="510" y="67" width="140" height="18" fill="rgba(192,192,192,.1)" stroke="#26262b" rx="3"/>
+            <text x="580" y="80" text-anchor="middle" fill="#9a9a95" font-size="7.5">orders_silver · events_silver</text>
+            <rect x="510" y="91" width="140" height="18" fill="rgba(192,192,192,.06)" stroke="#26262b" rx="3"/>
+            <text x="580" y="104" text-anchor="middle" fill="#9a9a95" font-size="7.5">users_silver · products_silver</text>
+            <!-- Coming: Spark -->
+            <rect x="690" y="30" width="150" height="55" fill="none" stroke="#232326" stroke-dasharray="4,3" stroke-width="1" rx="7"/>
+            <text x="765" y="53" text-anchor="middle" fill="#2e2e33" font-size="10">Spark ETL</text>
+            <text x="765" y="68" text-anchor="middle" fill="#252528" font-size="8">M4 → gold шар</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -2551,7 +2788,7 @@ result = conn.execute(<span class="hl-str">"""
         <div class="reading-time">~30 хв читання</div>
         <div class="mod-week">Тижні 5 – 6 · ~30 год навчання</div>
         <h2 class="mod-title">Batch Processing — <em>Apache Spark</em></h2>
-        <p class="mod-lead">Найважливіший навик Data Engineer у 2026. Spark — це «швейцарський ніж» для обробки великих даних: SQL, Python, Scala, ML, streaming — все в одному движку.</p>
+        <p class="mod-lead">Apache Spark — distributed computing engine: розбиває датасет на партиції і паралельно обробляє їх на десятках або сотнях вузлів кластеру. На відміну від MapReduce, проміжні результати зберігаються в RAM executors, а не на диску — звідси 10–100× прискорення на ітеративних задачах. Один і той самий Python API (PySpark) покриває batch ETL, SQL, ML (MLlib) і streaming — саме тому Spark став де-факто стандартом data engineering.</p>
       </div>
     </div>
 
@@ -3185,6 +3422,54 @@ df_funnel.write.mode(<span class="hl-str">"overwrite"</span>).parquet(<span clas
           <li>Додати pytest-тести на основні трансформації (маленький тестовий DataFrame)</li>
           <li>Зафіксувати рішення в <code>ADR-003-batch-processing.md</code></li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М4 — перший повноцінний batch ETL pipeline</div>
+          <svg viewBox="0 0 860 175" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arM4n" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4ecdc4"/></marker>
+              <marker id="arM4d" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#333"/></marker>
+            </defs>
+            <circle cx="22" cy="15" r="4" fill="#4ecdc4"/><text x="32" y="19" fill="#4ecdc4" font-size="9">НОВЕ В М4</text>
+            <circle cx="130" cy="15" r="4" fill="#333"/><text x="140" y="19" fill="#555" font-size="9">ГОТОВО РАНІШЕ</text>
+            <!-- Generators dim -->
+            <rect x="20" y="30" width="100" height="42" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="70" y="48" text-anchor="middle" fill="#484848" font-size="9">Generators</text>
+            <text x="70" y="62" text-anchor="middle" fill="#383838" font-size="8">M2 ✓</text>
+            <line x1="120" y1="51" x2="140" y2="51" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM4d)"/>
+            <!-- Bronze dim -->
+            <rect x="140" y="30" width="100" height="42" fill="rgba(139,90,43,.15)" stroke="#2a2a2e" rx="7"/>
+            <text x="190" y="48" text-anchor="middle" fill="#484848" font-size="9">bronze</text>
+            <text x="190" y="62" text-anchor="middle" fill="#383838" font-size="8">raw JSON · M2</text>
+            <!-- Spark job 1 (new) -->
+            <line x1="240" y1="51" x2="265" y2="51" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arM4n)"/>
+            <rect x="265" y="20" width="135" height="110" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+            <text x="332" y="44" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">Spark Job 1</text>
+            <text x="332" y="59" text-anchor="middle" fill="#9a9a95" font-size="9">bronze → silver</text>
+            <text x="332" y="73" text-anchor="middle" fill="#6a6a66" font-size="8">dedup · cast · validate</text>
+            <line x1="332" y1="95" x2="332" y2="118" stroke="#4ecdc4" stroke-width="1" stroke-dasharray="3,2"/>
+            <rect x="270" y="109" width="125" height="20" fill="rgba(78,205,196,.05)" stroke="#4ecdc4" stroke-width="1" rx="3"/>
+            <text x="332" y="122" text-anchor="middle" fill="#4ecdc4" font-size="7.5">pytest tests ✓</text>
+            <!-- Silver dim -->
+            <line x1="400" y1="51" x2="420" y2="51" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM4d)"/>
+            <rect x="420" y="30" width="100" height="42" fill="rgba(192,192,192,.1)" stroke="#2a2a2e" rx="7"/>
+            <text x="470" y="48" text-anchor="middle" fill="#484848" font-size="9">silver</text>
+            <text x="470" y="62" text-anchor="middle" fill="#383838" font-size="8">Parquet · M3</text>
+            <!-- Spark job 2 (new) -->
+            <line x1="520" y1="51" x2="545" y2="51" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arM4n)"/>
+            <rect x="545" y="20" width="135" height="110" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+            <text x="612" y="44" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">Spark Job 2</text>
+            <text x="612" y="59" text-anchor="middle" fill="#9a9a95" font-size="9">silver → gold</text>
+            <text x="612" y="73" text-anchor="middle" fill="#6a6a66" font-size="8">GMV · AOV · funnel</text>
+            <line x1="612" y1="95" x2="612" y2="118" stroke="#4ecdc4" stroke-width="1" stroke-dasharray="3,2"/>
+            <rect x="548" y="109" width="128" height="20" fill="rgba(78,205,196,.05)" stroke="#4ecdc4" stroke-width="1" rx="3"/>
+            <text x="612" y="122" text-anchor="middle" fill="#4ecdc4" font-size="7.5">--date · --env params</text>
+            <!-- Gold (new) -->
+            <line x1="680" y1="51" x2="705" y2="51" stroke="#4ecdc4" stroke-width="1.5" marker-end="url(#arM4n)"/>
+            <rect x="705" y="30" width="135" height="42" fill="rgba(255,215,0,.1)" stroke="#ffb627" stroke-width="1.5" rx="8"/>
+            <text x="772" y="48" text-anchor="middle" fill="#ffb627" font-size="10" font-weight="700">gold</text>
+            <text x="772" y="62" text-anchor="middle" fill="#9a9a95" font-size="8">GMV/day · AOV/country</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -3337,6 +3622,24 @@ document.querySelectorAll('.qa-q').forEach(function(q){
       tip.style.left=x+'px';tip.style.top=y+'px';
     });
     el.addEventListener('mouseleave',function(){tip.classList.remove('on');});
+  });
+})();
+// Code block collapse
+(function(){
+  document.querySelectorAll('.pre-wrap').forEach(function(wrap){
+    var pre=wrap.querySelector('pre');
+    if(!pre) return;
+    var lines=pre.textContent.split('\n').filter(function(l){return l.trim()!==''}).length;
+    if(lines<=12) return;
+    wrap.classList.add('pre-collapsed');
+    var btn=document.createElement('button');
+    btn.className='code-expand-btn';
+    btn.textContent='↓ розгорнути · '+lines+' рядків';
+    wrap.insertAdjacentElement('afterend',btn);
+    btn.addEventListener('click',function(){
+      wrap.classList.remove('pre-collapsed');
+      btn.remove();
+    });
   });
 })();
 </script>

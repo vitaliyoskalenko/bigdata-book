@@ -304,6 +304,12 @@ footer a{color:var(--fg-muted)}
   letter-spacing:.14em;text-transform:uppercase;
   color:var(--info);margin-bottom:6px;
 }
+.pre-collapsed{max-height:130px;overflow:hidden}
+.pre-collapsed::after{content:'';position:absolute;bottom:0;left:0;right:0;height:70px;background:linear-gradient(transparent,var(--bg-3));pointer-events:none;z-index:1;border-radius:0 0 8px 8px}
+.code-expand-btn{display:block;width:100%;padding:7px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-top:none;color:var(--fg-dim);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-align:center;cursor:pointer;border-radius:0 0 6px 6px;margin-bottom:24px;transition:background .15s,color .15s}
+.code-expand-btn:hover{background:rgba(255,255,255,.06);color:var(--fg-muted)}
+.ms-diagram{margin-top:22px;border-top:1px solid var(--border-soft);padding-top:16px}
+.ms-diagram-hdr{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -401,7 +407,7 @@ footer a{color:var(--fg-muted)}
       <div class="mod-meta">
         <div class="mod-week">Тижні 7 – 8 · ~30 год</div>
         <h2 class="mod-title">Stream Processing — <em>Kafka + Flink</em></h2>
-        <p class="mod-lead">Batch дає відповіді «як було вчора». Streaming дає відповіді «що відбувається прямо зараз» — антифрод, динамічне ціноутворення, live-дашборди, персоналізовані push-и. Це найбільший technological shift після Spark.</p>
+        <p class="mod-lead">Apache Kafka — розподілений журнал подій (distributed log): producer пише повідомлення, вони зберігаються в незмінному впорядкованому лозі, consumer читає у своєму темпі — хоч через секунду, хоч через тиждень. Apache Flink — stateful stream processor: читає з Kafka і обчислює результати (агрегати, anomaly detection, join-и) з latency від мілісекунд. Разом вони дають відповідь «що відбувається прямо зараз» — антифрод, surge pricing, live-дашборди — те, що batch ETL фізично не може.</p>
       </div>
     </div>
 
@@ -903,6 +909,164 @@ finally:
         </table>
       </div>
 
+      <h4>Change Data Capture (CDC) — інкрементальна синхронізація з реляційних БД</h4>
+      <p><strong>CDC</strong> — патерн захоплення кожної зміни (INSERT / UPDATE / DELETE) з реляційної БД і публікації її у Kafka як події. Замість того щоб щоночі робити full dump таблиці, CDC передає тільки дельту в реальному часі.</p>
+
+      <div class="analogy">
+        <strong>Аналогія:</strong> CDC — як банківська виписка в реальному часі замість щомісячного звіту. Кожна транзакція одразу відома downstream-системам, а не через добу після пакетної вивантаження.
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:24px 0">
+        <div style="padding:20px;background:var(--bg-3);border:1px solid var(--border);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--accent-2);text-transform:uppercase;margin-bottom:10px">Log-based CDC</div>
+          <p style="font-size:13px;color:var(--fg-muted);line-height:1.5">Читає <strong>WAL</strong> (Write-Ahead Log) PostgreSQL або <strong>binlog</strong> MySQL — не чіпає продакшн-таблиці. Нульове навантаження на БД, latency &lt;1 сек. Це підхід Debezium.</p>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--accent-2)">✓ Best practice</div>
+        </div>
+        <div style="padding:20px;background:var(--bg-3);border:1px solid var(--border);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--fg-dim);text-transform:uppercase;margin-bottom:10px">Query-based CDC</div>
+          <p style="font-size:13px;color:var(--fg-muted);line-height:1.5">Виконує <code>SELECT * WHERE updated_at &gt; last_run</code> за розкладом. Простіше, але не захоплює DELETE, потребує поля <code>updated_at</code>, навантажує БД. Підхід Airbyte, Singer.</p>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--fg-dim)">⚠ Missed deletes</div>
+        </div>
+        <div style="padding:20px;background:var(--bg-3);border:1px solid var(--border);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--fg-dim);text-transform:uppercase;margin-bottom:10px">Trigger-based CDC</div>
+          <p style="font-size:13px;color:var(--fg-muted);line-height:1.5">DB-тригери пишуть у changelog-таблицю при кожній зміні. Ловить всі операції, але подвоює writes у БД. Застаріло — майже не використовується у сучасних системах.</p>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--fg-dim)">✗ Overhead</div>
+        </div>
+      </div>
+
+      <h4>Debezium — log-based CDC на практиці</h4>
+      <p>Debezium — найпопулярніший open-source CDC connector (Red Hat). Читає WAL/binlog і публікує зміни у Kafka у форматі <code>{before, after, op, ts_ms}</code>.</p>
+
+      <div class="pre-wrap"><pre># docker-compose.yml — Debezium connector для PostgreSQL
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: shopwave
+      POSTGRES_USER: shopwave
+      POSTGRES_PASSWORD: secret
+    command: >
+      postgres
+      -c wal_level=logical
+      -c max_replication_slots=4
+      -c max_wal_senders=4
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+
+  kafka-connect:
+    image: debezium/connect:2.4
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: debezium-connect
+      CONFIG_STORAGE_TOPIC: connect-configs
+      OFFSET_STORAGE_TOPIC: connect-offsets
+      STATUS_STORAGE_TOPIC: connect-statuses
+    ports:
+      - "8083:8083"</pre></div>
+
+      <div class="pre-wrap"><pre># Реєстрація Debezium PostgreSQL connector через REST API
+curl -X POST http://localhost:8083/connectors \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "shopwave-postgres-connector",
+    "config": {
+      "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+      "database.hostname": "postgres",
+      "database.port": "5432",
+      "database.user": "shopwave",
+      "database.password": "secret",
+      "database.dbname": "shopwave",
+      "database.server.name": "shopwave",
+      "table.include.list": "public.orders,public.customers,public.products",
+      "plugin.name": "pgoutput",
+      "slot.name": "debezium_slot",
+      "publication.name": "debezium_pub",
+      "topic.prefix": "shopwave.cdc",
+      "transforms": "unwrap",
+      "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+      "transforms.unwrap.drop.tombstones": "false",
+      "transforms.unwrap.delete.handling.mode": "rewrite"
+    }
+  }'
+
+# Топіки що буде створено автоматично:
+# shopwave.cdc.public.orders
+# shopwave.cdc.public.customers
+# shopwave.cdc.public.products</pre></div>
+
+      <div class="pre-wrap"><pre># Обробка CDC-подій у Python consumer
+import json
+from confluent_kafka import Consumer
+
+consumer = Consumer({
+    "bootstrap.servers": "kafka:9092",
+    "group.id": "shopwave-cdc-processor",
+    "auto.offset.reset": "earliest"
+})
+consumer.subscribe(["shopwave.cdc.public.orders"])
+
+# Структура Debezium-повідомлення:
+# {
+#   "op": "c" | "u" | "d" | "r",   # create/update/delete/read(snapshot)
+#   "before": { ...old row... },     # null для INSERT
+#   "after":  { ...new row... },     # null для DELETE
+#   "source": { "ts_ms": ..., "lsn": ..., "table": "orders" }
+# }
+
+def process_cdc_event(msg):
+    event = json.loads(msg.value())
+    op = event.get("op")
+    after = event.get("after")
+    before = event.get("before")
+
+    if op == "c":   # INSERT → додати в Iceberg silver
+        upsert_to_iceberg("orders", after)
+    elif op == "u": # UPDATE → MERGE INTO Iceberg
+        upsert_to_iceberg("orders", after)
+    elif op == "d": # DELETE → soft delete або видалення з Iceberg
+        soft_delete_in_iceberg("orders", before["order_id"])
+    elif op == "r": # Snapshot (initial load) → bulk insert
+        upsert_to_iceberg("orders", after)
+
+while True:
+    msg = consumer.poll(1.0)
+    if msg and not msg.error():
+        process_cdc_event(msg)</pre></div>
+
+      <h4>CDC у архітектурі ShopWave</h4>
+      <div style="overflow-x:auto;margin:16px 0">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:9px 14px;color:var(--fg-muted);font-family:var(--mono);font-size:10px;letter-spacing:.08em">ДЖЕРЕЛО</th>
+              <th style="text-align:left;padding:9px 14px;color:var(--fg-muted);font-family:var(--mono);font-size:10px;letter-spacing:.08em">МЕТОД</th>
+              <th style="text-align:left;padding:9px 14px;color:var(--fg-muted);font-family:var(--mono);font-size:10px;letter-spacing:.08em">KAFKA ТОПІК</th>
+              <th style="text-align:left;padding:9px 14px;color:var(--fg-muted);font-family:var(--mono);font-size:10px;letter-spacing:.08em">ПРИЗНАЧЕННЯ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:9px 14px">PostgreSQL orders</td><td style="padding:9px 14px;color:var(--fg-muted)">Debezium WAL</td><td style="padding:9px 14px;font-family:var(--mono);font-size:11px;color:var(--accent-2)">shopwave.cdc.public.orders</td><td style="padding:9px 14px;color:var(--fg-muted)">Iceberg silver merge</td></tr>
+            <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:9px 14px">PostgreSQL customers</td><td style="padding:9px 14px;color:var(--fg-muted)">Debezium WAL</td><td style="padding:9px 14px;font-family:var(--mono);font-size:11px;color:var(--accent-2)">shopwave.cdc.public.customers</td><td style="padding:9px 14px;color:var(--fg-muted)">dim_customer оновлення</td></tr>
+            <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:9px 14px">MySQL legacy catalog</td><td style="padding:9px 14px;color:var(--fg-muted)">Debezium binlog</td><td style="padding:9px 14px;font-family:var(--mono);font-size:11px;color:var(--accent-2)">shopwave.cdc.products</td><td style="padding:9px 14px;color:var(--fg-muted)">Product catalog sync</td></tr>
+            <tr><td style="padding:9px 14px">MongoDB events</td><td style="padding:9px 14px;color:var(--fg-muted)">Debezium oplog</td><td style="padding:9px 14px;font-family:var(--mono);font-size:11px;color:var(--accent-2)">shopwave.cdc.events</td><td style="padding:9px 14px;color:var(--fg-muted)">Behavioral analytics</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pitfall">
+        <strong>Важливо:</strong> для log-based CDC PostgreSQL потрібен <code>wal_level=logical</code> і достатньо місця для WAL retention (Debezium не встигає читати → WAL видаляється → connector падає). Встановіть <code>wal_keep_size=1024</code> (1 GB) і моніторте <code>pg_replication_slots</code>.
+      </div>
+
       <div class="interview-qa">
         <h5>🎯 Interview Q&A — Модуль 5: Kafka + Flink</h5>
         <div class="qa-item">
@@ -977,6 +1141,74 @@ finally:
           <li>Додати <strong>Kafka Connect S3 Sink</strong>: усі <code>orders</code> автоматично копіюються в bronze-шар</li>
           <li>ADR: <code>ADR-004-streaming-stack.md</code> (чому Kafka + Flink, а не Kinesis + Spark Streaming)</li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М5 — додано real-time streaming pipeline</div>
+          <svg viewBox="0 0 860 210" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arM5n" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#b794f6"/></marker>
+              <marker id="arM5d" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#333"/></marker>
+            </defs>
+            <circle cx="22" cy="15" r="4" fill="#b794f6"/><text x="32" y="19" fill="#b794f6" font-size="9">НОВЕ В М5</text>
+            <circle cx="140" cy="15" r="4" fill="#333"/><text x="150" y="19" fill="#555" font-size="9">ЧАСТИНА 1 ГОТОВО</text>
+            <!-- Generators dim -->
+            <rect x="20" y="80" width="100" height="42" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="70" y="98" text-anchor="middle" fill="#484848" font-size="9">Generators</text>
+            <text x="70" y="112" text-anchor="middle" fill="#383838" font-size="8">M1-M4 ✓</text>
+            <!-- Kafka (new) -->
+            <line x1="120" y1="101" x2="145" y2="101" stroke="#b794f6" stroke-width="1.5" marker-end="url(#arM5n)"/>
+            <rect x="145" y="25" width="160" height="155" fill="rgba(183,148,246,.08)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+            <text x="225" y="47" text-anchor="middle" fill="#b794f6" font-size="11" font-weight="700">Kafka Cluster</text>
+            <text x="225" y="62" text-anchor="middle" fill="#9a9a95" font-size="8">3 брокери · Schema Registry</text>
+            <rect x="155" y="70" width="140" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="225" y="83" text-anchor="middle" fill="#9a9a95" font-size="7.5">orders (Avro schema)</text>
+            <rect x="155" y="93" width="140" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="225" y="106" text-anchor="middle" fill="#9a9a95" font-size="7.5">events · users</text>
+            <rect x="155" y="116" width="140" height="18" fill="rgba(78,205,196,.1)" stroke="#4ecdc4" rx="3"/>
+            <text x="225" y="129" text-anchor="middle" fill="#4ecdc4" font-size="7.5">gmv_5min (output)</text>
+            <rect x="155" y="139" width="140" height="18" fill="rgba(239,107,107,.1)" stroke="#ef6b6b" rx="3"/>
+            <text x="225" y="152" text-anchor="middle" fill="#ef6b6b" font-size="7.5">fraud-alerts (output)</text>
+            <!-- Flink (new) -->
+            <line x1="305" y1="65" x2="330" y2="65" stroke="#b794f6" stroke-width="1.5" marker-end="url(#arM5n)"/>
+            <line x1="305" y1="115" x2="330" y2="115" stroke="#b794f6" stroke-width="1.5" marker-end="url(#arM5n)"/>
+            <rect x="330" y="28" width="140" height="60" fill="rgba(183,148,246,.08)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+            <text x="400" y="50" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">Flink: GMV Job</text>
+            <text x="400" y="65" text-anchor="middle" fill="#9a9a95" font-size="8">5-хв tumbling window</text>
+            <text x="400" y="78" text-anchor="middle" fill="#6a6a66" font-size="7.5">GMV/country → gmv_5min</text>
+            <rect x="330" y="98" width="140" height="60" fill="rgba(239,107,107,.1)" stroke="#ef6b6b" stroke-width="1.5" rx="8"/>
+            <text x="400" y="120" text-anchor="middle" fill="#ef6b6b" font-size="10" font-weight="700">Flink: Fraud Job</text>
+            <text x="400" y="135" text-anchor="middle" fill="#9a9a95" font-size="8">&gt;5 замовлень / 2 хв</text>
+            <text x="400" y="148" text-anchor="middle" fill="#6a6a66" font-size="7.5">keyed state by user_id</text>
+            <!-- Kafka Connect (new) -->
+            <rect x="330" y="170" width="140" height="30" fill="rgba(183,148,246,.06)" stroke="#b794f6" stroke-width="1" rx="6"/>
+            <text x="400" y="183" text-anchor="middle" fill="#b794f6" font-size="9">Kafka Connect S3 Sink</text>
+            <text x="400" y="195" text-anchor="middle" fill="#6a6a66" font-size="7.5">orders → bronze автоматично</text>
+            <line x1="225" y1="157" x2="225" y2="170" stroke="#b794f6" stroke-width="1" marker-end="url(#arM5n)"/>
+            <line x1="305" y1="185" x2="330" y2="185" stroke="#b794f6" stroke-width="1.5" marker-end="url(#arM5n)"/>
+            <!-- MinIO dim -->
+            <line x1="470" y1="185" x2="495" y2="185" stroke="#333" stroke-width="1" marker-end="url(#arM5d)"/>
+            <rect x="495" y="25" width="120" height="175" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="555" y="48" text-anchor="middle" fill="#484848" font-size="9">MinIO S3</text>
+            <text x="555" y="63" text-anchor="middle" fill="#383838" font-size="8">M1-M4 ✓</text>
+            <rect x="505" y="75" width="100" height="18" fill="rgba(139,90,43,.1)" stroke="#2a2a2e" rx="3"/>
+            <text x="555" y="88" text-anchor="middle" fill="#484848" font-size="7.5">bronze</text>
+            <rect x="505" y="98" width="100" height="18" fill="rgba(192,192,192,.06)" stroke="#2a2a2e" rx="3"/>
+            <text x="555" y="111" text-anchor="middle" fill="#484848" font-size="7.5">silver · Parquet</text>
+            <rect x="505" y="121" width="100" height="18" fill="rgba(255,215,0,.06)" stroke="#2a2a2e" rx="3"/>
+            <text x="555" y="134" text-anchor="middle" fill="#484848" font-size="7.5">gold · GMV/AOV</text>
+            <!-- Coming: Iceberg -->
+            <rect x="645" y="35" width="100" height="45" fill="none" stroke="#232326" stroke-dasharray="4,3" stroke-width="1" rx="7"/>
+            <text x="695" y="56" text-anchor="middle" fill="#2e2e33" font-size="9">Iceberg</text>
+            <text x="695" y="70" text-anchor="middle" fill="#252528" font-size="7.5">M6 →</text>
+            <!-- Coming: DWH -->
+            <rect x="645" y="95" width="100" height="45" fill="none" stroke="#232326" stroke-dasharray="4,3" stroke-width="1" rx="7"/>
+            <text x="695" y="116" text-anchor="middle" fill="#2e2e33" font-size="9">ClickHouse + dbt</text>
+            <text x="695" y="130" text-anchor="middle" fill="#252528" font-size="7.5">M7 →</text>
+            <!-- Coming: Airflow -->
+            <rect x="770" y="65" width="75" height="45" fill="none" stroke="#232326" stroke-dasharray="4,3" stroke-width="1" rx="7"/>
+            <text x="807" y="86" text-anchor="middle" fill="#2e2e33" font-size="9">Airflow</text>
+            <text x="807" y="100" text-anchor="middle" fill="#252528" font-size="7.5">M8 →</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -990,7 +1222,7 @@ finally:
       <div class="mod-meta">
         <div class="mod-week">Тижні 9 – 10 · ~30 год</div>
         <h2 class="mod-title">Data Lakehouse — <span class="violet">Delta · Iceberg · Hudi</span></h2>
-        <p class="mod-lead">Перевести Data Lake з «купи Parquet-файлів» у систему з ACID-транзакціями, upsert-ами, time travel і schema evolution. Це зміна, яка перетворює lake з дослідницького інструменту на надійну production-платформу.</p>
+        <p class="mod-lead">Data Lakehouse — підхід, що додає транзакційний metadata-шар поверх звичайних Parquet-файлів у S3. Delta Lake (Databricks), Apache Iceberg (Netflix/Apple) і Apache Hudi (Uber) — три реалізації цього шару. Кожна дає те, чого не має «голий» lake: ACID-транзакції, рядковий UPDATE/DELETE, time travel і schema evolution — без переїзду в окрему базу даних.</p>
       </div>
     </div>
 
@@ -1335,6 +1567,61 @@ print(f"GDPR deletion complete for user {USER_ID_TO_DELETE}")</code></pre></div>
           <li>Перевірити time travel через Spark SQL <code>FOR SYSTEM_TIME AS OF ...</code></li>
           <li>ADR: <code>ADR-005-lakehouse-choice.md</code> (Iceberg vs Delta vs Hudi — чому Iceberg)</li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М6 — silver/gold шари мігровані на Iceberg</div>
+          <svg viewBox="0 0 860 185" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arM6n" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#b794f6"/></marker>
+              <marker id="arM6d" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#333"/></marker>
+            </defs>
+            <circle cx="22" cy="15" r="4" fill="#b794f6"/><text x="32" y="19" fill="#b794f6" font-size="9">НОВЕ В М6</text>
+            <circle cx="140" cy="15" r="4" fill="#333"/><text x="150" y="19" fill="#555" font-size="9">ГОТОВО РАНІШЕ</text>
+            <!-- Generators dim -->
+            <rect x="20" y="68" width="90" height="42" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="65" y="86" text-anchor="middle" fill="#484848" font-size="9">Generators</text>
+            <text x="65" y="100" text-anchor="middle" fill="#383838" font-size="8">✓</text>
+            <line x1="110" y1="89" x2="130" y2="89" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM6d)"/>
+            <!-- Kafka dim -->
+            <rect x="130" y="55" width="95" height="80" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="177" y="78" text-anchor="middle" fill="#484848" font-size="9">Kafka</text>
+            <text x="177" y="93" text-anchor="middle" fill="#383838" font-size="8">+Flink · M5 ✓</text>
+            <line x1="225" y1="95" x2="248" y2="95" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM6d)"/>
+            <!-- Spark dim -->
+            <rect x="248" y="55" width="95" height="80" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="295" y="78" text-anchor="middle" fill="#484848" font-size="9">Spark ETL</text>
+            <text x="295" y="93" text-anchor="middle" fill="#383838" font-size="8">M4 ✓</text>
+            <!-- Bronze dim -->
+            <line x1="343" y1="115" x2="368" y2="145" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM6d)"/>
+            <rect x="368" y="130" width="110" height="32" fill="rgba(139,90,43,.12)" stroke="#2a2a2e" rx="6"/>
+            <text x="423" y="145" text-anchor="middle" fill="#484848" font-size="9">bronze · raw JSON</text>
+            <text x="423" y="157" text-anchor="middle" fill="#383838" font-size="7.5">M2 ✓</text>
+            <!-- Iceberg silver (new) -->
+            <line x1="343" y1="80" x2="368" y2="62" stroke="#b794f6" stroke-width="1.5" marker-end="url(#arM6n)"/>
+            <rect x="368" y="28" width="160" height="62" fill="rgba(183,148,246,.08)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+            <text x="448" y="50" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">Iceberg Silver</text>
+            <text x="448" y="64" text-anchor="middle" fill="#9a9a95" font-size="8">fct_orders · dim_customer</text>
+            <text x="448" y="77" text-anchor="middle" fill="#6a6a66" font-size="7.5">MERGE INTO · time travel ✓</text>
+            <!-- Iceberg gold (new) -->
+            <line x1="368" y1="85" x2="368" y2="98" stroke="#b794f6" stroke-width="1" stroke-dasharray="3,2"/>
+            <rect x="368" y="98" width="160" height="28" fill="rgba(183,148,246,.06)" stroke="#b794f6" stroke-width="1" rx="8"/>
+            <text x="448" y="116" text-anchor="middle" fill="#b794f6" font-size="9">Iceberg Gold · dim_product</text>
+            <!-- Compaction DAG (new) -->
+            <rect x="558" y="28" width="160" height="55" fill="rgba(183,148,246,.08)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+            <text x="638" y="50" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">Airflow DAG</text>
+            <text x="638" y="65" text-anchor="middle" fill="#9a9a95" font-size="8">compaction щоночі</text>
+            <text x="638" y="77" text-anchor="middle" fill="#6a6a66" font-size="7.5">expire_snapshots &gt; 7 днів</text>
+            <line x1="528" y1="50" x2="558" y2="50" stroke="#b794f6" stroke-width="1.5" marker-end="url(#arM6n)"/>
+            <!-- Coming: DWH -->
+            <rect x="558" y="100" width="160" height="50" fill="none" stroke="#232326" stroke-dasharray="4,3" stroke-width="1" rx="7"/>
+            <text x="638" y="123" text-anchor="middle" fill="#2e2e33" font-size="10">ClickHouse + dbt + BI</text>
+            <text x="638" y="138" text-anchor="middle" fill="#252528" font-size="7.5">M7 →</text>
+            <!-- Coming: Airflow full -->
+            <rect x="738" y="55" width="100" height="65" fill="none" stroke="#232326" stroke-dasharray="4,3" stroke-width="1" rx="7"/>
+            <text x="788" y="82" text-anchor="middle" fill="#2e2e33" font-size="9">Повний</text>
+            <text x="788" y="97" text-anchor="middle" fill="#2e2e33" font-size="9">Airflow DAG</text>
+            <text x="788" y="111" text-anchor="middle" fill="#252528" font-size="7.5">M8 →</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -1348,7 +1635,7 @@ print(f"GDPR deletion complete for user {USER_ID_TO_DELETE}")</code></pre></div>
       <div class="mod-meta">
         <div class="mod-week">Тижні 11 – 12 · ~30 год</div>
         <h2 class="mod-title">Data <em>Warehouses</em></h2>
-        <p class="mod-lead">Lakehouse добре для data engineers і ML, але BI-аналітики і бізнес хочуть швидкий SQL з дашбордами. Тут на сцену виходять спеціалізовані DWH: Snowflake, BigQuery, Redshift, ClickHouse. Розбираємо як вони влаштовані і як правильно моделювати дані.</p>
+        <p class="mod-lead">Data Warehouse — колонкова СУБД, оптимізована для аналітичних запитів (OLAP): де OLTP-база зберігає рядки і оновлює їх транзакційно, DWH зберігає стовпці і сканує мільярди рядків за секунди. Snowflake, BigQuery, Redshift і ClickHouse — чотири архітектурно різні підходи до цієї задачі. Поверх DWH — dbt: інструмент, що перетворює SQL-файли на версіоновані, тестовані, документовані трансформації даних.</p>
       </div>
     </div>
 
@@ -1759,6 +2046,141 @@ services:
 # Host: clickhouse, Port: 8123, Database: shopwave
 # Username/Password: admin/shopwave123</code></pre></div>
 
+      <h4>dbt Incremental Models — обробка великих таблиць</h4>
+      <p>Матеріалізація <code>table</code> перераховує всю таблицю щоразу — при мільярдах рядків це займає годину. <strong>Incremental</strong> — обробляє тільки нові або змінені рядки з останнього запуску.</p>
+
+      <div class="pre-wrap"><pre>-- models/marts/fct_orders.sql
+-- Incremental model для таблиці замовлень ShopWave
+
+{{
+  config(
+    materialized='incremental',
+    unique_key='order_id',
+    incremental_strategy='merge',   -- INSERT + UPDATE за unique_key
+    on_schema_change='append_new_columns'
+  )
+}}
+
+WITH source AS (
+  SELECT
+    order_id,
+    customer_id,
+    product_id,
+    amount_usd,
+    currency,
+    status,
+    country,
+    created_at,
+    updated_at
+  FROM {{ ref('stg_orders') }}
+
+  {% if is_incremental() %}
+    -- Під час incremental запуску — тільки рядки новіші за останній run
+    WHERE updated_at > (SELECT MAX(updated_at) FROM {{ this }})
+       OR created_at > (SELECT MAX(created_at) FROM {{ this }})
+  {% endif %}
+),
+
+enriched AS (
+  SELECT
+    o.order_id,
+    o.customer_id,
+    o.product_id,
+    o.amount_usd,
+    o.currency,
+    o.status,
+    o.country,
+    p.category        AS product_category,
+    p.brand           AS product_brand,
+    c.tier            AS customer_tier,
+    c.signup_date     AS customer_signup_date,
+    o.created_at,
+    o.updated_at,
+    CURRENT_TIMESTAMP AS dbt_loaded_at
+  FROM source o
+  LEFT JOIN {{ ref('dim_products') }} p USING (product_id)
+  LEFT JOIN {{ ref('dim_customers') }} c USING (customer_id)
+)
+
+SELECT * FROM enriched</pre></div>
+
+      <div class="pre-wrap"><pre>-- schema.yml — конфігурація та тести для incremental model
+models:
+  - name: fct_orders
+    description: "Таблиця замовлень ShopWave, incremental merge по order_id"
+    config:
+      materialized: incremental
+      unique_key: order_id
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_id
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']
+      - name: amount_usd
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+# Freshness тест — дані не можуть бути старіше 2 годин
+sources:
+  - name: shopwave_raw
+    freshness:
+      warn_after: {count: 1, period: hour}
+      error_after: {count: 2, period: hour}
+    loaded_at_field: updated_at
+    tables:
+      - name: orders</pre></div>
+
+      <div class="pre-wrap"><pre># Корисні команди dbt для incremental моделей
+
+# Звичайний запуск — incremental, лише нові дані
+dbt run --select fct_orders
+
+# Повне перебудування (full refresh) — коли змінилась логіка
+dbt run --select fct_orders --full-refresh
+
+# Запустити тільки downstream моделей після fct_orders
+dbt run --select fct_orders+
+
+# Перевірити SQL без виконання (compile)
+dbt compile --select fct_orders
+
+# Запустити тести після build
+dbt test --select fct_orders
+
+# Подивитись план виконання (DAG)
+dbt ls --select fct_orders+</pre></div>
+
+      <div style="margin:20px 0;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:9px 14px;color:var(--fg-muted);font-family:var(--mono);font-size:10px;letter-spacing:.08em">СТРАТЕГІЯ</th>
+              <th style="text-align:left;padding:9px 14px;color:var(--fg-muted);font-family:var(--mono);font-size:10px;letter-spacing:.08em">ПІДТРИМУЮТЬ</th>
+              <th style="text-align:left;padding:9px 14px;color:var(--fg-muted);font-family:var(--mono);font-size:10px;letter-spacing:.08em">ПОВЕДІНКА</th>
+              <th style="text-align:left;padding:9px 14px;color:var(--fg-muted);font-family:var(--mono);font-size:10px;letter-spacing:.08em">КОЛИ ВИКОРИСТОВУВАТИ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:9px 14px;font-family:var(--mono);font-size:11px">append</td><td style="padding:9px 14px;color:var(--fg-muted)">Всі DWH</td><td style="padding:9px 14px;color:var(--fg-muted)">INSERT нових рядків, без оновлення</td><td style="padding:9px 14px;color:var(--fg-muted)">Event таблиці (immutable), логи</td></tr>
+            <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:9px 14px;font-family:var(--mono);font-size:11px">merge</td><td style="padding:9px 14px;color:var(--fg-muted)">Snowflake, BigQuery, Spark</td><td style="padding:9px 14px;color:var(--fg-muted)">MERGE: INSERT нових, UPDATE існуючих по unique_key</td><td style="padding:9px 14px;color:var(--fg-muted)">Замовлення зі статусами, профілі</td></tr>
+            <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:9px 14px;font-family:var(--mono);font-size:11px">delete+insert</td><td style="padding:9px 14px;color:var(--fg-muted)">BigQuery, Redshift</td><td style="padding:9px 14px;color:var(--fg-muted)">DELETE партиції + INSERT. Безпечніше за merge при великих партиціях</td><td style="padding:9px 14px;color:var(--fg-muted)">Партиціоновані таблиці за датою</td></tr>
+            <tr><td style="padding:9px 14px;font-family:var(--mono);font-size:11px">insert_overwrite</td><td style="padding:9px 14px;color:var(--fg-muted)">Spark, BigQuery</td><td style="padding:9px 14px;color:var(--fg-muted)">Перезаписує конкретні партиції (не всю таблицю)</td><td style="padding:9px 14px;color:var(--fg-muted)">Великі таблиці з чіткими date-партиціями</td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <div class="interview-qa">
         <h5>🎯 Interview Q&A — Модуль 7: DWH + dbt</h5>
         <div class="qa-item">
@@ -1835,6 +2257,53 @@ services:
           <li>Підняти <strong>Metabase</strong> або <strong>Apache Superset</strong> у docker-compose, під'єднати до DWH, побудувати перший ShopWave-дашборд</li>
           <li>ADR: <code>ADR-006-dwh-choice.md</code> (чому обрали саме ClickHouse / BigQuery)</li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М7 — аналітичний шар готовий до BI</div>
+          <svg viewBox="0 0 860 175" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arM7n" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#b794f6"/></marker>
+              <marker id="arM7d" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#333"/></marker>
+            </defs>
+            <circle cx="22" cy="15" r="4" fill="#b794f6"/><text x="32" y="19" fill="#b794f6" font-size="9">НОВЕ В М7</text>
+            <circle cx="140" cy="15" r="4" fill="#333"/><text x="150" y="19" fill="#555" font-size="9">ГОТОВО РАНІШЕ</text>
+            <!-- Previous pipeline collapsed (dim) -->
+            <rect x="20" y="60" width="90" height="42" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="65" y="78" text-anchor="middle" fill="#484848" font-size="9">Generators</text>
+            <line x1="110" y1="81" x2="130" y2="81" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM7d)"/>
+            <rect x="130" y="45" width="100" height="75" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="180" y="68" text-anchor="middle" fill="#484848" font-size="9">Kafka +</text>
+            <text x="180" y="83" text-anchor="middle" fill="#484848" font-size="9">Flink</text>
+            <text x="180" y="98" text-anchor="middle" fill="#383838" font-size="7.5">M5 ✓</text>
+            <line x1="230" y1="81" x2="255" y2="81" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM7d)"/>
+            <rect x="255" y="45" width="100" height="75" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="305" y="68" text-anchor="middle" fill="#484848" font-size="9">Iceberg</text>
+            <text x="305" y="83" text-anchor="middle" fill="#484848" font-size="9">silver/gold</text>
+            <text x="305" y="98" text-anchor="middle" fill="#383838" font-size="7.5">M6 ✓</text>
+            <!-- dbt models (new) -->
+            <line x1="355" y1="81" x2="380" y2="81" stroke="#b794f6" stroke-width="1.5" marker-end="url(#arM7n)"/>
+            <rect x="380" y="28" width="150" height="120" fill="rgba(183,148,246,.08)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+            <text x="455" y="52" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">dbt models</text>
+            <rect x="390" y="60" width="130" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="455" y="73" text-anchor="middle" fill="#9a9a95" font-size="8">fct_orders · fct_events</text>
+            <rect x="390" y="83" width="130" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="455" y="96" text-anchor="middle" fill="#9a9a95" font-size="8">dim_customer (SCD2)</text>
+            <rect x="390" y="106" width="130" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="455" y="119" text-anchor="middle" fill="#9a9a95" font-size="8">dim_product · dim_date</text>
+            <!-- ClickHouse (new) -->
+            <line x1="530" y1="81" x2="555" y2="81" stroke="#b794f6" stroke-width="1.5" marker-end="url(#arM7n)"/>
+            <rect x="555" y="35" width="140" height="90" fill="rgba(255,182,39,.08)" stroke="#ffb627" stroke-width="1.5" rx="8"/>
+            <text x="625" y="57" text-anchor="middle" fill="#ffb627" font-size="10" font-weight="700">ClickHouse DWH</text>
+            <text x="625" y="72" text-anchor="middle" fill="#9a9a95" font-size="8">star schema · subsecond</text>
+            <text x="625" y="86" text-anchor="middle" fill="#6a6a66" font-size="7.5">GMV · conversion funnel</text>
+            <text x="625" y="100" text-anchor="middle" fill="#6a6a66" font-size="7.5">cohort retention · AOV</text>
+            <!-- Metabase (new) -->
+            <line x1="695" y1="81" x2="720" y2="81" stroke="#b794f6" stroke-width="1.5" marker-end="url(#arM7n)"/>
+            <rect x="720" y="48" width="120" height="65" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5" rx="8"/>
+            <text x="780" y="70" text-anchor="middle" fill="#4ecdc4" font-size="10" font-weight="700">Metabase</text>
+            <text x="780" y="85" text-anchor="middle" fill="#9a9a95" font-size="8">ShopWave dashboard</text>
+            <text x="780" y="99" text-anchor="middle" fill="#6a6a66" font-size="7.5">перший live BI ✓</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -1848,7 +2317,7 @@ services:
       <div class="mod-meta">
         <div class="mod-week">Тиждень 13 · ~15 год</div>
         <h2 class="mod-title">Orchestration &amp; <span class="violet">NoSQL</span></h2>
-        <p class="mod-lead">Треба зв'язати всі джоби у повторюваний pipeline з retry, залежностями, SLA. Для цього — Airflow. А ще розбираємо, коли PostgreSQL недостатньо і потрібен документний / широкий-колонковий / graph / time-series сторедж.</p>
+        <p class="mod-lead">Apache Airflow — платформа оркестрації, де кожен pipeline описується як Python-клас (DAG) зі списком задач і залежностями між ними. MongoDB, Cassandra, Redis, Elasticsearch — чотири класи NoSQL-сховищ, кожен оптимізований під свій паттерн доступу: документи, wide-column, key-value in-memory, повнотекстовий пошук. Разом вони закривають задачі, де реляційна БД або занадто повільна, або не масштабується горизонтально.</p>
       </div>
     </div>
 
@@ -2425,6 +2894,54 @@ def check_rate_limit(user_id: str, limit: int = 100) -> bool:
           <li>Додати DAG для регулярного backup всіх продових DB (Postgres meta + Mongo)</li>
           <li>ADR: <code>ADR-007-orchestration.md</code> (Airflow vs Dagster) + <code>ADR-008-polyglot-persistence.md</code> (Iceberg+ClickHouse+Mongo)</li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М8 — повна Частина 2 завершена, платформа оркестрована</div>
+          <svg viewBox="0 0 860 195" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arM8n" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#b794f6"/></marker>
+              <marker id="arM8d" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#333"/></marker>
+            </defs>
+            <circle cx="22" cy="15" r="4" fill="#b794f6"/><text x="32" y="19" fill="#b794f6" font-size="9">НОВЕ В М8</text>
+            <circle cx="140" cy="15" r="4" fill="#333"/><text x="150" y="19" fill="#555" font-size="9">ГОТОВО РАНІШЕ</text>
+            <!-- Airflow (new, top) -->
+            <rect x="20" y="26" width="820" height="40" fill="rgba(183,148,246,.06)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+            <text x="240" y="43" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">Airflow DAG: shopwave_daily_etl</text>
+            <text x="240" y="57" text-anchor="middle" fill="#9a9a95" font-size="8">Kafka Check → Spark b→s → Spark s→g Iceberg → DWH MERGE → Metabase refresh → Slack notify</text>
+            <text x="680" y="43" text-anchor="middle" fill="#b794f6" font-size="9">shopwave_maintenance DAG</text>
+            <text x="680" y="57" text-anchor="middle" fill="#6a6a66" font-size="7.5">compaction · expire_snapshots · backup</text>
+            <!-- Pipeline (dim) -->
+            <rect x="20" y="90" width="82" height="42" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="61" y="108" text-anchor="middle" fill="#484848" font-size="9">Generators</text>
+            <line x1="102" y1="111" x2="122" y2="111" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM8d)"/>
+            <rect x="122" y="75" width="80" height="75" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="162" y="108" text-anchor="middle" fill="#484848" font-size="8">Kafka+Flink</text>
+            <line x1="202" y1="111" x2="222" y2="111" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM8d)"/>
+            <rect x="222" y="75" width="80" height="75" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="262" y="108" text-anchor="middle" fill="#484848" font-size="8">Iceberg lake</text>
+            <line x1="302" y1="111" x2="322" y2="111" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM8d)"/>
+            <rect x="322" y="75" width="80" height="75" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="362" y="108" text-anchor="middle" fill="#484848" font-size="8">dbt+ClickHouse</text>
+            <line x1="402" y1="111" x2="422" y2="111" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM8d)"/>
+            <rect x="422" y="75" width="80" height="75" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="462" y="108" text-anchor="middle" fill="#484848" font-size="8">Metabase BI</text>
+            <!-- MongoDB (new) -->
+            <rect x="535" y="75" width="145" height="85" fill="rgba(183,148,246,.08)" stroke="#b794f6" stroke-width="1.5" rx="8"/>
+            <text x="607" y="98" text-anchor="middle" fill="#b794f6" font-size="10" font-weight="700">MongoDB</text>
+            <text x="607" y="113" text-anchor="middle" fill="#9a9a95" font-size="8">user_profiles · flexible schema</text>
+            <text x="607" y="127" text-anchor="middle" fill="#6a6a66" font-size="7.5">preferences · recent_views</text>
+            <text x="607" y="140" text-anchor="middle" fill="#6a6a66" font-size="7.5">daily snapshot → Iceberg gold</text>
+            <!-- ShopWaveOperator (new) -->
+            <rect x="695" y="75" width="145" height="85" fill="rgba(183,148,246,.06)" stroke="#b794f6" stroke-width="1" rx="8"/>
+            <text x="767" y="98" text-anchor="middle" fill="#b794f6" font-size="10">ShopWaveOperator</text>
+            <text x="767" y="113" text-anchor="middle" fill="#9a9a95" font-size="8">custom Airflow Operator</text>
+            <text x="767" y="127" text-anchor="middle" fill="#6a6a66" font-size="7.5">уніфікований Spark submit</text>
+            <text x="767" y="141" text-anchor="middle" fill="#6a6a66" font-size="7.5">ADR-007 · ADR-008</text>
+            <!-- docker-compose note -->
+            <rect x="20" y="153" width="820" height="28" fill="rgba(255,182,39,.04)" stroke="rgba(255,182,39,.2)" stroke-dasharray="3,2" rx="6"/>
+            <text x="430" y="165" text-anchor="middle" fill="#ffb627" font-size="8" letter-spacing=".08em">⚠ ВЕСЬ СТЕК ЩЕ В docker-compose — Kubernetes і хмара у Частині 3</text>
+            <text x="430" y="177" text-anchor="middle" fill="#6a6a66" font-size="7.5">M9 → контейнеризація + Terraform + K8s deплой</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -2557,6 +3074,23 @@ document.querySelectorAll('.qa-q').forEach(function(q){
       tip.style.left=x+'px';tip.style.top=y+'px';
     });
     el.addEventListener('mouseleave',function(){tip.classList.remove('on');});
+  });
+})();
+(function(){
+  document.querySelectorAll('.pre-wrap').forEach(function(wrap){
+    var pre=wrap.querySelector('pre');
+    if(!pre) return;
+    var lines=pre.textContent.split('\n').filter(function(l){return l.trim()!==''}).length;
+    if(lines<=12) return;
+    wrap.classList.add('pre-collapsed');
+    var btn=document.createElement('button');
+    btn.className='code-expand-btn';
+    btn.textContent='↓ розгорнути · '+lines+' рядків';
+    wrap.insertAdjacentElement('afterend',btn);
+    btn.addEventListener('click',function(){
+      wrap.classList.remove('pre-collapsed');
+      btn.remove();
+    });
   });
 })();
 </script>

@@ -309,6 +309,12 @@ footer a{color:var(--fg-muted)}
   letter-spacing:.14em;text-transform:uppercase;
   color:var(--pro);margin-bottom:6px;
 }
+.pre-collapsed{max-height:130px;overflow:hidden}
+.pre-collapsed::after{content:'';position:absolute;bottom:0;left:0;right:0;height:70px;background:linear-gradient(transparent,var(--bg-3));pointer-events:none;z-index:1;border-radius:0 0 8px 8px}
+.code-expand-btn{display:block;width:100%;padding:7px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-top:none;color:var(--fg-dim);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-align:center;cursor:pointer;border-radius:0 0 6px 6px;margin-bottom:24px;transition:background .15s,color .15s}
+.code-expand-btn:hover{background:rgba(255,255,255,.06);color:var(--fg-muted)}
+.ms-diagram{margin-top:22px;border-top:1px solid var(--border-soft);padding-top:16px}
+.ms-diagram-hdr{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -320,6 +326,7 @@ footer a{color:var(--fg-muted)}
     <div class="nav-links">
       <a href="#module-9">М9</a>
       <a href="#module-10">М10</a>
+      <a href="#module-10b">М10b</a>
       <a href="#module-11">М11</a>
       <a href="#capstone">Capstone</a>
     </div>
@@ -407,7 +414,7 @@ footer a{color:var(--fg-muted)}
       <div class="mod-meta">
         <div class="mod-week">Тижні 14 – 15 · ~30 год</div>
         <h2 class="mod-title">DevOps для Data — <em>Docker · K8s · Terraform</em></h2>
-        <p class="mod-lead">Межа між Data Engineer і Data Platform Engineer у 2026 — саме тут. Без вміння упакувати pipeline у контейнер, деплоїти у Kubernetes і описати інфраструктуру кодом — ви не зможете підтримувати production-ready системи.</p>
+        <p class="mod-lead">Docker — стандарт пакування: застосунок разом із залежностями в ізольований образ, що однаково запускається на laptop і prod-сервері. Kubernetes — оркестратор контейнерів: розподіляє їх по кластеру, перезапускає при збоях, масштабує під навантаження. Terraform — Infrastructure as Code: хмарна інфраструктура описується у файлах, версіонується у Git і відтворюється однією командою. Без цих трьох інструментів data platform не існує в production — лише на localhost.</p>
       </div>
     </div>
 
@@ -1065,6 +1072,52 @@ jobs:
           <li>3 базові алерти: Airflow DAG failed, Spark executor OOMKilled, Kafka consumer lag &gt; 100k</li>
           <li>ADR: <code>ADR-009-k8s-deployment.md</code> + <code>ADR-010-iac-approach.md</code></li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М9 — стек перенесено у Kubernetes + GitOps</div>
+          <svg viewBox="0 0 860 205" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arM9n" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7fdba5"/></marker>
+              <marker id="arM9d" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#333"/></marker>
+            </defs>
+            <circle cx="22" cy="15" r="4" fill="#7fdba5"/><text x="32" y="19" fill="#7fdba5" font-size="9">НОВЕ В М9</text>
+            <circle cx="140" cy="15" r="4" fill="#333"/><text x="150" y="19" fill="#555" font-size="9">ЧАСТИНИ 1-2 ГОТОВО</text>
+            <!-- GitHub Actions CI/CD (new, top) -->
+            <rect x="20" y="28" width="820" height="38" fill="rgba(127,219,165,.07)" stroke="#7fdba5" stroke-width="1.5" rx="8"/>
+            <text x="430" y="43" text-anchor="middle" fill="#7fdba5" font-size="10" font-weight="700">GitHub Actions CI/CD</text>
+            <text x="430" y="57" text-anchor="middle" fill="#9a9a95" font-size="8">lint → test → build Docker image → push ECR → update Helm values → ArgoCD sync</text>
+            <!-- Terraform (new) -->
+            <rect x="20" y="80" width="150" height="55" fill="rgba(127,219,165,.08)" stroke="#7fdba5" stroke-width="1.5" rx="8"/>
+            <text x="95" y="103" text-anchor="middle" fill="#7fdba5" font-size="10" font-weight="700">Terraform IaC</text>
+            <text x="95" y="117" text-anchor="middle" fill="#9a9a95" font-size="8">modules/: vpc, eks, s3</text>
+            <text x="95" y="128" text-anchor="middle" fill="#6a6a66" font-size="7.5">envs/: dev, staging, prod</text>
+            <line x1="170" y1="107" x2="193" y2="107" stroke="#7fdba5" stroke-width="1.5" marker-end="url(#arM9n)"/>
+            <!-- K8s cluster (new) -->
+            <rect x="193" y="72" width="450" height="120" fill="rgba(127,219,165,.05)" stroke="#7fdba5" stroke-width="1.5" rx="10"/>
+            <text x="418" y="95" text-anchor="middle" fill="#7fdba5" font-size="11" font-weight="700">Kubernetes Cluster (EKS)</text>
+            <!-- Pods inside K8s -->
+            <rect x="205" y="105" width="85" height="32" fill="rgba(255,255,255,.03)" stroke="#2e2e33" rx="5"/>
+            <text x="247" y="124" text-anchor="middle" fill="#9a9a95" font-size="8">Kafka pods</text>
+            <rect x="298" y="105" width="85" height="32" fill="rgba(255,255,255,.03)" stroke="#2e2e33" rx="5"/>
+            <text x="340" y="124" text-anchor="middle" fill="#9a9a95" font-size="8">Flink pods</text>
+            <rect x="391" y="105" width="85" height="32" fill="rgba(255,255,255,.03)" stroke="#2e2e33" rx="5"/>
+            <text x="433" y="124" text-anchor="middle" fill="#9a9a95" font-size="8">Spark pods</text>
+            <rect x="484" y="105" width="85" height="32" fill="rgba(255,255,255,.03)" stroke="#2e2e33" rx="5"/>
+            <text x="526" y="124" text-anchor="middle" fill="#9a9a95" font-size="8">Airflow pods</text>
+            <rect x="205" y="145" width="170" height="35" fill="rgba(127,219,165,.04)" stroke="#7fdba5" stroke-width="1" rx="5"/>
+            <text x="290" y="160" text-anchor="middle" fill="#7fdba5" font-size="8">ArgoCD (GitOps)</text>
+            <text x="290" y="173" text-anchor="middle" fill="#6a6a66" font-size="7">слідкує за helm/ у repo</text>
+            <rect x="385" y="145" width="250" height="35" fill="rgba(127,219,165,.04)" stroke="#7fdba5" stroke-width="1" rx="5"/>
+            <text x="510" y="160" text-anchor="middle" fill="#7fdba5" font-size="8">Prometheus + Grafana + Alertmanager</text>
+            <text x="510" y="173" text-anchor="middle" fill="#6a6a66" font-size="7">3 алерти: Airflow fail · OOM · Kafka lag</text>
+            <!-- Monitoring stack -->
+            <rect x="660" y="80" width="180" height="110" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="1" rx="8"/>
+            <text x="750" y="103" text-anchor="middle" fill="#7fdba5" font-size="9" font-weight="700">Observability</text>
+            <text x="750" y="118" text-anchor="middle" fill="#9a9a95" font-size="8">kube-prometheus-stack</text>
+            <text x="750" y="132" text-anchor="middle" fill="#6a6a66" font-size="7.5">Helm chart · pre-built dashboards</text>
+            <text x="750" y="147" text-anchor="middle" fill="#6a6a66" font-size="7.5">Slack alerts · PagerDuty</text>
+            <text x="750" y="162" text-anchor="middle" fill="#6a6a66" font-size="7.5">multi-stage Dockerfiles ✓</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -1078,7 +1131,7 @@ jobs:
       <div class="mod-meta">
         <div class="mod-week">Тижні 16 – 17 · ~30 год</div>
         <h2 class="mod-title">Хмари — <span class="red">AWS · GCP · Azure</span></h2>
-        <p class="mod-lead">Три гіганти ділять 65% хмарного ринку. Кожен має повний data-стек, але з різними сильними сторонами. Уміти обрати хмару, порахувати реальну вартість і не потрапити у vendor lock-in — один з найцінніших навичків data-інженера у 2026.</p>
+        <p class="mod-lead">AWS, GCP і Azure — hyperscaler cloud platforms: датацентри у десятках регіонів, сотні managed-сервісів, оплата за фактичне споживання. Для data engineering кожен пропонує повний стек: object storage → streaming → distributed compute → DWH → ML platform. Різниця — в архітектурних акцентах: AWS найширший вибір і зрілість, GCP сильніший у BigQuery і ML, Azure домінує там, де є Microsoft enterprise. Уміти обрати, порахувати TCO і не потрапити у vendor lock-in — конкретний навик, що впливає на рахунки на мільйони доларів.</p>
       </div>
     </div>
 
@@ -1090,38 +1143,38 @@ jobs:
       <p>У AWS для кожної задачі є 2-3 сервіси, часто з перекриттям. Плюс — гнучкість і вибір, мінус — надто багато опцій і плутанина.</p>
 
       <div class="cards">
-        <div class="card red"><div class="ic">S3</div><h6>S3</h6><p>Object storage. Де-факто стандарт. $0.023/GB Standard, знижується до $0.004 у Glacier. Data lake основа.</p></div>
-        <div class="card red"><div class="ic">EMR</div><h6>EMR / EMR Serverless</h6><p>Managed Hadoop/Spark/Hive/Presto. Serverless-варіант — платите за job, без кластера. ~$0.12/min vCPU.</p></div>
-        <div class="card red"><div class="ic">GL</div><h6>Glue</h6><p>Serverless Spark + data catalog + crawlers. Простіше за EMR, дорожче ($0.44/DPU-year). ETL-орієнтований.</p></div>
-        <div class="card red"><div class="ic">At</div><h6>Athena</h6><p>Presto/Trino як сервіс. $5/TB сканованих. Для ad-hoc-запитів на S3 Parquet без ETL.</p></div>
-        <div class="card red"><div class="ic">RS</div><h6>Redshift</h6><p>DWH. $0.25-$13/год RA3 nodes, або Serverless $0.375/RPU-год.</p></div>
-        <div class="card red"><div class="ic">Kn</div><h6>Kinesis</h6><p>Streaming. Data Streams (аналог Kafka), Firehose (loader у S3), Analytics (SQL на стріми). ~$0.015/shard-hour.</p></div>
-        <div class="card red"><div class="ic">MSK</div><h6>MSK</h6><p>Managed Kafka (справжня). ~$0.21/год kafka.m5.large + $0.10/GB storage. Якщо не хочете Kinesis.</p></div>
-        <div class="card red"><div class="ic">MWA</div><h6>MWAA</h6><p>Managed Airflow. ~$0.49/год Small env + $0.77/worker. Дорого, але не треба самому підтримувати.</p></div>
+        <div class="card red"><div class="ic">S3</div><h6>S3</h6><p>Об'єктне сховище — основа будь-якого data lake на AWS. Зберігає Parquet/Iceberg-файли, логи, бекапи. Нескінченно масштабується, 11 дев'яток durability. $0.023/GB Standard → $0.004/GB Glacier для cold архіву.</p></div>
+        <div class="card red"><div class="ic">EMR</div><h6>EMR / EMR Serverless</h6><p>Запускає Spark, Hive, Presto на managed-кластері EC2 або serverless (без кластера, платите за CPU за job). Використовується для batch ETL, ML training, великих трансформацій. Serverless ідеальний для нерегулярних job-ів. ~$0.12/vCPU-хв.</p></div>
+        <div class="card red"><div class="ic">GL</div><h6>AWS Glue</h6><p>Serverless ETL + data catalog + crawlers. Crawler автоматично сканує S3 і створює схеми таблиць у Glue Catalog (сумісний з Hive Metastore). ETL-скрипти на PySpark. Простіше за EMR для нескладних pipeline, але дорожче. ETL $0.44/DPU-год.</p></div>
+        <div class="card red"><div class="ic">At</div><h6>Athena</h6><p>Serverless SQL прямо по S3: пишете запит → Athena читає Parquet/Iceberg → повертає результат. Не потрібен кластер. Ідеально для ad-hoc аналітики і data exploration без ETL. Платите тільки за дані що прочитались: $5/TB сканованих.</p></div>
+        <div class="card red"><div class="ic">RS</div><h6>Redshift</h6><p>Повноцінний колонковий DWH для BI та складних аналітичних запитів. Масштабується до петабайтів. RA3 nodes відокремлюють compute від storage (S3). Redshift Serverless — автоскейл без провізії. $0.25-$13/год RA3 nodes.</p></div>
+        <div class="card red"><div class="ic">Kn</div><h6>Kinesis</h6><p>AWS-native streaming без Kafka. Data Streams — managed log (аналог Kafka), Firehose — direct loader у S3/Redshift без коду, Analytics — SQL на живий стрім. Простіший операційно ніж Kafka, але менш гнучкий. ~$0.015/shard-год.</p></div>
+        <div class="card red"><div class="ic">MSK</div><h6>MSK (Managed Kafka)</h6><p>Справжній Apache Kafka як managed-сервіс: AWS керує брокерами, ZooKeeper/KRaft, дисками, патчами. Ваш код підключається як до звичайного Kafka. Обирайте MSK якщо вже є Kafka expertise або потрібна повна Kafka API сумісність. ~$0.21/год kafka.m5.large.</p></div>
+        <div class="card red"><div class="ic">MWA</div><h6>MWAA (Managed Airflow)</h6><p>Apache Airflow як managed-сервіс: AWS тримає scheduler, webserver, workers, метадані. Ви пишете тільки DAG-файли і кладете у S3. Хороший вибір якщо не хочете адмінити Airflow самостійно. ~$0.49/год Small env + $0.77/worker-год.</p></div>
       </div>
 
       <h4>GCP — data-native підхід</h4>
       <p>Google — компанія, що побудувала свою інфраструктуру на MapReduce, BigTable, Dremel. Цей досвід видно у сервісах: BigQuery неймовірно зручний, Dataflow просто працює. Мінус — менша зрілість за межами data і ML.</p>
 
       <div class="cards">
-        <div class="card"><div class="ic">GCS</div><h6>GCS</h6><p>Object storage. $0.020/GB Standard, до $0.0012 у Archive. API сумісний з S3 через HMAC keys.</p></div>
-        <div class="card"><div class="ic">BQ</div><h6>BigQuery</h6><p>Flagship DWH. Serverless, $6.25/TB on-demand або Capacity pricing. BigLake читає Iceberg/Delta.</p></div>
-        <div class="card"><div class="ic">DP</div><h6>Dataproc / Dataproc Serverless</h6><p>Managed Hadoop/Spark. Serverless platить за job, $0.06/DCU-год. Аналог EMR.</p></div>
-        <div class="card"><div class="ic">DF</div><h6>Dataflow</h6><p>Managed Apache Beam. І batch, і stream в одному API. Унікальне для GCP, дуже елегантне.</p></div>
-        <div class="card"><div class="ic">P/S</div><h6>Pub/Sub</h6><p>Managed messaging. Serverless, autoscale. ~$40/TB. Сильна альтернатива Kafka для GCP-стеку.</p></div>
-        <div class="card"><div class="ic">Co</div><h6>Composer</h6><p>Managed Airflow. ~$400-800/міс small env. Стандарт для оркестрації у GCP.</p></div>
+        <div class="card"><div class="ic">GCS</div><h6>GCS</h6><p>Google Cloud Storage — об'єктне сховище, аналог S3. Зберігає data lake файли, Dataflow staging, BigQuery external tables. API сумісний з S3 через HMAC keys — можна міґрувати без переписування коду. $0.020/GB Standard → $0.0012/GB Archive.</p></div>
+        <div class="card"><div class="ic">BQ</div><h6>BigQuery</h6><p>Serverless колонковий DWH — флагман GCP. Не треба провізувати кластер: пишете SQL, BigQuery автоматично аллоцює compute. Сканує петабайти за секунди. BigLake читає Iceberg/Delta прямо з GCS. Ідеальний для Spotify-масштабу. $6.25/TB on-demand або Capacity slots.</p></div>
+        <div class="card"><div class="ic">DP</div><h6>Dataproc / Serverless</h6><p>Managed Spark/Hadoop на GCP. Кластер піднімається за 90 сек, автоматично видаляється після job. Serverless-варіант — взагалі без кластера. Аналог AWS EMR. Ідеальний для batch ETL і ML на великих датасетах. Serverless $0.06/DCU-год.</p></div>
+        <div class="card"><div class="ic">DF</div><h6>Dataflow</h6><p>Managed Apache Beam — unified API для batch і streaming в одному коді. Spotify використовує для обробки мільярдів подій/день. Auto-scales від нуля. Uniqне для GCP: один pipeline для historical reprocessing і live stream. Оплата за vCPU/GB processed.</p></div>
+        <div class="card"><div class="ic">P/S</div><h6>Pub/Sub</h6><p>Serverless managed messaging — аналог Kafka без операційного overhead. Автоскейл під будь-який throughput. Topics, subscriptions, push/pull delivery. Spotify обрав замість Kafka щоб не тримати Kafka-ops команду. Обмеження: менш гнучкий ніж Kafka. ~$40/TB.</p></div>
+        <div class="card"><div class="ic">Co</div><h6>Cloud Composer</h6><p>Managed Apache Airflow від Google. AWS тримає scheduler, webserver і metadata DB, ви пишете DAG-файли у GCS. Стандартний вибір для оркестрації на GCP — ніяких Kubernetes for Airflow. Spotify використовує для щотижневого Discover Weekly pipeline. ~$400-800/міс small env.</p></div>
       </div>
 
       <h4>Azure — enterprise і Microsoft-екосистема</h4>
       <p>Azure виграє там, де компанія вже у Microsoft-світі (Office 365, AD, Windows). Дуже сильна інтеграція з Databricks (Azure Databricks — спільний продукт). Data-стек менш "нативний", але широкий.</p>
 
       <div class="cards">
-        <div class="card red"><div class="ic">AL</div><h6>ADLS Gen2</h6><p>Data Lake Storage — S3-подібне, поверх Blob. Hierarchical namespace. $0.018/GB Hot.</p></div>
-        <div class="card red"><div class="ic">Sy</div><h6>Synapse</h6><p>Унифіцоване: DWH + Spark + pipelines + SQL serverless. Аналог BigQuery + EMR + Glue в одному продукті.</p></div>
-        <div class="card red"><div class="ic">ADF</div><h6>Data Factory</h6><p>ETL/ELT orchestration з GUI. Альтернатива Airflow для non-engineers. Інтеграція з 90+ джерелами.</p></div>
-        <div class="card red"><div class="ic">EH</div><h6>Event Hubs</h6><p>Streaming. Kafka-protocol сумісний. ~$0.015/throughput unit-год.</p></div>
-        <div class="card red"><div class="ic">DB</div><h6>Azure Databricks</h6><p>Native Databricks як managed-сервіс. Для багатьох Azure-клієнтів — основний DE/ML-стек.</p></div>
-        <div class="card red"><div class="ic">Fa</div><h6>Microsoft Fabric</h6><p>Нова (2023+) SaaS-платформа, об'єднує Power BI + Synapse + Data Factory. OneLake як universal storage. Конкурує зі Snowflake + Databricks.</p></div>
+        <div class="card red"><div class="ic">AL</div><h6>ADLS Gen2</h6><p>Azure Data Lake Storage Gen2 — об'єктне сховище з hierarchical namespace (як файлова система). Поєднує Blob Storage з POSIX-подібними ACL. Основа data lake для Spark і Synapse. Native інтеграція з Azure AD для RBAC. $0.018/GB Hot tier.</p></div>
+        <div class="card red"><div class="ic">Sy</div><h6>Azure Synapse</h6><p>Єдина платформа: DWH (Synapse SQL) + Spark pools + Serverless SQL (Athena-аналог) + pipelines (ADF-аналог). Аналог BigQuery + EMR + Glue в одному продукті. Читає ADLS напряму. Сильна інтеграція з Power BI. Хороший вибір для Microsoft-heavy стеку.</p></div>
+        <div class="card red"><div class="ic">ADF</div><h6>Azure Data Factory</h6><p>ETL/ELT orchestration з GUI-конструктором pipeline без коду. Альтернатива Airflow для non-engineers і legacy integration. Вбудовані конектори до 90+ джерел: SAP, Salesforce, Oracle, on-prem SQL Server. Популярний у enterprise де немає Python-інженерів. Pay-per-activity-run.</p></div>
+        <div class="card red"><div class="ic">EH</div><h6>Azure Event Hubs</h6><p>Managed streaming — аналог Kafka з підтримкою Kafka Protocol (ваш Kafka-код підключається без змін). Приймає мільйони подій/сек, автоскейл. Capture-функція — автоматично зберігає стрім у ADLS/Blob у Avro/Parquet. ~$0.015/throughput unit-год.</p></div>
+        <div class="card red"><div class="ic">DB</div><h6>Azure Databricks</h6><p>Спільний продукт Microsoft + Databricks — повний Databricks (Spark + Delta Lake + MLflow + Unity Catalog) як managed-сервіс на Azure. Для більшості Azure data-клієнтів — основний стек DE + ML. Глибока інтеграція з Azure AD, ADLS, Event Hubs. Дорогий, але потужний.</p></div>
+        <div class="card red"><div class="ic">Fa</div><h6>Microsoft Fabric</h6><p>Нова (2023+) SaaS-платформа всього data стеку: Power BI + Synapse + Data Factory + Databricks у одному workspace. OneLake — universal storage (один lake для всього). Конкурує зі Snowflake + Databricks як all-in-one. Ідеальний для компаній, що хочуть один vendor без складної інтеграції.</p></div>
       </div>
 
       <h4>Порівняльна таблиця — еквіваленти</h4>
@@ -1582,7 +1635,662 @@ aws iam simulate-principal-policy \
           <li>Перевести EMR/Dataproc workloads на <strong>spot/preemptible</strong> instances</li>
           <li>ADR: <code>ADR-011-cloud-strategy.md</code> з обґрунтуванням вибору</li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М10 — production у хмарі + DR у другій хмарі</div>
+          <svg viewBox="0 0 860 195" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arM10n" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7fdba5"/></marker>
+              <marker id="arM10d" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#333"/></marker>
+            </defs>
+            <circle cx="22" cy="15" r="4" fill="#7fdba5"/><text x="32" y="19" fill="#7fdba5" font-size="9">НОВЕ В М10</text>
+            <circle cx="140" cy="15" r="4" fill="#333"/><text x="150" y="19" fill="#555" font-size="9">М9 ГОТОВО</text>
+            <!-- AWS Primary cloud (new) -->
+            <rect x="20" y="28" width="490" height="148" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="1.5" rx="10"/>
+            <text x="265" y="50" text-anchor="middle" fill="#7fdba5" font-size="11" font-weight="700">AWS — Primary Cloud</text>
+            <rect x="35" y="60" width="100" height="35" fill="rgba(255,255,255,.03)" stroke="#2e2e33" rx="6"/>
+            <text x="85" y="75" text-anchor="middle" fill="#9a9a95" font-size="8">EKS cluster</text>
+            <text x="85" y="88" text-anchor="middle" fill="#6a6a66" font-size="7">Kubernetes ✓</text>
+            <rect x="145" y="60" width="100" height="35" fill="rgba(255,255,255,.03)" stroke="#2e2e33" rx="6"/>
+            <text x="195" y="75" text-anchor="middle" fill="#9a9a95" font-size="8">S3 Data Lake</text>
+            <text x="195" y="88" text-anchor="middle" fill="#6a6a66" font-size="7">Iceberg tables</text>
+            <rect x="255" y="60" width="100" height="35" fill="rgba(255,255,255,.03)" stroke="#2e2e33" rx="6"/>
+            <text x="305" y="75" text-anchor="middle" fill="#9a9a95" font-size="8">MSK (Kafka)</text>
+            <text x="305" y="88" text-anchor="middle" fill="#6a6a66" font-size="7">managed broker</text>
+            <rect x="365" y="60" width="130" height="35" fill="rgba(255,255,255,.03)" stroke="#2e2e33" rx="6"/>
+            <text x="430" y="75" text-anchor="middle" fill="#9a9a95" font-size="8">Redshift / ClickHouse</text>
+            <text x="430" y="88" text-anchor="middle" fill="#6a6a66" font-size="7">DWH + BI layer</text>
+            <rect x="35" y="110" width="460" height="50" fill="rgba(127,219,165,.04)" stroke="#7fdba5" stroke-width="1" rx="6"/>
+            <text x="265" y="128" text-anchor="middle" fill="#7fdba5" font-size="9" font-weight="700">FinOps: cost tags + alerts + spot instances + auto-shutdown</text>
+            <text x="265" y="143" text-anchor="middle" fill="#6a6a66" font-size="7.5">Project=shopwave · Env=prod/staging/dev · spot для EMR workloads · TCO 12 міс розраховано</text>
+            <!-- Cross-replication arrow -->
+            <line x1="512" y1="100" x2="538" y2="100" stroke="#7fdba5" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arM10n)"/>
+            <text x="524" y="95" text-anchor="middle" fill="#6a6a66" font-size="7">replication</text>
+            <!-- GCP DR cloud (new) -->
+            <rect x="538" y="28" width="302" height="148" fill="rgba(127,219,165,.04)" stroke="rgba(127,219,165,.4)" stroke-width="1" stroke-dasharray="5,3" rx="10"/>
+            <text x="689" y="50" text-anchor="middle" fill="rgba(127,219,165,.6)" font-size="11" font-weight="700">GCP — Disaster Recovery</text>
+            <rect x="550" y="60" width="100" height="35" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="6"/>
+            <text x="600" y="75" text-anchor="middle" fill="#484848" font-size="8">GKE (minimal)</text>
+            <text x="600" y="88" text-anchor="middle" fill="#383838" font-size="7">read-only replica</text>
+            <rect x="660" y="60" width="100" height="35" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="6"/>
+            <text x="710" y="75" text-anchor="middle" fill="#484848" font-size="8">GCS storage</text>
+            <text x="710" y="88" text-anchor="middle" fill="#383838" font-size="7">S3→GCS cross-replication</text>
+            <rect x="770" y="60" width="60" height="35" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="6"/>
+            <text x="800" y="80" text-anchor="middle" fill="#484848" font-size="7">BigQuery DR</text>
+            <rect x="550" y="110" width="280" height="50" fill="rgba(127,219,165,.03)" stroke="rgba(127,219,165,.2)" stroke-width="1" rx="6"/>
+            <text x="690" y="128" text-anchor="middle" fill="rgba(127,219,165,.5)" font-size="8">RTO: &lt; 4 год · RPO: &lt; 1 год</text>
+            <text x="690" y="143" text-anchor="middle" fill="#383838" font-size="7">різні failure domains · geo redundancy</text>
+          </svg>
+        </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 10b -->
+<section class="module" id="module-10b">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num" style="font-size:20px;width:56px;height:56px">10b</div>
+      <div class="mod-meta">
+        <div class="mod-week">Тиждень 17 · ~12 год</div>
+        <h2 class="mod-title">Безпека &amp; <span class="red">Доступ до Даних</span></h2>
+        <p class="mod-lead">Public cloud — не єдина модель: хмарна стратегія завжди починається з питання «де взагалі можна зберігати ці дані?» Регулятори, закони про локалізацію, галузеві стандарти і класифікація самих даних визначають, чи можна взагалі використовувати hyperscaler, і якщо так — з якими додатковими контролями. Далі — мережева ізоляція (VPC, VPN, PrivateLink), шифрування на кожному рівні і Zero Trust IAM.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+
+      <!-- ТИПИ ХМАР -->
+      <h4>Моделі розгортання хмари</h4>
+      <p>Перш ніж обирати AWS чи GCP — треба визначити, яка модель взагалі дозволена для ваших даних.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:20px 0">
+        <div class="card" style="border-color:rgba(127,219,165,.3)">
+          <div class="ic" style="background:rgba(127,219,165,.15);color:#7fdba5">PU</div>
+          <h6>Public Cloud</h6>
+          <p>AWS / GCP / Azure — shared infrastructure, оплата за spoживання. Відповідальність за безпеку ділиться: провайдер захищає фізику і гіпервізор, ви — дані, IAM, мережу. Підходить для більшості комерційних компаній.</p>
+        </div>
+        <div class="card" style="border-color:rgba(127,219,165,.3)">
+          <div class="ic" style="background:rgba(127,219,165,.15);color:#7fdba5">PR</div>
+          <h6>Private Cloud</h6>
+          <p>On-premise або dedicated hardware: OpenStack, VMware vCloud, Nutanix. Повний контроль над фізикою і даними. Дорожче у CAPEX, але обов'язково для держорганів, ЗСУ, спецслужб, оборонного сектору.</p>
+        </div>
+        <div class="card" style="border-color:rgba(127,219,165,.3)">
+          <div class="ic" style="background:rgba(127,219,165,.15);color:#7fdba5">HY</div>
+          <h6>Hybrid Cloud</h6>
+          <p>Частина workloads on-prem, частина в public cloud — з'єднані через VPN або Direct Connect. Типово: гарячі дані та ML training у хмарі, PII та фінансові транзакції on-prem. Банки, страхові, telecom.</p>
+        </div>
+        <div class="card" style="border-color:rgba(127,219,165,.3)">
+          <div class="ic" style="background:rgba(127,219,165,.15);color:#7fdba5">MC</div>
+          <h6>Multi-Cloud</h6>
+          <p>Одночасно кілька публічних хмар: AWS для compute, GCP для BigQuery, Azure для AD-інтеграції. Запобігає vendor lock-in, але ускладнює мережу і IAM. Потребує спільного control plane (Anthos, Azure Arc).</p>
+        </div>
+        <div class="card" style="border-color:rgba(127,219,165,.3)">
+          <div class="ic" style="background:rgba(127,219,165,.15);color:#7fdba5">SZ</div>
+          <h6>Sovereign Cloud</h6>
+          <p>Dedicated region провайдера у конкретній країні з юридичними гарантіями локалізації даних. AWS EU Sovereign Cloud, Google Sovereign Cloud DE. Для держструктур ЄС і компаній під GDPR з жорсткими вимогами.</p>
+        </div>
+        <div class="card" style="border-color:rgba(127,219,165,.3)">
+          <div class="ic" style="background:rgba(127,219,165,.15);color:#7fdba5">ED</div>
+          <h6>Edge / On-prem</h6>
+          <p>Обробка даних де вони виникають: IoT-пристрої, промислові ПЛК, відео-аналітика на камерах. AWS Outposts, Azure Stack Edge, K3s. Коли не можна передавати raw-дані у хмару через затримку або bandwidth.</p>
+        </div>
+      </div>
+
+      <!-- ХМАРНІ ОБМЕЖЕННЯ -->
+      <h4>Коли public cloud заборонено або обмежено</h4>
+      <p>Регуляторні обмеження залежать від галузі, класифікації даних і юрисдикції.</p>
+
+      <div style="overflow-x:auto;margin:20px 0">
+        <table style="width:100%;border-collapse:collapse;font-size:14px">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:10px 14px;color:var(--fg-muted);font-weight:500;font-family:var(--mono);font-size:11px;letter-spacing:.08em">ГАЛУЗЬ / СЕКТОР</th>
+              <th style="text-align:left;padding:10px 14px;color:var(--fg-muted);font-weight:500;font-family:var(--mono);font-size:11px;letter-spacing:.08em">РЕГУЛЯТОР / ЗАКОН</th>
+              <th style="text-align:left;padding:10px 14px;color:var(--fg-muted);font-weight:500;font-family:var(--mono);font-size:11px;letter-spacing:.08em">ВИМОГА</th>
+              <th style="text-align:left;padding:10px 14px;color:var(--fg-muted);font-weight:500;font-family:var(--mono);font-size:11px;letter-spacing:.08em">РІШЕННЯ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-soft)">
+              <td style="padding:10px 14px"><strong>Банки та НБУ</strong></td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Постанова НБУ №95, Закон про банки</td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Дані клієнтів та транзакцій — тільки в Україні або у «довірених» країнах. ПІН, CVV — виключно on-prem HSM</td>
+              <td style="padding:10px 14px;color:#7fdba5">Hybrid: аналітика у хмарі, транзакції on-prem. AWS/Azure регіони в ЄС + DPA</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-soft)">
+              <td style="padding:10px 14px"><strong>Держоргани України</strong></td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Закон «Про хмарні послуги» №2075, КСЗІ, Держспецзв'язок</td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Гос. реєстри та персональні дані громадян — тільки на сертифікованих майданчиках. Атестат відповідності КСЗІ обов'язковий</td>
+              <td style="padding:10px 14px;color:#7fdba5">РНБО-схвалені держхмари (Мінцифри «Трембіта»), або приватний ЦОД з КСЗІ</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-soft)">
+              <td style="padding:10px 14px"><strong>Оборона / ЗСУ</strong></td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Закон «Про держтаємницю», накази МО</td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Секретна інформація — виключно ізольовані мережі (air-gap). Жодних підключень до інтернету</td>
+              <td style="padding:10px 14px;color:#7fdba5">On-prem isolated cluster, фізична охорона, TEMPEST-захист</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-soft)">
+              <td style="padding:10px 14px"><strong>Медицина (Україна / ЄС)</strong></td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">GDPR (Art.9), Закон про персональні дані №2297</td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Медичні дані — спеціальна категорія, потрібна явна згода + DPA або BCR для передачі за межі ЄС</td>
+              <td style="padding:10px 14px;color:#7fdba5">AWS/Azure EU regions + Business Associate Agreement, псевдонімізація перед хмарою</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-soft)">
+              <td style="padding:10px 14px"><strong>Платіжні системи</strong></td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">PCI DSS v4.0</td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Cardholder Data Environment (CDE) — ізольована мережа, шифрування, логування всіх дій, щорічний аудит QSA</td>
+              <td style="padding:10px 14px;color:#7fdba5">AWS/GCP мають PCI DSS-сертифіковані сервіси. Токенізація (Vault, AWS Payment Cryptography) виводить PAN з CDE</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-soft)">
+              <td style="padding:10px 14px"><strong>Критична інфраструктура</strong></td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Закон «Про критичну інфраструктуру» №1882, Директива NIS2 (ЄС)</td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Енергетика, вода, транспорт — OT-мережі фізично відділені від IT, incident reporting &lt; 24 год</td>
+              <td style="padding:10px 14px;color:#7fdba5">Air-gap OT, тільки one-way data diode для телеметрії у хмару</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 14px"><strong>Telecom</strong></td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">СОРМ (Росія) / аналоги, LAWFUL INTERCEPT стандарти</td>
+              <td style="padding:10px 14px;color:var(--fg-muted)">Metadata і CDR зберігаються локально, доступ для правоохоронців</td>
+              <td style="padding:10px 14px;color:#7fdba5">On-prem CDR storage, хмара для аналітики після анонімізації</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="analogy">
+        <strong>Ключове правило:</strong> спочатку класифікуй дані (Public / Internal / Confidential / Restricted), потім вибирай де їх зберігати. Клас «Restricted» (PAN, паспорти, медкарти, ДСК) диктує технологію — а не навпаки.
+      </div>
+
+      <!-- МЕРЕЖЕВА БЕЗПЕКА -->
+      <h4>Мережева ізоляція: VPN, PrivateLink, Direct Connect</h4>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:20px 0">
+        <div class="card" style="border-color:rgba(127,219,165,.25)">
+          <div class="ic" style="background:rgba(127,219,165,.12);color:#7fdba5">VPN</div>
+          <h6>Site-to-Site VPN</h6>
+          <p>Зашифрований тунель між on-prem мережею і VPC у хмарі. IPsec/IKEv2. AWS VPN Gateway, Azure VPN Gateway. Пропускна здатність до ~1.25 Gbps, через інтернет. Підходить для початкового hybrid setup або DR.</p>
+          <div style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--fg-dim)">Latency: непередбачувана · Cost: ~$0.05/год</div>
+        </div>
+        <div class="card" style="border-color:rgba(127,219,165,.25)">
+          <div class="ic" style="background:rgba(127,219,165,.12);color:#7fdba5">DC</div>
+          <h6>Direct Connect / ExpressRoute</h6>
+          <p>Виділена фізична лінія між вашим ЦОД і хмарою — без публічного інтернету. AWS Direct Connect (1/10/100 Gbps), Azure ExpressRoute, Google Cloud Interconnect. Обов'язково для фінансових установ і великих batch-трансферів.</p>
+          <div style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--fg-dim)">Latency: стабільна · Cost: $0.02–0.05/GB + port fee</div>
+        </div>
+        <div class="card" style="border-color:rgba(127,219,165,.25)">
+          <div class="ic" style="background:rgba(127,219,165,.12);color:#7fdba5">PL</div>
+          <h6>VPC Endpoints / PrivateLink</h6>
+          <p>Доступ до managed-сервісів (S3, RDS, Kafka) без виходу в інтернет — через внутрішню мережу AWS/Azure. Трафік ніколи не покидає backbone провайдера. Критично для PCI DSS і SOC 2 — дані не йдуть через public internet.</p>
+          <div style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--fg-dim)">Best practice для prod · Безкоштовно для S3 Gateway endpoint</div>
+        </div>
+        <div class="card" style="border-color:rgba(127,219,165,.25)">
+          <div class="ic" style="background:rgba(127,219,165,.12);color:#7fdba5">ZT</div>
+          <h6>Zero Trust Network</h6>
+          <p>Мережа не є довіреною за замовчуванням — кожен запит автентифікується і авторизується незалежно від того, звідки він прийшов (VPC, VPN, офіс). Реалізація: mTLS між сервісами, service mesh (Istio/Linkerd), BeyondCorp (Google), Cloudflare Access.</p>
+          <div style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--fg-dim)">Gold standard для микросервісів · Складно впровадити</div>
+        </div>
+        <div class="card" style="border-color:rgba(127,219,165,.25)">
+          <div class="ic" style="background:rgba(127,219,165,.12);color:#7fdba5">SG</div>
+          <h6>Security Groups / NACL</h6>
+          <p>Stateful firewall (Security Groups) на рівні ENI і stateless NACL на рівні subnet. Мінімальний принцип: відкривати тільки конкретні порти між конкретними CIDR або SG-id. Ніколи 0.0.0.0/0 для SSH/RDP у prod.</p>
+          <div style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--fg-dim)">Перша лінія захисту · Аудитувати регулярно</div>
+        </div>
+        <div class="card" style="border-color:rgba(127,219,165,.25)">
+          <div class="ic" style="background:rgba(127,219,165,.12);color:#7fdba5">NF</div>
+          <h6>Network Firewall / WAF</h6>
+          <p>AWS Network Firewall / Azure Firewall — L3-L7 deep packet inspection, IPS, DNS filtering. WAF (Web Application Firewall) — захист від OWASP Top 10 (SQLi, XSS, SSRF) перед API Gateway або ALB. AWS WAF Managed Rules або ModSecurity.</p>
+          <div style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--fg-dim)">Обов'язково для публічних API · $5–20/міс базово</div>
+        </div>
+      </div>
+
+      <!-- ШИФРУВАННЯ -->
+      <h4>Шифрування: at-rest, in-transit, in-use</h4>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:20px 0">
+        <div style="padding:20px;background:var(--bg-3);border:1px solid var(--border);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:#7fdba5;text-transform:uppercase;margin-bottom:12px">At-Rest</div>
+          <p style="font-size:13px;color:var(--fg-muted);line-height:1.5">Дані на диску / S3. AES-256 або ChaCha20. AWS: SSE-S3 (автоматично), SSE-KMS (свої ключі), SSE-C (ваш ключ). BYOK (Bring Your Own Key) — ви керуєте ротацією. Шифрування Parquet на рівні колонок через Parquet Encryption.</p>
+        </div>
+        <div style="padding:20px;background:var(--bg-3);border:1px solid var(--border);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:#7fdba5;text-transform:uppercase;margin-bottom:12px">In-Transit</div>
+          <p style="font-size:13px;color:var(--fg-muted);line-height:1.5">Дані в мережі. TLS 1.2+ для HTTPS, Kafka, gRPC. mTLS — обидві сторони пред'являють сертифікати (service mesh). SFTP/SCP для file transfers. Заборонити HTTP і старі TLS &lt; 1.2 через AWS Config rules або Azure Policy.</p>
+        </div>
+        <div style="padding:20px;background:var(--bg-3);border:1px solid var(--border);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:#7fdba5;text-transform:uppercase;margin-bottom:12px">In-Use</div>
+          <p style="font-size:13px;color:var(--fg-muted);line-height:1.5">Дані в пам'яті під час обробки. Confidential Computing: AWS Nitro Enclaves, Azure Confidential VMs, GCP Confidential VMs (AMD SEV). Для ML на sensitive data без доступу оператора хмари до plaintext.</p>
+        </div>
+      </div>
+
+      <!-- IAM / ZERO TRUST -->
+      <h4>IAM і принцип найменших привілеїв</h4>
+      <p>Більшість хмарних інцидентів — не злам firewall, а витік credentials або надмірні права IAM. Правила:</p>
+
+      <div class="pre-wrap"><pre><!-- IAM best practices для data platform -->
+
+# 1. Сервісні акаунти замість user credentials
+# Погано: використовувати особистий AWS_ACCESS_KEY у скрипті
+# Добре: IAM Role for EC2 / EKS ServiceAccount
+
+# 2. Мінімальні права (least privilege)
+# Spark job читає тільки конкретний S3 prefix
+{
+  "Effect": "Allow",
+  "Action": ["s3:GetObject", "s3:ListBucket"],
+  "Resource": [
+    "arn:aws:s3:::shopwave-datalake",
+    "arn:aws:s3:::shopwave-datalake/silver/*"
+  ]
+}
+
+# 3. Resource-based policies (замість "Action: s3:*")
+# Заборонити видалення production bucket
+{
+  "Effect": "Deny",
+  "Principal": "*",
+  "Action": "s3:DeleteBucket",
+  "Resource": "arn:aws:s3:::shopwave-datalake"
+}
+
+# 4. Умовні права (Condition keys)
+# Тільки з конкретного VPC endpoint
+"Condition": {
+  "StringEquals": {
+    "aws:SourceVpce": "vpce-0abc123def456"
+  }
+}
+
+# 5. Ротація секретів через AWS Secrets Manager
+import boto3
+client = boto3.client('secretsmanager')
+secret = client.get_secret_value(SecretId='shopwave/kafka/credentials')
+# Ніколи не хардкодити credentials у коді або docker image</pre></div>
+
+      <!-- ВИБІР СЕРВІСУ ПО SECURITY -->
+      <h4>Як обирати сервіс з урахуванням безпеки</h4>
+      <p>Чекліст при виборі managed-сервісу:</p>
+
+      <div class="modules-list" style="max-width:720px">
+        <div class="mod-row"><strong>SOC 2 Type II</strong> — незалежний аудит безпеки провайдера (логи, доступ, incident response). Мінімальна вимога для B2B SaaS.</div>
+        <div class="mod-row"><strong>ISO/IEC 27001</strong> — міжнародний стандарт ISMS. Обов'язково для роботи з держсектором ЄС.</div>
+        <div class="mod-row"><strong>PCI DSS Level 1</strong> — для будь-якого сервісу, що торкається cardholder data. Перевіряй список сертифікованих сервісів AWS/Azure/GCP.</div>
+        <div class="mod-row"><strong>FIPS 140-2/3</strong> — для криптографічних операцій у держсекторі США. AWS GovCloud, Azure Government мають FIPS-режим.</div>
+        <div class="mod-row"><strong>Data residency</strong> — в якому регіоні реально зберігаються дані? Чи є гарантії що не переїдуть? Перевіряй DPA (Data Processing Agreement).</div>
+        <div class="mod-row"><strong>Encryption at-rest default</strong> — чи шифрує сервіс дані автоматично, чи потрібно явно вмикати? Де зберігаються ключі?</div>
+        <div class="mod-row"><strong>VPC support</strong> — чи можна розгорнути сервіс у приватній мережі без public endpoint?</div>
+        <div class="mod-row"><strong>Audit logs</strong> — чи є детальні логи доступу? Скільки зберігаються? Чи можна вивантажити у SIEM?</div>
+      </div>
+
+      <div style="margin:24px 0;padding:20px 24px;background:rgba(127,219,165,.04);border:1px solid rgba(127,219,165,.2);border-radius:10px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:#7fdba5;text-transform:uppercase;margin-bottom:10px">Порівняння сертифікацій</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border)">
+                <th style="text-align:left;padding:8px 12px;color:var(--fg-muted);font-weight:500;font-family:var(--mono);font-size:10px">СТАНДАРТ</th>
+                <th style="text-align:left;padding:8px 12px;color:var(--fg-muted);font-weight:500;font-family:var(--mono);font-size:10px">AWS</th>
+                <th style="text-align:left;padding:8px 12px;color:var(--fg-muted);font-weight:500;font-family:var(--mono);font-size:10px">GCP</th>
+                <th style="text-align:left;padding:8px 12px;color:var(--fg-muted);font-weight:500;font-family:var(--mono);font-size:10px">AZURE</th>
+                <th style="text-align:left;padding:8px 12px;color:var(--fg-muted);font-weight:500;font-family:var(--mono);font-size:10px">КОЛИ ПОТРІБНО</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:8px 12px">SOC 2 Type II</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:var(--fg-muted)">Enterprise B2B, SaaS</td></tr>
+              <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:8px 12px">ISO 27001</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:var(--fg-muted)">Держсектор ЄС, тендери</td></tr>
+              <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:8px 12px">PCI DSS L1</td><td style="padding:8px 12px;color:#7fdba5">✓ (100+ сервісів)</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:var(--fg-muted)">Платіжні системи, банки</td></tr>
+              <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:8px 12px">HIPAA BAA</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:#7fdba5">✓</td><td style="padding:8px 12px;color:var(--fg-muted)">Медичні дані (США)</td></tr>
+              <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:8px 12px">FedRAMP High</td><td style="padding:8px 12px;color:#7fdba5">GovCloud</td><td style="padding:8px 12px;color:#7fdba5">Gov Cloud</td><td style="padding:8px 12px;color:#7fdba5">Government</td><td style="padding:8px 12px;color:var(--fg-muted)">Федеральні агенції США</td></tr>
+              <tr><td style="padding:8px 12px">GDPR DPA</td><td style="padding:8px 12px;color:#7fdba5">✓ SCCs</td><td style="padding:8px 12px;color:#7fdba5">✓ SCCs</td><td style="padding:8px 12px;color:#7fdba5">✓ SCCs</td><td style="padding:8px 12px;color:var(--fg-muted)">Дані громадян ЄС</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TERRAFORM SECURITY EXAMPLES -->
+      <h4>Terraform — Security Groups, KMS, S3 Bucket Policy</h4>
+      <p>Конфігурація безпеки як код — відтворювана, ревьювана, версіонована. Нижче реальні Terraform блоки для ShopWave production.</p>
+
+      <div class="pre-wrap"><pre># security_groups.tf — мінімальні правила для data platform
+
+# Security Group для Kafka MSK brokers
+resource "aws_security_group" "msk_brokers" {
+  name        = "shopwave-msk-brokers"
+  description = "MSK broker SG — only from app and Flink"
+  vpc_id      = aws_vpc.main.id
+
+  # Дозволяємо тільки від Flink і Spark executor SG
+  ingress {
+    description     = "Kafka plaintext from Flink"
+    from_port       = 9092
+    to_port         = 9092
+    protocol        = "tcp"
+    security_groups = [aws_security_group.flink_executors.id]
+  }
+  ingress {
+    description     = "Kafka TLS from Spark"
+    from_port       = 9094
+    to_port         = 9094
+    protocol        = "tcp"
+    security_groups = [aws_security_group.spark_executors.id]
+  }
+  ingress {
+    description     = "Schema Registry"
+    from_port       = 8081
+    to_port         = 8081
+    protocol        = "tcp"
+    security_groups = [aws_security_group.flink_executors.id,
+                       aws_security_group.spark_executors.id]
+  }
+  # Вихідний трафік не обмежуємо (MSK потребує для реплікації)
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = { Project = "shopwave", Component = "kafka" }
+}
+
+# Security Group для S3 VPC Endpoint
+# (S3 Gateway endpoint не потребує SG, але Interface endpoint потребує)
+resource "aws_security_group" "s3_endpoint" {
+  name   = "shopwave-s3-vpce"
+  vpc_id = aws_vpc.main.id
+  ingress {
+    description     = "HTTPS to S3 from all private subnets"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    cidr_blocks     = [aws_vpc.main.cidr_block]
+  }
+  tags = { Project = "shopwave", Component = "s3-endpoint" }
+}
+
+# NACL — додатковий рівень захисту на рівні subnet
+resource "aws_network_acl_rule" "block_ssh_inbound" {
+  network_acl_id = aws_network_acl.private.id
+  rule_number    = 100
+  protocol       = "tcp"
+  rule_action    = "deny"
+  egress         = false
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 22
+  to_port        = 22
+}</pre></div>
+
+      <div class="pre-wrap"><pre># kms.tf — ключі шифрування для кожного компонента
+
+# KMS ключ для S3 Data Lake
+resource "aws_kms_key" "s3_datalake" {
+  description             = "ShopWave S3 Data Lake encryption key"
+  deletion_window_in_days = 30
+  enable_key_rotation     = true  # Автоматична ротація щороку
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Enable IAM User Permissions"
+        Effect = "Allow"
+        Principal = { AWS = "arn:aws:iam::${var.account_id}:root" }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow Spark EMR to use the key"
+        Effect = "Allow"
+        Principal = { AWS = aws_iam_role.spark_emr.arn }
+        Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow Airflow to use the key"
+        Effect = "Allow"
+        Principal = { AWS = aws_iam_role.airflow_worker.arn }
+        Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
+        Resource = "*"
+      }
+    ]
+  })
+  tags = { Project = "shopwave", Purpose = "s3-datalake" }
+}
+
+resource "aws_kms_alias" "s3_datalake" {
+  name          = "alias/shopwave-s3-datalake"
+  target_key_id = aws_kms_key.s3_datalake.key_id
+}
+
+# S3 Bucket з SSE-KMS
+resource "aws_s3_bucket_server_side_encryption_configuration" "datalake" {
+  bucket = aws_s3_bucket.datalake.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = aws_kms_key.s3_datalake.arn
+    }
+    bucket_key_enabled = true  # Знижує KMS API calls на ~99%
+  }
+}
+
+# S3 Bucket Policy — тільки через VPC Endpoint, шифрування обов'язкове
+resource "aws_s3_bucket_policy" "datalake" {
+  bucket = aws_s3_bucket.datalake.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "DenyUnencryptedObjectUploads"
+        Effect = "Deny"
+        Principal = "*"
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.datalake.arn}/*"
+        Condition = {
+          StringNotEquals = {
+            "s3:x-amz-server-side-encryption" = "aws:kms"
+          }
+        }
+      },
+      {
+        Sid    = "DenyAccessOutsideVPC"
+        Effect = "Deny"
+        Principal = "*"
+        Action   = "s3:*"
+        Resource = [
+          aws_s3_bucket.datalake.arn,
+          "${aws_s3_bucket.datalake.arn}/*"
+        ]
+        Condition = {
+          StringNotEquals = {
+            "aws:SourceVpce" = aws_vpc_endpoint.s3.id
+          }
+        }
+      }
+    ]
+  })
+}</pre></div>
+
+      <div class="pre-wrap"><pre># iam_roles.tf — Least privilege IAM для Spark і Airflow
+
+# IAM Role для Spark EMR Job — читає тільки silver/, пише тільки gold/
+resource "aws_iam_role_policy" "spark_s3" {
+  name   = "shopwave-spark-s3-policy"
+  role   = aws_iam_role.spark_emr.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "ReadSilver"
+        Effect = "Allow"
+        Action = ["s3:GetObject", "s3:ListBucket"]
+        Resource = [
+          aws_s3_bucket.datalake.arn,
+          "${aws_s3_bucket.datalake.arn}/silver/*"
+        ]
+      },
+      {
+        Sid    = "WriteGold"
+        Effect = "Allow"
+        Action = ["s3:PutObject", "s3:DeleteObject"]
+        Resource = "${aws_s3_bucket.datalake.arn}/gold/*"
+      },
+      {
+        Sid    = "DenyDeleteBronze"
+        Effect = "Deny"
+        Action = ["s3:DeleteObject", "s3:DeleteObjectVersion"]
+        Resource = "${aws_s3_bucket.datalake.arn}/bronze/*"
+      }
+    ]
+  })
+}
+
+# Secrets Manager — Kafka credentials (не хардкодимо у коді)
+resource "aws_secretsmanager_secret" "kafka_creds" {
+  name                    = "shopwave/kafka/credentials"
+  recovery_window_in_days = 7
+  kms_key_id              = aws_kms_key.s3_datalake.arn
+}
+
+resource "aws_secretsmanager_secret_version" "kafka_creds" {
+  secret_id = aws_secretsmanager_secret.kafka_creds.id
+  secret_string = jsonencode({
+    bootstrap_servers = "b-1.shopwave.xxx.kafka.eu-west-1.amazonaws.com:9094"
+    username          = var.kafka_username
+    password          = var.kafka_password  # з terraform.tfvars, не у VCS
+  })
+}</pre></div>
+
+      <!-- SHARED RESPONSIBILITY -->
+      <h4>Shared Responsibility Model</h4>
+      <p>Провайдер відповідає за безпеку <em>хмари</em>, ви — за безпеку <em>в хмарі</em>. Типова причина інцидентів — компанії думають, що провайдер захистить усе.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0">
+        <div style="padding:20px;background:rgba(127,219,165,.04);border:1px solid rgba(127,219,165,.2);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#7fdba5;text-transform:uppercase;margin-bottom:12px">Провайдер відповідає</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--fg-muted)">
+            <li>✓ Фізична безпека датацентрів</li>
+            <li>✓ Гіпервізор і мережеве обладнання</li>
+            <li>✓ Оновлення managed-сервісів (RDS, MSK)</li>
+            <li>✓ Доступність інфраструктури (SLA 99.99%)</li>
+            <li>✓ Compliance сертифікати платформи</li>
+          </ul>
+        </div>
+        <div style="padding:20px;background:rgba(255,100,80,.04);border:1px solid rgba(255,100,80,.2);border-radius:10px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#ff6b35;text-transform:uppercase;margin-bottom:12px">Ви відповідаєте</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--fg-muted)">
+            <li>⚠ IAM, ролі, паролі, MFA</li>
+            <li>⚠ Конфігурація Security Groups і NACLs</li>
+            <li>⚠ Шифрування даних (вмикаєте ви)</li>
+            <li>⚠ Оновлення OS і додатків у EC2/K8s</li>
+            <li>⚠ Моніторинг і реагування на інциденти</li>
+            <li>⚠ Backup і disaster recovery</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- INTERVIEW Q&A -->
+      <div class="interview-qa">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-bottom:16px">Interview Q&amp;A · Безпека хмарних даних</div>
+
+        <div class="qa-item">
+          <div class="qa-q">Чим відрізняється Site-to-Site VPN від Direct Connect?</div>
+          <div class="qa-a">VPN — зашифрований тунель через публічний інтернет, швидко підняти, нестабільна latency, до ~1.25 Gbps. Direct Connect — фізична виділена лінія до AWS без інтернету, стабільна latency, до 100 Gbps, обов'язкова для фінансових workloads і великих batch-трансферів. Компанії часто мають обидва: DC для production, VPN як failover.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Яка різниця між public, private і hybrid cloud для data engineering?</div>
+          <div class="qa-a">Public — managed сервіси провайдера, оплата за споживання, підходить більшості. Private — on-prem або dedicated, повний контроль, для держорганів і оборонки. Hybrid — частина on-prem (PII, транзакції), частина у хмарі (аналітика, ML), з'єднані VPN або Direct Connect. Вибір диктують регулятор і клас даних, не технічні переваги.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке Shared Responsibility Model і де найчастіше допускають помилку?</div>
+          <div class="qa-a">Провайдер відповідає за безпеку інфраструктури хмари (фізика, гіпервізор, managed сервіси). Клієнт — за безпеку в хмарі (IAM, мережа, шифрування, OS-патчі). Найчастіша помилка: залишити S3 bucket публічним або надати занадто широкі IAM права (Action: «*»). Переважна більшість хмарних інцидентів — не злам провайдера, а помилки конфігурації клієнта.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Для яких компаній public cloud заборонений або суттєво обмежений?</div>
+          <div class="qa-a">В Україні: держоргани (реєстри громадян потребують КСЗІ), оборонний сектор (air-gap), банки (НБУ обмежує де зберігаються транзакційні дані). У ЄС: медичні установи (GDPR Art.9 — спецкатегорія), оператори критичної інфраструктури (NIS2). Але навіть у цих секторах public cloud використовується для аналітики, ML, dev/test — тільки production і PII-дані залишаються on-prem.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Як забезпечити безпеку даних між мікросервісами у K8s?</div>
+          <div class="qa-a">Service mesh (Istio або Linkerd): автоматичний mTLS між подами, RBAC на рівні сервісів, детальний трафік у Jaeger. Альтернатива без mesh: Network Policies у K8s — whitelist між namespace і pod. Також: OPA/Gatekeeper для policy enforcement, Falco для runtime anomaly detection (читання /etc/shadow, exec у контейнері).</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">Що таке BYOK і коли він потрібен?</div>
+          <div class="qa-a">Bring Your Own Key — ви надаєте свій master key до KMS провайдера (AWS KMS Custom Key Store через CloudHSM, Azure Customer-Managed Keys, GCP CMEK). Потрібен коли: регулятор вимагає що ключі зберігаються у вашому HSM, або коли потрібно гарантовано «забути» дані (видалення ключа = неможливість дешифрувати). Для більшості компаній достатньо KMS зі стандартними ключами провайдера.</div>
+        </div>
+      </div>
+
+      <!-- MILESTONE DIAGRAM -->
+      <div class="ms-diagram">
+        <div class="ms-diagram-hdr">Milestone · Безпека ShopWave Platform</div>
+        <div style="overflow-x:auto">
+          <svg viewBox="0 0 860 200" style="width:100%;max-width:860px;display:block" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arM10b" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L7,3 L0,6 Z" fill="#7fdba5"/>
+              </marker>
+            </defs>
+            <!-- Previous: K8s + Terraform + Clouds -->
+            <rect x="10" y="20" width="120" height="40" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="6"/>
+            <text x="70" y="36" text-anchor="middle" fill="#484848" font-size="8">K8s Cluster</text>
+            <text x="70" y="50" text-anchor="middle" fill="#383838" font-size="7">Terraform · ArgoCD</text>
+            <rect x="145" y="20" width="120" height="40" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="6"/>
+            <text x="205" y="36" text-anchor="middle" fill="#484848" font-size="8">AWS Primary</text>
+            <text x="205" y="50" text-anchor="middle" fill="#383838" font-size="7">S3 · EMR · MSK · EKS</text>
+
+            <!-- NEW: VPC + Security Groups -->
+            <rect x="285" y="10" width="140" height="55" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="1.5" rx="6"/>
+            <text x="355" y="27" text-anchor="middle" fill="#7fdba5" font-size="9" font-weight="700">VPC Isolation</text>
+            <text x="355" y="42" text-anchor="middle" fill="#9a9a95" font-size="7.5">Private Subnets · SG whitelist</text>
+            <text x="355" y="55" text-anchor="middle" fill="#7fdba5" font-size="7">PrivateLink для S3/MSK</text>
+
+            <!-- NEW: IAM Roles -->
+            <rect x="445" y="10" width="130" height="55" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="1.5" rx="6"/>
+            <text x="510" y="27" text-anchor="middle" fill="#7fdba5" font-size="9" font-weight="700">IAM Least Privilege</text>
+            <text x="510" y="42" text-anchor="middle" fill="#9a9a95" font-size="7.5">Spark role: s3:Get* silver/*</text>
+            <text x="510" y="55" text-anchor="middle" fill="#7fdba5" font-size="7">Secrets Manager · IRSA</text>
+
+            <!-- NEW: Encryption -->
+            <rect x="595" y="10" width="115" height="55" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="1.5" rx="6"/>
+            <text x="652" y="27" text-anchor="middle" fill="#7fdba5" font-size="9" font-weight="700">Encryption</text>
+            <text x="652" y="42" text-anchor="middle" fill="#9a9a95" font-size="7.5">S3 SSE-KMS · TLS 1.3</text>
+            <text x="652" y="55" text-anchor="middle" fill="#7fdba5" font-size="7">BYOK для PCI scope</text>
+
+            <!-- NEW: Audit / SIEM -->
+            <rect x="730" y="10" width="120" height="55" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="1.5" rx="6"/>
+            <text x="790" y="27" text-anchor="middle" fill="#7fdba5" font-size="9" font-weight="700">Audit &amp; SIEM</text>
+            <text x="790" y="42" text-anchor="middle" fill="#9a9a95" font-size="7.5">CloudTrail · GuardDuty</text>
+            <text x="790" y="55" text-anchor="middle" fill="#7fdba5" font-size="7">SecurityHub · alerts</text>
+
+            <!-- Arrows -->
+            <line x1="265" y1="37" x2="283" y2="37" stroke="#7fdba5" stroke-width="1.5" marker-end="url(#arM10b)"/>
+            <line x1="425" y1="37" x2="443" y2="37" stroke="#7fdba5" stroke-width="1.5" marker-end="url(#arM10b)"/>
+            <line x1="575" y1="37" x2="593" y2="37" stroke="#7fdba5" stroke-width="1.5" marker-end="url(#arM10b)"/>
+            <line x1="711" y1="37" x2="728" y2="37" stroke="#7fdba5" stroke-width="1.5" marker-end="url(#arM10b)"/>
+
+            <!-- VPN tunnel to on-prem -->
+            <rect x="100" y="110" width="130" height="45" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="1.5" rx="6"/>
+            <text x="165" y="128" text-anchor="middle" fill="#7fdba5" font-size="9" font-weight="700">On-prem ЦОД</text>
+            <text x="165" y="143" text-anchor="middle" fill="#9a9a95" font-size="7.5">Транзакції · PII · HSM</text>
+
+            <rect x="330" y="110" width="130" height="45" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="1.5" rx="6"/>
+            <text x="395" y="128" text-anchor="middle" fill="#7fdba5" font-size="9" font-weight="700">Direct Connect</text>
+            <text x="395" y="143" text-anchor="middle" fill="#9a9a95" font-size="7.5">10 Gbps · без інтернету</text>
+
+            <line x1="230" y1="132" x2="328" y2="132" stroke="#7fdba5" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arM10b)"/>
+            <line x1="460" y1="132" x2="490" y2="132" stroke="#7fdba5" stroke-width="1.5" marker-end="url(#arM10b)"/>
+
+            <rect x="490" y="110" width="130" height="45" fill="rgba(127,219,165,.04)" stroke="rgba(127,219,165,.3)" rx="6"/>
+            <text x="555" y="128" text-anchor="middle" fill="rgba(127,219,165,.6)" font-size="9">AWS VPC Private</text>
+            <text x="555" y="143" text-anchor="middle" fill="#383838" font-size="7.5">Data Lake · Compute</text>
+
+            <!-- Legend -->
+            <rect x="10" y="175" width="10" height="10" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="1.5" rx="2"/>
+            <text x="26" y="184" fill="#7fdba5" font-size="8">Нове у M10b</text>
+            <rect x="120" y="175" width="10" height="10" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="2"/>
+            <text x="136" y="184" fill="#484848" font-size="8">Попередні модулі</text>
+          </svg>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -1595,7 +2303,7 @@ aws iam simulate-principal-policy \
       <div class="mod-meta">
         <div class="mod-week">Тиждень 18 · ~15 год</div>
         <h2 class="mod-title">Data Governance &amp; <span class="red">Security</span></h2>
-        <p class="mod-lead">Побудувати платформу — пів справи. У 2026 під GDPR, CCPA, NIS2 і секторальні регуляції (PCI DSS, HIPAA) — треба ще знати хто, коли і навіщо читав які дані, і вміти швидко видалити конкретного користувача на його запит. Без цього production — юридичний ризик.</p>
+        <p class="mod-lead">Data Governance — система класифікації, доступу та аудиту даних: хто що читає, як PII-поля маскуються або видаляються, яка родовід у кожного датасету. DataHub — open-source metadata platform для каталогізації і lineage. Presidio — бібліотека Microsoft для виявлення і анонімізації PII (імена, картки, паспорти). Разом вони дозволяють виконати вимоги GDPR «видалити юзера» або PCI DSS «не показувати номер картки» без переписування всього pipeline.</p>
       </div>
     </div>
 
@@ -2002,6 +2710,62 @@ gcloud asset get-effective-iam-policy \
           <li>Retention policies у S3 lifecycle: events 13 місяців, PII 2 роки, agg 7 років</li>
           <li>ADR: <code>ADR-012-governance-and-security.md</code></li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ стан ShopWave після М11 — governance layer + security готові до production</div>
+          <svg viewBox="0 0 860 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs>
+              <marker id="arM11n" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7fdba5"/></marker>
+              <marker id="arM11d" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#333"/></marker>
+            </defs>
+            <circle cx="22" cy="15" r="4" fill="#7fdba5"/><text x="32" y="19" fill="#7fdba5" font-size="9">НОВЕ В М11</text>
+            <circle cx="140" cy="15" r="4" fill="#333"/><text x="150" y="19" fill="#555" font-size="9">М9-М10 ГОТОВО</text>
+            <!-- Data flow (dim) -->
+            <rect x="20" y="80" width="80" height="100" fill="rgba(255,255,255,.02)" stroke="#2a2a2e" rx="7"/>
+            <text x="60" y="127" text-anchor="middle" fill="#484848" font-size="8">Весь pipeline</text>
+            <text x="60" y="141" text-anchor="middle" fill="#383838" font-size="7">M1-M10 ✓</text>
+            <line x1="100" y1="130" x2="120" y2="130" stroke="#2a2a2e" stroke-width="1" marker-end="url(#arM11d)"/>
+            <!-- DataHub (new) -->
+            <rect x="120" y="70" width="160" height="125" fill="rgba(127,219,165,.08)" stroke="#7fdba5" stroke-width="1.5" rx="8"/>
+            <text x="200" y="92" text-anchor="middle" fill="#7fdba5" font-size="10" font-weight="700">DataHub</text>
+            <text x="200" y="107" text-anchor="middle" fill="#9a9a95" font-size="8">metadata platform · lineage</text>
+            <rect x="130" y="115" width="140" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="200" y="128" text-anchor="middle" fill="#9a9a95" font-size="7.5">OpenLineage: Spark + Airflow</text>
+            <rect x="130" y="138" width="140" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="200" y="151" text-anchor="middle" fill="#9a9a95" font-size="7.5">dbt artifacts ingestion</text>
+            <rect x="130" y="161" width="140" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="200" y="174" text-anchor="middle" fill="#9a9a95" font-size="7.5">Kafka schemas catalog</text>
+            <!-- Presidio (new) -->
+            <rect x="300" y="70" width="160" height="125" fill="rgba(127,219,165,.07)" stroke="#7fdba5" stroke-width="1.5" rx="8"/>
+            <text x="380" y="92" text-anchor="middle" fill="#7fdba5" font-size="10" font-weight="700">Presidio PII</text>
+            <text x="380" y="107" text-anchor="middle" fill="#9a9a95" font-size="8">Microsoft NLP · batch scan</text>
+            <rect x="310" y="115" width="140" height="18" fill="rgba(239,107,107,.1)" stroke="#ef6b6b" rx="3"/>
+            <text x="380" y="128" text-anchor="middle" fill="#ef6b6b" font-size="7.5">PII detect: email/phone/card</text>
+            <rect x="310" y="138" width="140" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="380" y="151" text-anchor="middle" fill="#9a9a95" font-size="7.5">bronze → silver masking</text>
+            <rect x="310" y="161" width="140" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="380" y="174" text-anchor="middle" fill="#9a9a95" font-size="7.5">auto-tag columns у DataHub</text>
+            <!-- RBAC (new) -->
+            <rect x="480" y="70" width="160" height="125" fill="rgba(127,219,165,.07)" stroke="#7fdba5" stroke-width="1.5" rx="8"/>
+            <text x="560" y="92" text-anchor="middle" fill="#7fdba5" font-size="10" font-weight="700">RBAC + IAM</text>
+            <text x="560" y="107" text-anchor="middle" fill="#9a9a95" font-size="8">3 ролі · KMS encryption</text>
+            <rect x="490" y="115" width="140" height="18" fill="rgba(255,182,39,.08)" stroke="rgba(255,182,39,.3)" rx="3"/>
+            <text x="560" y="128" text-anchor="middle" fill="#ffb627" font-size="7.5">analyst: тільки gold</text>
+            <rect x="490" y="138" width="140" height="18" fill="rgba(255,182,39,.05)" stroke="rgba(255,182,39,.2)" rx="3"/>
+            <text x="560" y="151" text-anchor="middle" fill="#ffb627" font-size="7.5">engineer: silver + gold</text>
+            <rect x="490" y="161" width="140" height="18" fill="rgba(255,182,39,.04)" stroke="rgba(255,182,39,.15)" rx="3"/>
+            <text x="560" y="174" text-anchor="middle" fill="#ffb627" font-size="7.5">admin: все + audit logs</text>
+            <!-- GDPR pipeline (new) -->
+            <rect x="660" y="70" width="180" height="125" fill="rgba(127,219,165,.06)" stroke="#7fdba5" stroke-width="1" rx="8"/>
+            <text x="750" y="92" text-anchor="middle" fill="#7fdba5" font-size="9" font-weight="700">GDPR Pipeline</text>
+            <text x="750" y="107" text-anchor="middle" fill="#9a9a95" font-size="8">right-to-be-forgotten DAG</text>
+            <rect x="668" y="115" width="164" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="750" y="128" text-anchor="middle" fill="#9a9a95" font-size="7.5">Iceberg DELETE + VACUUM</text>
+            <rect x="668" y="138" width="164" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="750" y="151" text-anchor="middle" fill="#9a9a95" font-size="7.5">MongoDB user delete</text>
+            <rect x="668" y="161" width="164" height="18" fill="#131316" stroke="#26262b" rx="3"/>
+            <text x="750" y="174" text-anchor="middle" fill="#9a9a95" font-size="7.5">Kafka tombstone message</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -2345,6 +3109,71 @@ aws dynamodb delete-item \
           <li>Публікація на Medium/DOU з ретроспективою: що дізнався, головні висновки</li>
           <li>Поділитися на LinkedIn і в профільних спільнотах (DataTalks Club, UA DE Slack)</li>
         </ul>
+        <div class="ms-diagram">
+          <div class="ms-diagram-hdr">◇ ShopWave — фінальна production-ready архітектура після 20 тижнів</div>
+          <svg viewBox="0 0 860 215" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
+            <defs><marker id="arFin" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ffb627"/></marker></defs>
+            <!-- CI/CD bar -->
+            <rect x="20" y="12" width="820" height="28" fill="rgba(127,219,165,.07)" stroke="#7fdba5" stroke-width="1" rx="6"/>
+            <text x="430" y="27" text-anchor="middle" fill="#7fdba5" font-size="9" font-weight="700">GitHub Actions CI/CD → ECR → ArgoCD GitOps · Prometheus + Grafana · DataHub lineage · RBAC + KMS · GDPR DAG</text>
+            <!-- Ingestion -->
+            <rect x="20" y="52" width="90" height="90" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1" rx="7"/>
+            <text x="65" y="75" text-anchor="middle" fill="#4ecdc4" font-size="9" font-weight="700">Generators</text>
+            <text x="65" y="90" text-anchor="middle" fill="#6a6a66" font-size="7.5">Faker orders</text>
+            <text x="65" y="103" text-anchor="middle" fill="#6a6a66" font-size="7.5">events · users</text>
+            <line x1="110" y1="97" x2="128" y2="97" stroke="#ffb627" stroke-width="1.5" marker-end="url(#arFin)"/>
+            <!-- Kafka -->
+            <rect x="128" y="52" width="100" height="90" fill="rgba(78,205,196,.07)" stroke="#4ecdc4" stroke-width="1" rx="7"/>
+            <text x="178" y="75" text-anchor="middle" fill="#4ecdc4" font-size="9" font-weight="700">Kafka</text>
+            <text x="178" y="90" text-anchor="middle" fill="#6a6a66" font-size="7.5">MSK · 3 brokers</text>
+            <text x="178" y="103" text-anchor="middle" fill="#6a6a66" font-size="7.5">Schema Registry</text>
+            <text x="178" y="116" text-anchor="middle" fill="#6a6a66" font-size="7.5">Avro · Kafka Connect</text>
+            <line x1="228" y1="97" x2="248" y2="97" stroke="#ffb627" stroke-width="1.5" marker-end="url(#arFin)"/>
+            <!-- Flink -->
+            <rect x="248" y="52" width="100" height="90" fill="rgba(183,148,246,.07)" stroke="#b794f6" stroke-width="1" rx="7"/>
+            <text x="298" y="75" text-anchor="middle" fill="#b794f6" font-size="9" font-weight="700">Flink</text>
+            <text x="298" y="90" text-anchor="middle" fill="#6a6a66" font-size="7.5">GMV 5-min window</text>
+            <text x="298" y="103" text-anchor="middle" fill="#6a6a66" font-size="7.5">fraud detection</text>
+            <text x="298" y="116" text-anchor="middle" fill="#6a6a66" font-size="7.5">keyed state · checkpoint</text>
+            <!-- Iceberg lake -->
+            <line x1="348" y1="97" x2="368" y2="97" stroke="#ffb627" stroke-width="1.5" marker-end="url(#arFin)"/>
+            <rect x="368" y="35" width="135" height="125" fill="rgba(127,219,165,.07)" stroke="#7fdba5" stroke-width="1.5" rx="8"/>
+            <text x="435" y="60" text-anchor="middle" fill="#7fdba5" font-size="10" font-weight="700">S3 + Iceberg</text>
+            <rect x="378" y="70" width="115" height="18" fill="rgba(139,90,43,.2)" stroke="#26262b" rx="3"/>
+            <text x="435" y="83" text-anchor="middle" fill="#c8a87a" font-size="7.5">bronze: raw events</text>
+            <rect x="378" y="93" width="115" height="18" fill="rgba(192,192,192,.12)" stroke="#26262b" rx="3"/>
+            <text x="435" y="106" text-anchor="middle" fill="#c8c8c8" font-size="7.5">silver: Iceberg · masked PII</text>
+            <rect x="378" y="116" width="115" height="18" fill="rgba(255,215,0,.12)" stroke="#26262b" rx="3"/>
+            <text x="435" y="129" text-anchor="middle" fill="#ccad00" font-size="7.5">gold: Iceberg · aggregated</text>
+            <text x="435" y="149" text-anchor="middle" fill="#6a6a66" font-size="7">ACID · time travel · compaction</text>
+            <!-- dbt + DWH -->
+            <line x1="503" y1="97" x2="523" y2="97" stroke="#ffb627" stroke-width="1.5" marker-end="url(#arFin)"/>
+            <rect x="523" y="52" width="100" height="90" fill="rgba(255,182,39,.07)" stroke="#ffb627" stroke-width="1" rx="7"/>
+            <text x="573" y="75" text-anchor="middle" fill="#ffb627" font-size="9" font-weight="700">dbt + ClickHouse</text>
+            <text x="573" y="90" text-anchor="middle" fill="#6a6a66" font-size="7.5">star schema</text>
+            <text x="573" y="103" text-anchor="middle" fill="#6a6a66" font-size="7.5">fct_orders SCD2</text>
+            <text x="573" y="116" text-anchor="middle" fill="#6a6a66" font-size="7.5">tests · lineage</text>
+            <!-- BI -->
+            <line x1="623" y1="97" x2="643" y2="97" stroke="#ffb627" stroke-width="1.5" marker-end="url(#arFin)"/>
+            <rect x="643" y="52" width="100" height="90" fill="rgba(78,205,196,.06)" stroke="#4ecdc4" stroke-width="1" rx="7"/>
+            <text x="693" y="75" text-anchor="middle" fill="#4ecdc4" font-size="9" font-weight="700">Metabase</text>
+            <text x="693" y="90" text-anchor="middle" fill="#6a6a66" font-size="7.5">ShopWave dashboard</text>
+            <text x="693" y="103" text-anchor="middle" fill="#6a6a66" font-size="7.5">GMV · AOV · funnel</text>
+            <text x="693" y="116" text-anchor="middle" fill="#6a6a66" font-size="7.5">cohort retention</text>
+            <!-- K8s + Terraform -->
+            <rect x="763" y="52" width="77" height="90" fill="rgba(127,219,165,.07)" stroke="#7fdba5" stroke-width="1" rx="7"/>
+            <text x="801" y="75" text-anchor="middle" fill="#7fdba5" font-size="8" font-weight="700">EKS + TF</text>
+            <text x="801" y="90" text-anchor="middle" fill="#6a6a66" font-size="7">Kubernetes</text>
+            <text x="801" y="103" text-anchor="middle" fill="#6a6a66" font-size="7">Terraform IaC</text>
+            <text x="801" y="116" text-anchor="middle" fill="#6a6a66" font-size="7">GCP DR</text>
+            <!-- Airflow orchestration bar -->
+            <rect x="128" y="155" width="515" height="28" fill="rgba(183,148,246,.05)" stroke="#b794f6" stroke-width="1" rx="6"/>
+            <text x="385" y="168" text-anchor="middle" fill="#b794f6" font-size="8" font-weight="700">Airflow: shopwave_daily_etl · shopwave_maintenance · shopwave_governance · MongoDB snapshot</text>
+            <text x="385" y="181" text-anchor="middle" fill="#6a6a66" font-size="7">MongoDB user_profiles · Redis cache · ExternalTaskSensor · ShopWaveOperator · SLA alerts</text>
+            <!-- ADR note -->
+            <text x="430" y="200" text-anchor="middle" fill="#6a6a66" font-size="7.5" letter-spacing=".05em">12 ADRs · Helm charts · docs/portfolio.md · 5-хв demo video · Medium post · LinkedIn</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -2484,6 +3313,23 @@ document.querySelectorAll('.qa-q').forEach(function(q){
       tip.style.left=x+'px';tip.style.top=y+'px';
     });
     el.addEventListener('mouseleave',function(){tip.classList.remove('on');});
+  });
+})();
+(function(){
+  document.querySelectorAll('.pre-wrap').forEach(function(wrap){
+    var pre=wrap.querySelector('pre');
+    if(!pre) return;
+    var lines=pre.textContent.split('\n').filter(function(l){return l.trim()!==''}).length;
+    if(lines<=12) return;
+    wrap.classList.add('pre-collapsed');
+    var btn=document.createElement('button');
+    btn.className='code-expand-btn';
+    btn.textContent='↓ розгорнути · '+lines+' рядків';
+    wrap.insertAdjacentElement('afterend',btn);
+    btn.addEventListener('click',function(){
+      wrap.classList.remove('pre-collapsed');
+      btn.remove();
+    });
   });
 })();
 </script>
