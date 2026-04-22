@@ -428,7 +428,7 @@ footer a{color:var(--fg-muted)}
       <p>Kafka з 2011 — де-факто стандарт для event streaming. Це не тільки message queue: це <strong>розподілений append-only журнал</strong>, з якого багато споживачів можуть читати події незалежно одне від одного. У великих компаніях Kafka — «центр усесвіту даних»: до нього підключені 100+ сервісів.</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
           <!-- Producers -->
           <g data-tip="PRODUCERS||Будь-який сервіс що публікує події у Kafka. Продюсер надсилає повідомлення у конкретний topic. Kafka SDK сам вибирає партицію (якщо не задано key → round-robin; якщо є key → hash(key) % partitions). Продюсер отримує підтвердження після того, як брокер записав повідомлення (acks=all → підтвердження від усіх ISR-реплік).">
             <rect x="20" y="30" width="140" height="40" fill="#131316" stroke="#26262b" rx="6"/>
@@ -1028,7 +1028,7 @@ finally:
       <p>Iceberg тримає поверх Parquet-файлів метаслой з трьох рівнів:</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
           <!-- catalog -->
           <rect x="40" y="30" width="180" height="60" fill="rgba(183,148,246,.1)" stroke="#b794f6" stroke-width="2" rx="8"/>
           <text x="130" y="55" text-anchor="middle" fill="#b794f6" font-size="12" font-weight="700">CATALOG</text>
@@ -1369,7 +1369,7 @@ print(f"GDPR deletion complete for user {USER_ID_TO_DELETE}")</code></pre></div>
       <p>Ральф Кімбол сформував підхід ще у 1996 році, і він досі актуальний: замість однієї великої таблиці — <strong>fact</strong>-таблиця в центрі, навколо — <strong>dimension</strong>-таблиці. BI-інструменти (Tableau, Metabase, Looker) очікують саме такої структури.</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
           <!-- fact center -->
           <g>
             <rect x="350" y="170" width="220" height="80" fill="rgba(78,205,196,.15)" stroke="#4ecdc4" stroke-width="2" rx="8"/>
@@ -1917,7 +1917,7 @@ daily_etl()</pre>
       <p>У 2000 Ерік Брюер довів: у розподіленій системі можна мати тільки <strong>2 з 3</strong> властивостей одночасно — <strong>C</strong>onsistency, <strong>A</strong>vailability, <strong>P</strong>artition tolerance. У реальному світі network partitions трапляються, тому обираємо між <strong>CP</strong> і <strong>AP</strong>:</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 700 360" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 700 360" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
           <!-- Triangle -->
           <polygon points="350,40 80,320 620,320" fill="none" stroke="#26262b" stroke-width="2"/>
           <!-- Corners -->

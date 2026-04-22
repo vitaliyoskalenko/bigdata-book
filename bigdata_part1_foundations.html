@@ -317,7 +317,7 @@ footer a{color:var(--fg-muted)}
 .ca-name{font-family:var(--serif);font-size:20px;font-weight:500}
 .ca-meta{font-family:var(--mono);font-size:11px;color:var(--fg-muted);margin-top:2px;letter-spacing:.04em}
 .ca-body{padding:24px 28px}
-.ca-diagram{margin:0 0 20px;overflow-x:auto}
+.ca-diagram{margin:0 0 20px;overflow-x:auto;position:relative}
 .ca-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:16px}
 .ca-fact{padding:10px 14px;background:var(--bg);border:1px solid var(--border-soft);border-radius:6px;font-size:13px;color:var(--fg-muted)}
 .ca-fact strong{color:var(--fg);display:block;font-size:12px;font-family:var(--mono);margin-bottom:2px;letter-spacing:.04em}
@@ -531,7 +531,7 @@ footer a{color:var(--fg-muted)}
       <p>Щоб розуміти «чому зараз саме так», корисно знати, як ми сюди прийшли. Нижче — ключові віхи з моменту появи MapReduce у Google.</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 1100 340" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 1100 340" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
           <!-- timeline line -->
           <line x1="60" y1="170" x2="1040" y2="170" stroke="#26262b" stroke-width="2"/>
           <!-- era labels -->
@@ -837,8 +837,8 @@ footer a{color:var(--fg-muted)}
           </div>
         </div>
         <div class="ca-body">
-          <div class="ca-diagram">
-            <svg viewBox="0 0 860 320" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;min-width:640px">
+          <div class="ca-diagram diagram">
+            <svg viewBox="0 0 860 320" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <!-- Sources -->
               <g>
                 <text x="60" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">SOURCES</text>
@@ -945,8 +945,8 @@ footer a{color:var(--fg-muted)}
           </div>
         </div>
         <div class="ca-body">
-          <div class="ca-diagram">
-            <svg viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;min-width:640px">
+          <div class="ca-diagram diagram">
+            <svg viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <!-- Sources -->
               <text x="60" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">SOURCES</text>
               <rect x="10" y="25" width="100" height="28" fill="#131316" stroke="#26262b" rx="5"/>
@@ -1038,8 +1038,8 @@ footer a{color:var(--fg-muted)}
           </div>
         </div>
         <div class="ca-body">
-          <div class="ca-diagram">
-            <svg viewBox="0 0 860 250" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;min-width:600px">
+          <div class="ca-diagram diagram">
+            <svg viewBox="0 0 860 250" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <!-- Sources -->
               <text x="55" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">SOURCES</text>
               <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#26262b" rx="5"/>
@@ -1117,8 +1117,8 @@ footer a{color:var(--fg-muted)}
           </div>
         </div>
         <div class="ca-body">
-          <div class="ca-diagram">
-            <svg viewBox="0 0 860 230" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;min-width:580px">
+          <div class="ca-diagram diagram">
+            <svg viewBox="0 0 860 230" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <text x="55" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">ДЖЕРЕЛА</text>
               <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#4ecdc4" stroke-width="1.5" rx="5"/>
               <text x="55" y="42" text-anchor="middle" fill="#4ecdc4" font-size="10">App events</text>
@@ -1213,8 +1213,8 @@ footer a{color:var(--fg-muted)}
           </div>
         </div>
         <div class="ca-body">
-          <div class="ca-diagram">
-            <svg viewBox="0 0 860 220" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;min-width:560px">
+          <div class="ca-diagram diagram">
+            <svg viewBox="0 0 860 220" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <text x="55" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">ДЖЕРЕЛА</text>
               <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#8DC640" stroke-width="1.5" rx="5"/>
               <text x="55" y="42" text-anchor="middle" fill="#8DC640" font-size="10">Web / Mobile</text>
@@ -1298,8 +1298,8 @@ footer a{color:var(--fg-muted)}
           </div>
         </div>
         <div class="ca-body">
-          <div class="ca-diagram">
-            <svg viewBox="0 0 860 210" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;min-width:540px">
+          <div class="ca-diagram diagram">
+            <svg viewBox="0 0 860 210" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
               <text x="55" y="15" text-anchor="middle" fill="#9a9a95" font-size="9" letter-spacing="1">IoT СЕНСОРИ</text>
               <rect x="8" y="25" width="94" height="27" fill="#131316" stroke="#0057A8" stroke-width="1.5" rx="5"/>
               <text x="55" y="42" text-anchor="middle" fill="#4ecdc4" font-size="9">Генератори (SCADA)</text>
@@ -1682,7 +1682,7 @@ footer a{color:var(--fg-muted)}
       <p>Індустріальний стандарт організації даних у lake/lakehouse. Придуманий Databricks, але застосовується всюди. Кожен наступний шар — вища якість і більша бізнес-цінність.</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
           <!-- Sources -->
           <rect x="20" y="80" width="120" height="90" fill="#131316" stroke="#26262b" rx="8"/>
           <text x="80" y="110" text-anchor="middle" fill="#9a9a95" font-size="11" letter-spacing="1">SOURCES</text>
@@ -2202,7 +2202,7 @@ df_cleaned.write \
       <p>Два способи фізично розкласти таблицю на диску. Відмінність — фундаментальна для продуктивності аналітичних запитів.</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
           <!-- Row-based -->
           <text x="180" y="30" text-anchor="middle" fill="#f4f4f2" font-size="14" font-weight="700">ROW-BASED (CSV, JSON, Avro)</text>
           <g>
@@ -2279,7 +2279,7 @@ df_cleaned.write \
       <p>Створений у 2013 спільно Twitter і Cloudera. Галузевий стандарт №1 для analytical workloads. Підтримується всіма query engines (Spark, Trino, Athena, BigQuery external tables, DuckDB, pandas, polars).</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
           <!-- file outline -->
           <rect x="40" y="30" width="720" height="200" fill="#0a0a0b" stroke="#ffb627" stroke-width="2" rx="8"/>
           <text x="60" y="20" fill="#ffb627" font-size="11" letter-spacing="1">PARQUET FILE</text>
@@ -2570,7 +2570,7 @@ result = conn.execute(<span class="hl-str">"""
       <p>Ось реальна задача, яка ламає будь-яку одномашинну систему. ShopWave накопичив за місяць:</p>
 
       <div class="diagram" style="padding:24px">
-        <svg viewBox="0 0 860 240" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 860 240" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
           <!-- Problem: pandas on one machine -->
           <rect x="20" y="20" width="380" height="200" fill="rgba(239,107,107,.04)" stroke="rgba(239,107,107,.3)" stroke-dasharray="4,3" rx="10"/>
           <text x="210" y="40" text-anchor="middle" fill="#ef6b6b" font-size="10" letter-spacing="1" font-weight="700">БЕЗ SPARK — один сервер</text>
@@ -2664,7 +2664,7 @@ result = conn.execute(<span class="hl-str">"""
       <h4>Spark у контексті всього pipeline</h4>
 
       <div class="diagram">
-        <svg viewBox="0 0 900 310" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 900 310" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
 
           <!-- Layer labels -->
           <text x="20" y="50" fill="#6a6a66" font-size="9" letter-spacing="1">ДЖЕРЕЛА ДАНИХ</text>
@@ -2828,7 +2828,7 @@ result = df.filter(col("country") == "UA").groupBy("month").agg(sum("amount"))
 
       <h4>Архітектура Spark</h4>
       <div class="diagram">
-        <svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+        <svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace;width:100%;height:auto;display:block">
           <!-- Driver -->
           <g data-tip="DRIVER||Процес де запускається ваш Python/Scala код. Тримає SparkSession/SparkContext. Будує логічний план (DataFrame operations) → оптимізує через Catalyst Optimizer → перетворює на DAG фізичних stages → роздає tasks executors. ВАЖЛИВО: Driver не обробляє дані сам — тільки координує. Якщо робите collect() великого DataFrame на Driver → OOM. Розмір Driver: 2-4 GB типово. При K8s: Driver = один Pod що живе весь час job.">
           <rect x="330" y="30" width="240" height="90" fill="#1a1a1d" stroke="#ffb627" stroke-width="2" rx="8"/>
