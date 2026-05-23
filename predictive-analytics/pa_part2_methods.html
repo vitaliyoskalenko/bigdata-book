@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PA &amp; TSA · Частина 2 — Методи</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0b;--bg-2:#111113;--bg-3:#17171a;--bg-card:#131316;
+  --border:#26262b;--border-soft:#1e1e22;
+  --fg:#f4f4f2;--fg-muted:#9a9a95;--fg-dim:#6a6a66;
+  --accent:#34d399;--accent-2:#059669;--accent-soft:rgba(52,211,153,.12);
+  --pro:#a78bfa;--con:#ef6b6b;--info:#4ecdc4;--amber:#f59e0b;
+  --serif:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono','Courier New',monospace;
+  --sans:'Inter Tight',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(52,211,153,.07),transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 10%,rgba(5,150,105,.04),transparent 60%);
+  background-attachment:fixed;min-height:100vh;}
+::selection{background:var(--accent);color:#000}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(52,211,153,.3);transition:all .2s}
+a:hover{color:var(--accent-2);border-color:var(--accent-2)}
+code,.mono{font-family:var(--mono)}
+
+nav.top{position:sticky;top:0;z-index:50;background:rgba(10,10,11,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-soft)}
+nav.top .inner{max-width:1240px;margin:0 auto;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-weight:600;font-size:18px;letter-spacing:-.01em}
+.brand-dot{width:10px;height:10px;background:var(--accent);border-radius:50%;box-shadow:0 0 12px var(--accent)}
+.nav-links{display:flex;gap:28px;font-size:13px;font-weight:500}
+.nav-links a{color:var(--fg-muted);border:none;letter-spacing:.02em}
+.nav-links a:hover{color:var(--accent)}
+.container{max-width:1240px;margin:0 auto;padding:0 32px}
+
+.hero{padding:120px 0 80px}
+.hero-label{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.hero-label::before{content:'';width:32px;height:1px;background:var(--accent)}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(48px,8vw,112px);line-height:.95;letter-spacing:-.03em;margin-bottom:32px}
+.hero h1 em{font-style:italic;color:var(--accent);font-weight:300}
+.hero-sub{font-size:20px;color:var(--fg-muted);max-width:720px;line-height:1.5;margin-bottom:48px}
+
+section{padding:96px 0;border-top:1px solid var(--border-soft)}
+.section-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.section-title{font-family:var(--serif);font-size:clamp(36px,5vw,64px);font-weight:400;letter-spacing:-.02em;line-height:1.05;margin-bottom:32px;max-width:900px}
+.section-title em{font-style:italic;color:var(--accent);font-weight:300}
+.section-intro{font-size:18px;color:var(--fg-muted);max-width:720px;margin-bottom:56px;line-height:1.6}
+
+.module{padding:120px 0;border-top:1px solid var(--border-soft)}
+.module-header{display:grid;grid-template-columns:140px 1fr;gap:40px;margin-bottom:64px;align-items:start}
+.mod-num{font-family:var(--serif);font-size:120px;font-weight:300;font-style:italic;color:var(--accent);line-height:.9;letter-spacing:-.04em}
+.mod-meta{padding-top:16px}
+.mod-week{font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-bottom:16px}
+.mod-title{font-family:var(--serif);font-size:clamp(36px,4.5vw,56px);font-weight:400;line-height:1.05;letter-spacing:-.02em;margin-bottom:20px}
+.mod-title em{font-style:italic;color:var(--accent);font-weight:300}
+.mod-lead{font-size:18px;color:var(--fg-muted);line-height:1.6;max-width:760px}
+
+.mod-content h4{font-family:var(--serif);font-size:32px;font-weight:500;font-style:italic;margin:56px 0 24px;letter-spacing:-.01em;color:var(--fg)}
+.mod-content h5{font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:40px 0 16px}
+.mod-content p{margin-bottom:16px;color:var(--fg);max-width:860px}
+.mod-content ul{margin:16px 0 24px 24px;max-width:860px}
+.mod-content ul li{margin-bottom:10px;color:var(--fg)}
+.mod-content ul li::marker{color:var(--accent)}
+.mod-content strong{color:var(--fg);font-weight:600}
+.mod-content code{background:var(--bg-3);padding:2px 8px;border-radius:4px;font-size:.9em;color:var(--accent);border:1px solid var(--border-soft)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:32px 0}
+.card{padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);transition:all .3s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card h6{font-family:var(--serif);font-size:20px;margin-bottom:10px;font-weight:500}
+.card p{font-size:14px;color:var(--fg-muted);line-height:1.5;margin:0}
+.card .ic{width:32px;height:32px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-family:var(--mono);font-weight:700;font-size:13px}
+
+.table-wrap{margin:32px 0;border:1px solid var(--border);border-radius:12px;overflow:auto;background:var(--bg-card)}
+table.compare{width:100%;border-collapse:collapse;font-size:14px;min-width:600px}
+table.compare thead{background:var(--bg-3)}
+table.compare th{text-align:left;padding:16px 20px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-muted);font-weight:500;border-bottom:1px solid var(--border)}
+table.compare td{padding:16px 20px;border-bottom:1px solid var(--border-soft);vertical-align:top;color:var(--fg)}
+table.compare tr:last-child td{border-bottom:none}
+table.compare tr:hover td{background:rgba(52,211,153,.03)}
+table.compare td:first-child{font-weight:600}
+table.compare .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:10px}
+table.compare .badge.good{background:rgba(52,211,153,.15);color:#34d399}
+table.compare .badge.bad{background:rgba(239,107,107,.15);color:#ef6b6b}
+table.compare .badge.mid{background:rgba(245,158,11,.15);color:#f59e0b}
+
+.diagram{margin:40px 0;padding:32px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);text-align:center}
+.diagram svg{max-width:100%;height:auto}
+.diagram-caption{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-top:20px}
+
+.assignment{margin:48px 0;padding:32px 40px;border:1px solid var(--accent);border-radius:12px;background:linear-gradient(135deg,rgba(52,211,153,.08),rgba(5,150,105,.03))}
+.assignment .a-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.assignment h5{color:var(--fg)!important;margin:0 0 20px!important;font-family:var(--serif)!important;font-size:24px!important;text-transform:none!important;letter-spacing:-.01em!important;font-weight:500!important}
+.assignment ol{margin:16px 0 16px 24px;max-width:720px}
+.assignment ol li{margin-bottom:10px;color:var(--fg)}
+.assignment ol li::marker{color:var(--accent);font-weight:700}
+.assignment .deliverable{margin-top:24px;padding:16px;background:rgba(0,0,0,.3);border-radius:8px;font-family:var(--mono);font-size:13px;color:var(--fg-muted);border-left:2px solid var(--accent)}
+.assignment .deliverable strong{color:var(--accent)}
+
+.milestone{margin:48px 0;padding:32px 40px;border-radius:12px;background:linear-gradient(135deg,rgba(167,139,250,.08),rgba(52,211,153,.04));border:1px solid rgba(167,139,250,.3)}
+.milestone .m-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#a78bfa;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.milestone .m-label::before{content:'◆';color:#a78bfa}
+.milestone h5{color:var(--fg)!important;margin:0 0 16px!important;font-family:var(--serif)!important;font-size:24px!important;text-transform:none!important;letter-spacing:-.01em!important;font-weight:500!important}
+.milestone ul{max-width:760px;margin:12px 0 0 24px}
+.milestone ul li::marker{color:#a78bfa}
+
+.next-cta{padding:120px 0;text-align:center;border-top:1px solid var(--border-soft)}
+.next-cta h2{font-family:var(--serif);font-size:clamp(40px,6vw,80px);font-weight:400;line-height:1;letter-spacing:-.03em;margin-bottom:24px}
+.next-cta h2 em{font-style:italic;color:var(--accent)}
+.next-cta p{color:var(--fg-muted);font-size:18px;max-width:640px;margin:0 auto 40px}
+.next-cta .btn{display:inline-flex;align-items:center;gap:12px;padding:18px 32px;background:var(--accent);color:#000;font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:100px;border:none;transition:all .2s}
+.next-cta .btn:hover{background:var(--accent-2);color:#fff;transform:translateY(-2px);box-shadow:0 12px 40px rgba(5,150,105,.3)}
+footer{padding:48px 0;border-top:1px solid var(--border-soft);text-align:center;font-family:var(--mono);font-size:12px;color:var(--fg-dim)}
+
+.interview-qa{margin:56px 0 0;border:1px solid rgba(52,211,153,.3);border-radius:12px;overflow:hidden;background:var(--bg-card)}
+.interview-qa-header{padding:20px 28px;background:linear-gradient(90deg,rgba(52,211,153,.08),transparent);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.interview-qa-header .iq-icon{width:30px;height:30px;background:rgba(52,211,153,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700;flex-shrink:0}
+.interview-qa-header h5{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0!important;padding:0!important}
+.qa-item{border-bottom:1px solid var(--border-soft)}
+.qa-item:last-child{border-bottom:none}
+.qa-q{padding:16px 28px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;transition:background .2s;list-style:none}
+.qa-q:hover{background:rgba(52,211,153,.04)}
+.qa-q-inner{display:flex;gap:12px;align-items:flex-start;flex:1}
+.qa-q-num{font-family:var(--mono);font-size:11px;color:var(--accent);flex-shrink:0;margin-top:2px;min-width:20px}
+.qa-q-text{font-size:14px;font-weight:500;color:var(--fg);line-height:1.4}
+.qa-toggle{font-family:var(--mono);font-size:16px;color:var(--fg-dim);flex-shrink:0;transition:transform .2s}
+.qa-item.open .qa-toggle{transform:rotate(45deg)}
+.qa-a{display:none;padding:4px 28px 20px 60px;color:var(--fg-muted);font-size:14px;line-height:1.6;max-width:860px}
+.qa-a.open{display:block}
+.qa-a code{background:var(--bg-3);padding:2px 6px;border-radius:4px;font-size:.88em;color:var(--accent);border:1px solid var(--border-soft)}
+
+.analogy{margin:20px 0;padding:18px 22px;border-radius:10px;background:linear-gradient(135deg,rgba(78,205,196,.06),rgba(52,211,153,.03));border-left:3px solid var(--info);max-width:860px}
+.analogy .an-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
+.analogy p{margin:0;font-size:14px;color:var(--fg-muted);line-height:1.6;font-style:italic}
+
+.pitfall{margin:20px 0;padding:18px 22px;border-radius:10px;background:rgba(239,107,107,.05);border-left:3px solid var(--con);max-width:860px}
+.pitfall .pt-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--con);margin-bottom:6px}
+.pitfall p{margin:0;font-size:14px;color:var(--fg);line-height:1.5}
+
+.reading-time{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--fg-dim);padding:3px 10px;border:1px solid var(--border-soft);border-radius:100px;margin-bottom:14px;letter-spacing:.05em}
+
+.part-nav{display:flex;gap:6px;align-items:center}
+.part-nav a{font-family:var(--mono);font-size:10px;padding:3px 10px;border:1px solid var(--border);border-radius:100px;color:var(--fg-dim);letter-spacing:.08em;transition:all .2s}
+.part-nav a:hover,.part-nav a.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.part-nav a{border-bottom:none}
+
+#reading-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:200;width:0;transition:width .1s linear;pointer-events:none}
+
+.formula-box{margin:24px 0;padding:20px 24px;background:var(--bg-3);border:1px solid var(--border-soft);border-radius:10px;max-width:860px;border-left:3px solid var(--accent)}
+.formula-box .f-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.formula-box .f-body{font-family:var(--mono);font-size:14px;color:var(--fg);line-height:2}
+.formula-box .f-note{font-size:13px;color:var(--fg-muted);margin-top:10px;line-height:1.5}
+
+.steps-grid{display:grid;gap:0;margin:32px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.step-row{display:grid;grid-template-columns:56px 1fr;border-bottom:1px solid var(--border-soft);background:var(--bg-card)}
+.step-row:last-child{border-bottom:none}
+.step-row:hover{background:var(--bg-3)}
+.step-num{display:flex;align-items:center;justify-content:center;background:rgba(52,211,153,.08);border-right:1px solid var(--border-soft);font-family:var(--serif);font-size:22px;font-weight:300;font-style:italic;color:var(--accent)}
+.step-body{padding:18px 24px}
+.step-body strong{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:6px}
+.step-body p{font-size:14px;color:var(--fg-muted);margin:0;line-height:1.5}
+
+@media(max-width:768px){
+  nav.top .inner{padding:12px 20px}
+  .nav-links{display:none}
+  .container{padding:0 20px}
+  .hero{padding:80px 0 60px}
+  .module-header{grid-template-columns:1fr;gap:16px}
+  .mod-num{font-size:80px}
+  .assignment,.milestone{padding:24px}
+}
+
+.code-panel{margin:40px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.code-panel-hdr{display:flex;align-items:center;gap:10px;padding:10px 20px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border)}
+.code-badge{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;padding:3px 9px;border-radius:4px;background:rgba(52,211,153,.1);color:var(--accent);flex-shrink:0}
+.code-fname{font-family:var(--mono);font-size:12px;color:var(--fg-dim);flex:1}
+.code-btn{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--fg-dim);cursor:pointer;transition:all .18s;letter-spacing:.04em}
+.code-btn:hover{border-color:var(--accent);color:var(--accent)}
+.code-btn.cp-ok{border-color:#34d399;color:#34d399}
+.code-wrap{position:relative;overflow:hidden}
+.code-wrap.collapsed{max-height:210px}
+.code-wrap.collapsed::after{content:'';position:absolute;bottom:0;left:0;right:0;height:56px;background:linear-gradient(transparent,#0c0c0f);pointer-events:none}
+.code-panel pre{margin:0;padding:22px 24px;overflow-x:auto;background:#0c0c0f}
+.code-panel code{font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#94a3b8;white-space:pre}
+.code-desc{padding:8px 24px 10px;font-size:12px;color:var(--fg-dim);font-family:var(--sans);line-height:1.4;background:rgba(0,0,0,.25);border-bottom:1px solid var(--border)}
+.module-code{margin:40px 0 0;padding-top:36px;border-top:1px solid var(--border-soft)}
+.mc-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.mc-label::before{content:'{ }';opacity:.6;font-size:12px}
+</style>
+</head>
+<body>
+<div id="reading-progress"></div>
+
+<nav class="top">
+  <div class="inner">
+    <div class="brand"><span class="brand-dot"></span> PA &amp; TSA</div>
+    <div class="nav-links">
+      <a href="#module-3">М3</a>
+      <a href="#module-4">М4</a>
+    </div>
+    <div class="part-nav">
+      <a href="pa_part1_foundations.html">Part 01</a>
+      <a class="active" href="pa_part2_methods.html">Part 02</a>
+      <a href="pa_part3_models.html">Part 03</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="hero-label">Частина 2 з 3 · Методи</div>
+    <h1>Тренд &amp;<br><em>циклічний аналіз.</em></h1>
+    <p class="hero-sub">Від простого ковзного середнього до нелінійного Holt-Winters і сингулярного спектрального аналізу — інструменти, що перетворюють часовий ряд із «шуму» на зрозумілу структуру, придатну для прогнозування.</p>
+  </div>
+</header>
+
+<!-- MODULE 3 -->
+<section class="module" id="module-3">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">03</div>
+      <div class="mod-meta">
+        <div class="reading-time">~30 хв читання</div>
+        <div class="mod-week">Тижні 5–6 · ~20 год навчання</div>
+        <h2 class="mod-title">Аналіз та оцінювання <em>тренду</em></h2>
+        <p class="mod-lead">Тренд — найочевидніша компонента часового ряду, але правильно її виокремити і спрогнозувати — нетривіально. Проходимо шлях від найпростішого ковзного середнього через рекурентне оцінювання до повноцінних адаптивних моделей Холта та Холта–Вінтерса, які одночасно відстежують і тренд, і сезонність.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Задача оцінювання тренду</h4>
+      <p>Формально часовий ряд представляють як суму детермінованої компоненти (тренд + сезонність) і випадкового шуму:</p>
+
+      <div class="formula-box">
+        <div class="f-label">Базова модель тренду</div>
+        <div class="f-body">
+          yₜ = f(c, t) + εₜ<br>
+          де f(c,t) — тренд (функція параметрів c та часу t)<br>
+              εₜ — випадковий шум: E[εₜ] = 0, Var[εₜ] = σ²
+        </div>
+        <div class="f-note">Задача: оцінити c̃ₜ за наявними даними і потім обчислити прогноз ŷₜ₊d = f(c̃ₜ, t+d). Для цього використовують методи від класичного МНК до адаптивних рекурентних алгоритмів.</div>
+      </div>
+
+      <h4>Ковзне середнє (Moving Average)</h4>
+      <p>Найпростіший метод згладжування тренду. Ідея: замінити кожне значення середнім сусідніх значень у вікні ширини <code>T</code>. Метод чутливий до параметра — ширини вікна.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Ковзне середнє</div>
+        <div class="f-body">
+          ŷₜ = (1/T) Σ y_{t-k}  (k від 0 до T-1)
+        </div>
+        <div class="f-note">Широке вікно → більш плавний тренд, але повільніша реакція на зміни. Вузьке вікно → чутливіше до змін, але залишається більше шуму. Для тижневих даних RetailPulse вікно T=4 (4 тижні) або T=12 (квартал) — типові стартові точки.</div>
+      </div>
+
+      <!-- SVG: Moving average illustration -->
+      <div class="diagram">
+        <svg viewBox="0 0 860 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+          <line x1="40" y1="220" x2="820" y2="220" stroke="#26262b" stroke-width="1.5"/>
+          <line x1="40" y1="20" x2="40" y2="220" stroke="#26262b" stroke-width="1.5"/>
+          <text x="430" y="248" text-anchor="middle" fill="#6a6a66" font-size="11">Час</text>
+          <text x="20" y="120" fill="#6a6a66" font-size="10" transform="rotate(-90,20,120)">Значення</text>
+
+          <!-- Noisy original data -->
+          <polyline points="
+            40,160 66,120 92,155 118,90 144,140 170,170 196,105 222,145 248,80 274,125
+            300,155 326,90 352,130 378,170 404,100 430,140 456,75 482,120 508,155 534,90
+            560,130 586,165 612,95 638,135 664,170 690,105 716,145 742,80 768,120 794,155 820,90
+          " fill="none" stroke="rgba(52,211,153,.35)" stroke-width="1.5"/>
+
+          <!-- Moving average (smooth trend) T=5 -->
+          <polyline points="
+            80,133 106,126 132,118 158,122 184,128 210,117 236,113 262,119 288,126 314,118
+            340,113 366,121 392,128 418,117 444,112 470,118 496,125 522,118 548,112 574,120
+            600,127 626,118 652,113 678,119 704,125 730,116 756,111 782,118 808,124
+          " fill="none" stroke="#34d399" stroke-width="2.5"/>
+
+          <text x="650" y="60" fill="rgba(52,211,153,.6)" font-size="11">● Вихідний ряд</text>
+          <text x="650" y="80" fill="#34d399" font-size="11">● Ковзне середнє (T=5)</text>
+        </svg>
+        <div class="diagram-caption">Ковзне середнє згладжує шум, виявляючи загальний тренд</div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pt-label">Проблема ковзного середнього</div>
+        <p>Класичний МНК (мінімізація суми квадратів) мінімізує загальну помилку, але передбачає <em>постійні</em> параметри. Реальні часові ряди нестаціонарні: рівень продажів RetailPulse міняється через відкриття нових магазинів, сезони, кризи. Потрібні алгоритми, що «забувають» старе й адаптуються до нового.</p>
+      </div>
+
+      <h4>Експоненціальне згладжування</h4>
+      <p>Замість рівноваговит усіх <code>T</code> спостережень — зважуємо їх так, що новіші мають більшу вагу. Ваги спадають <em>експоненціально</em> із зростанням «старості» спостереження. Один параметр <code>α ∈ (0,1)</code> контролює швидкість «забування».</p>
+
+      <div class="formula-box">
+        <div class="f-label">Просте експоненціальне згладжування (Brown)</div>
+        <div class="f-body">
+          ŷ_{t+1} = ŷₜ + α(yₜ − ŷₜ)     [форма корекції стану]<br>
+          ŷ_{t+1} = α·yₜ + (1−α)·ŷₜ     [еквівалентна форма]<br><br>
+          α → 1: ŷ ≈ yₜ (майже без згладжування)<br>
+          α → 0: ŷ майже не змінюється (сильне згладжування)
+        </div>
+        <div class="f-note">Рекурентна форма «корекції помилки» (error correction) відкриває суть: нова оцінка = стара оцінка + α × (помилка прогнозу). Параметр α — це «швидкість навчання», яку підбирають мінімізацією суми квадратів помилок на навчальній вибірці.</div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Аналогія: термостат</div>
+        <p>Термостат корегує температуру пропорційно різниці між заданою і поточною температурою. Великий α — агресивне регулювання (реагує на кожне коливання). Малий α — плавне, інерційне регулювання. Задача — знайти баланс, де термостат стабільний, але реагує на справжні зміни.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>t</th><th>yₜ (продажі)</th><th>ŷₜ (прогноз)</th><th>eₜ = yₜ−ŷₜ</th><th>Оновлення α·eₜ</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>—</td><td>ŷ₁ = y₁ = <strong>120</strong></td><td>—</td><td>Ініціалізація: ŷ₁ = y₁</td></tr>
+            <tr><td>1</td><td>120</td><td>120.0</td><td>0</td><td>ŷ₂ = 120 + 0.3×0 = 120.0</td></tr>
+            <tr><td>2</td><td>135</td><td>120.0</td><td>+15</td><td>ŷ₃ = 120 + 0.3×15 = <strong>124.5</strong></td></tr>
+            <tr><td>3</td><td>128</td><td>124.5</td><td>+3.5</td><td>ŷ₄ = 124.5 + 0.3×3.5 = <strong>125.5</strong></td></tr>
+            <tr><td>4</td><td>142</td><td>125.5</td><td>+16.5</td><td>ŷ₅ = 125.5 + 0.3×16.5 = <strong>130.5</strong></td></tr>
+            <tr><td>5</td><td>118</td><td>130.5</td><td>−12.5</td><td>ŷ₆ = 130.5 + 0.3×(−12.5) = <strong>126.7</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;color:var(--fg-muted);margin-top:8px">α = 0.3 · Дані: умовні щотижневі продажі SKU (тис. грн) · Кожен крок: нова оцінка = стара + α × помилка</p>
+
+      <div class="pitfall">
+        <div class="pt-label">Типова помилка: забути про «warm-up» SES</div>
+        <p>На першому кроці ŷ₁ = y₁ — модель "холодна". Перші 5–10 прогнозів нестабільні незалежно від α. При порівнянні SES з ARIMA на тестових даних завжди виключайте перші m (або 10) спостережень із розрахунку MAE/MAPE — інакше "warm-up ефект" завищить помилку SES.</p>
+      </div>
+
+      <h4>Модель Холта — лінійний тренд</h4>
+      <p>Просте згладжування добре справляється з трендом «постійний рівень», але не може правильно екстраполювати <em>зростаючий</em> або <em>спадаючий</em> тренд. Модель Холта (подвійне згладжування) явно оцінює і рівень, і нахил.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Модель Холта (Double Exponential Smoothing)</div>
+        <div class="f-body">
+          â_t = α·yₜ + (1−α)(â_{t-1} + b̂_{t-1})    [рівень]<br>
+          b̂_t = β(â_t − â_{t-1}) + (1−β)b̂_{t-1}   [нахил тренду]<br><br>
+          Прогноз: ŷ_{t+d} = â_t + b̂_t·d
+        </div>
+        <div class="f-note">α — швидкість адаптації рівня, β — швидкість адаптації нахилу. Прогноз на d кроків вперед лінійно екстраполює поточний тренд. Якщо тренд стабільний — підходить чудово. Якщо тренд нелінійний або не постійний — потрібен «загасаючий тренд» (damped trend) або модель Холта–Вінтерса.</div>
+      </div>
+
+      <h4>Модель Холта–Вінтерса — тренд + сезонність</h4>
+      <p>Найпотужніший з класичних методів: три рівняння одночасно оновлюють рівень, нахил тренду і сезонний профіль. Є дві версії: <strong>адитивна</strong> (амплітуда сезонності стала) і <strong>мультиплікативна</strong> (амплітуда пропорційна до рівня).</p>
+
+      <div class="formula-box">
+        <div class="f-label">Holt-Winters — адитивна версія</div>
+        <div class="f-body">
+          â_t = α(yₜ − ŝ_{t-m}) + (1−α)(â_{t-1} + b̂_{t-1})   [рівень]<br>
+          b̂_t = β(â_t − â_{t-1}) + (1−β)b̂_{t-1}              [нахил]<br>
+          ŝ_t = γ(yₜ − â_t) + (1−γ)ŝ_{t-m}                    [сезонність]<br><br>
+          Прогноз: ŷ_{t+d} = â_t + b̂_t·d + ŝ_{t+d-m}
+        </div>
+        <div class="f-note">m — довжина сезонного циклу (наприклад, m=52 для тижневих даних із річним циклом). Три параметри α, β, γ підбирають оптимізацією. Якщо амплітуда коливань зростає разом із трендом (що типово для RetailPulse — новорічний пік стає більшим у міру зростання мережі) — потрібна мультиплікативна версія.</div>
+      </div>
+
+      <div class="formula-box">
+        <div class="f-label">Holt-Winters — мультиплікативна версія</div>
+        <div class="f-body">
+          â_t = α(yₜ / ŝ_{t-m}) + (1−α)(â_{t-1} + b̂_{t-1})   [рівень]<br>
+          b̂_t = β(â_t − â_{t-1}) + (1−β)b̂_{t-1}              [нахил]<br>
+          ŝ_t = γ(yₜ / â_t) + (1−γ)ŝ_{t-m}                    [сезонність]<br><br>
+          Прогноз: ŷ_{t+d} = (â_t + b̂_t·d) · ŝ_{t+d-m}
+        </div>
+        <div class="f-note">Ключова відмінність від адитивної: сезонність входить як <em>множник</em>, а не як доданок. Рівень ділиться на сезонний індекс (а не віднімає). Перевірка: якщо у адитивної моделі залишки мають зростаючу дисперсію — природа ряду мультиплікативна. Ознака для RetailPulse: якщо різдвяний пік у 2023 удвічі більший за 2020 — мультиплікативна.</div>
+      </div>
+
+      <div class="formula-box">
+        <div class="f-label">Ініціалізація Holt-Winters (стандартний метод)</div>
+        <div class="f-body">
+Потрібні перші m (мінімум 2m) спостережень для "warm-up":
+
+Крок 1 — Початковий рівень â₀:
+  â₀ = (y₁ + y₂ + ... + yₘ) / m   ← середнє першого сезону
+
+Крок 2 — Початковий нахил b̂₀:
+  b̂₀ = [(yₘ₊₁+...+y₂ₘ) − (y₁+...+yₘ)] / m²
+        (різниця між середніми двох перших сезонів)
+
+Крок 3 — Початкові сезонні індекси ŝ₋ₘ₊₁, ..., ŝ₀ (адитивна):
+  ŝⱼ = yⱼ − â₀,   j = 1, ..., m
+  Нормуємо: ŝⱼ ← ŝⱼ − (1/m)Σŝⱼ   (сума = 0)
+
+  Для мультиплікативної: ŝⱼ = yⱼ / â₀  (середнє = 1)
+        </div>
+        <div class="f-note">Неправильна ініціалізація спричиняє нестабільний "розгін" на перших m–2m кроках. statsmodels.ExponentialSmoothing з <code>initialization_method='estimated'</code> оцінює початкові стани разом із α, β, γ методом MLE — це точніше, але потребує більших даних (N &gt; 4m). Для RetailPulse (m=52): мінімум 104 тижні (~2 роки) для надійної ініціалізації. При менших вибірках — використовуйте <code>initialization_method='heuristic'</code>.</div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Log-перетворення: мультиплікативна → адитивна</div>
+        <p>Якщо <code>yₜ = Tₜ · Sₜ · Rₜ</code>, то <code>log(yₜ) = log(Tₜ) + log(Sₜ) + log(Rₜ)</code> — мультиплікативна модель стає адитивною після логарифмування. Практичний трюк: застосуйте <code>np.log(y)</code> → побудуйте адитивну Holt-Winters → прогнози поверніть через <code>np.exp</code>. Перевага: простіша інтерпретація, прогнози завжди додатні. Обмеження: не підходить, якщо ряд містить нулі або від'ємні значення.</p>
+      </div>
+
+      <h4>Перетворення Бокса–Кокса</h4>
+      <p>Логарифм — окремий випадок ширшого сімейства <strong>перетворень Бокса–Кокса</strong>, що стабілізують дисперсію і наближають розподіл до нормального. Параметр λ визначається з даних:</p>
+
+      <div class="formula-box">
+        <div class="f-label">Перетворення Бокса–Кокса (Box–Cox)</div>
+        <div class="f-body">
+y'ₜ = { (yₜλ − 1) / λ ,   λ ≠ 0
+       { log(yₜ)      ,   λ = 0
+
+Особливі випадки:
+  λ = 1   → лінійне (без перетворення):  y'ₜ = yₜ − 1
+  λ = 0   → натуральний логарифм:       y'ₜ = ln(yₜ)
+  λ = 0.5 → квадратний корінь:          y'ₜ = √yₜ − 1
+  λ = −1  → зворотне:                   y'ₜ = 1/yₜ
+        </div>
+        <div class="f-note">Оптимальний λ: знаходять методом максимальної правдоподібності або профільним MLE — обирають λ, що мінімізує дисперсію залишків. В Python: <code>scipy.stats.boxcox(y)</code> повертає трансформовані дані і λ. Після прогнозу — обов'язково зворотне перетворення: <code>scipy.special.inv_boxcox(y_hat, lambda_)</code>.</div>
+      </div>
+
+      <div class="diagram" style="margin:24px 0">
+        <svg viewBox="0 0 640 180" width="100%" style="max-width:640px;display:block;margin:0 auto">
+          <!-- Before: heteroscedastic series -->
+          <rect x="10" y="10" width="280" height="150" rx="8" fill="#17171a" stroke="#26262b" stroke-width="1"/>
+          <text x="150" y="30" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing=".08em">ДО перетворення (λ≠1)</text>
+          <!-- growing variance -->
+          <polyline points="20,140 50,130 80,110 110,90 140,60 170,30 200,40 230,20 260,35 280,25" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+          <!-- variance envelopes -->
+          <polyline points="20,140 80,120 140,75 200,50 260,40 280,30" fill="none" stroke="rgba(245,158,11,.3)" stroke-width="1" stroke-dasharray="3,3"/>
+          <polyline points="20,145 80,135 140,100 200,75 260,65 280,55" fill="none" stroke="rgba(245,158,11,.3)" stroke-width="1" stroke-dasharray="3,3"/>
+          <text x="150" y="165" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="11">Дисперсія зростає з рівнем</text>
+          <!-- Arrow -->
+          <text x="320" y="90" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="16">→</text>
+          <text x="320" y="106" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="9">Box-Cox</text>
+          <!-- After: stabilized -->
+          <rect x="350" y="10" width="280" height="150" rx="8" fill="#17171a" stroke="rgba(52,211,153,.3)" stroke-width="1"/>
+          <text x="490" y="30" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing=".08em">ПІСЛЯ перетворення</text>
+          <!-- stable variance -->
+          <polyline points="360,80 400,70 440,85 480,72 520,78 560,68 620,80 630,74" fill="none" stroke="#34d399" stroke-width="1.5"/>
+          <line x1="360" y1="60" x2="630" y2="60" stroke="rgba(52,211,153,.25)" stroke-width="1" stroke-dasharray="3,3"/>
+          <line x1="360" y1="100" x2="630" y2="100" stroke="rgba(52,211,153,.25)" stroke-width="1" stroke-dasharray="3,3"/>
+          <text x="490" y="165" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="11">Стабільна дисперсія → ARIMA застосовна</text>
+        </svg>
+      </div>
+
+      <div class="pitfall">
+        <div class="pt-label">Не забудьте про зворотне перетворення!</div>
+        <p>Box-Cox перетворює ряд для <em>навчання</em> моделі. Прогнози будуються у трансформованому просторі, і їх <strong>обов'язково</strong> потрібно перетворити назад. Якщо цього не зробити, MAPE обчислюється на неправильному масштабі — завищена точність. Також пам'ятайте: після зворотного перетворення прогноз є медіаною, а не середнім — при λ=0 (log) середнє у вихідному просторі: <code>exp(μ + σ²/2)</code>, де σ² — дисперсія залишків.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Метод</th><th>Компоненти</th><th>Параметри</th><th>Коли підходить</th><th>Обмеження</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Ковзне середнє</td>
+              <td>Рівень</td>
+              <td>T (ширина вікна)</td>
+              <td>Швидке первинне згладжування, baseline</td>
+              <td>Немає прогнозу на >1 крок; запізнення</td>
+            </tr>
+            <tr>
+              <td>Просте згладжування (Brown)</td>
+              <td>Рівень</td>
+              <td>α</td>
+              <td>Стаціонарний ряд без тренду</td>
+              <td>Не може екстраполювати тренд</td>
+            </tr>
+            <tr>
+              <td>Holt (Double)</td>
+              <td>Рівень + тренд</td>
+              <td>α, β</td>
+              <td>Ряд з лінійним трендом без сезонності</td>
+              <td>Не враховує сезонність</td>
+            </tr>
+            <tr>
+              <td>Holt-Winters <span class="badge good">Рекомендовано</span></td>
+              <td>Рівень + тренд + сезонність</td>
+              <td>α, β, γ</td>
+              <td>Більшість реальних рядів із трендом і сезонністю</td>
+              <td>Чутливий до ініціалізації; погано для нерегулярних рядів</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>ETS-фреймворк — Error, Trend, Seasonality</h4>
+      <p>ETS (Error–Trend–Seasonality) — це уніфікована формальна мова для опису всього сімейства методів експоненціального згладжування. Замість того, щоб пам'ятати різні формули для SES, Holt, Holt-Winters — кожна модель описується трьома літерами:</p>
+
+      <div class="formula-box">
+        <div class="f-label">ETS-нотація: ETS(E, T, S)</div>
+        <div class="f-body">
+E — Error (Помилка):       A (Additive / адитивна)
+                            M (Multiplicative / мультиплікативна)
+
+T — Trend (Тренд):         N (None / немає)
+                            A (Additive / лінійний)
+                            Ad (Additive damped / загасаючий)
+                            M (Multiplicative / мультиплікативний)
+
+S — Seasonality (Сезонність): N (None / немає)
+                               A (Additive / адитивна)
+                               M (Multiplicative / мультиплікативна)
+
+Приклади:
+  ETS(A,N,N) = SES (просте згладжування Брауна)
+  ETS(A,A,N) = Holt (подвійне згладжування)
+  ETS(A,A,A) = Holt-Winters адитивний
+  ETS(M,A,M) = Holt-Winters мультиплікативний
+  ETS(A,Ad,N) = Damped trend (Гарднер–МакКензі)
+        </div>
+        <div class="f-note">Для кожної ETS-моделі існує стан-простірна (state-space) форма з оцінками максимальної правдоподібності. Це дозволяє: (1) об'єктивно порівнювати моделі за AIC/BIC; (2) автоматично генерувати інтервали прогнозування; (3) вибирати найкращу ETS-специфікацію через grid search. В Python: <code>statsmodels.tsa.exponential_smoothing.ets.ETSModel</code>.</div>
+      </div>
+
+      <div class="diagram" style="margin:24px 0">
+        <svg viewBox="0 0 660 200" width="100%" style="max-width:660px;display:block;margin:0 auto">
+          <defs>
+            <marker id="ets-arr" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#6a6a66"/></marker>
+          </defs>
+          <!-- E column -->
+          <text x="110" y="22" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing=".1em">E — Error</text>
+          <rect x="60" y="32" width="100" height="28" rx="6" fill="rgba(167,139,250,.15)" stroke="rgba(167,139,250,.3)" stroke-width="1"/>
+          <text x="110" y="51" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="12">A</text>
+          <rect x="60" y="70" width="100" height="28" rx="6" fill="rgba(167,139,250,.1)" stroke="rgba(167,139,250,.2)" stroke-width="1"/>
+          <text x="110" y="89" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="12">M</text>
+
+          <!-- T column -->
+          <text x="330" y="22" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing=".1em">T — Trend</text>
+          <rect x="270" y="32" width="120" height="28" rx="6" fill="rgba(52,211,153,.15)" stroke="rgba(52,211,153,.3)" stroke-width="1"/>
+          <text x="330" y="51" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="12">N</text>
+          <rect x="270" y="70" width="120" height="28" rx="6" fill="rgba(52,211,153,.1)" stroke="rgba(52,211,153,.2)" stroke-width="1"/>
+          <text x="330" y="89" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="12">A</text>
+          <rect x="270" y="108" width="120" height="28" rx="6" fill="rgba(52,211,153,.1)" stroke="rgba(52,211,153,.2)" stroke-width="1"/>
+          <text x="330" y="127" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="12">Ad</text>
+          <rect x="270" y="146" width="120" height="28" rx="6" fill="rgba(52,211,153,.07)" stroke="rgba(52,211,153,.15)" stroke-width="1"/>
+          <text x="330" y="165" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="12">M</text>
+
+          <!-- S column -->
+          <text x="560" y="22" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing=".1em">S — Seasonal</text>
+          <rect x="490" y="32" width="140" height="28" rx="6" fill="rgba(245,158,11,.15)" stroke="rgba(245,158,11,.3)" stroke-width="1"/>
+          <text x="560" y="51" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="12">N</text>
+          <rect x="490" y="70" width="140" height="28" rx="6" fill="rgba(245,158,11,.1)" stroke="rgba(245,158,11,.2)" stroke-width="1"/>
+          <text x="560" y="89" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="12">A</text>
+          <rect x="490" y="108" width="140" height="28" rx="6" fill="rgba(245,158,11,.07)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+          <text x="560" y="127" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="12">M</text>
+
+          <!-- 2x4x3 = 24 combinations note -->
+          <text x="330" y="188" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="11">2 × 4 × 3 = 24 можливих специфікації · statsmodels вибирає найкращу за AIC</text>
+        </svg>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">ETS у RetailPulse: автоматичний вибір моделі</div>
+        <p>Для 50 000 SKUs ручний підбір моделі неможливий. ETSModel автоматично перебирає 24 специфікації та обирає ту, що мінімізує AICc. Для категорії «молочна продукція» з чіткою сезонністю і зростаючим трендом перемагає ETS(M,A,M) — Holt-Winters мультиплікативний. Для «бакалія без тренду» — ETS(A,N,A). Автоматизація скорочує час налаштування з тижнів до годин.</p>
+      </div>
+
+      <h4>Поліноміальний тренд і теорема Брауна–Маєра</h4>
+      <p>Метод Холта дає лінійну екстраполяцію — тренд зростає або спадає з постійною швидкістю. Але реальні тренди часто нелінійні: сповільнюються при насиченні ринку, прискорюються під час зростання. Природним розширенням є поліноміальний тренд.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Поліноміальний тренд порядку d</div>
+        <div class="f-body">
+          Tₜ = a₀ + a₁t + a₂t² + ... + aₐtᵈ<br><br>
+          d=1: лінійний (Holt)    → постійна швидкість зміни<br>
+          d=2: квадратичний       → прискорення / уповільнення<br>
+          d=3: кубічний           → S-подібні криві зростання
+        </div>
+        <div class="f-note">Параметри оцінюють МНК або методом двостороннього ковзного середнього. Але поліноміальні тренди небезпечні за межами горизонту: поліном будь-якого степеня прямує до ±∞. Для прогнозування на 1–2 сезони вперед краще використовувати загасаючі (damped) моделі.</div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Теорема Брауна–Маєра</div>
+        <p>Ця теорема доводить, що метод експоненціального згладжування для поліноміального тренду порядку d еквівалентний МНК-оцінці поліному ступеня d на <em>зваженій</em> вибірці, де ваги спадають геометрично в минуле. Практичний наслідок: DES (Holt) оптимально підходить для лінійного тренду так само, як SES — для постійного. Для квадратичного тренду аналогічно використовують потрійне згладжування або методи вищого порядку.</p>
+      </div>
+
+      <h4>Загасаючий тренд (Damped Trend)</h4>
+      <p>Стандартний метод Холта екстраполює тренд нескінченно: якщо продажі зараз зростають на 5% на тиждень, модель прогнозує вічне зростання. На довгих горизонтах це нереалістично — реальні тренди загасають.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Загасаючий тренд Гарднера–Маккензі (Damped Holt)</div>
+        <div class="f-body">
+          Рівень:  Lₜ = α·yₜ + (1−α)·(Lₜ₋₁ + φ·Bₜ₋₁)<br>
+          Тренд:   Bₜ = β·(Lₜ − Lₜ₋₁) + (1−β)·φ·Bₜ₋₁<br><br>
+          Прогноз на d кроків: ŷₜ₊ₐ = Lₜ + (φ + φ² + ... + φᵈ)·Bₜ<br><br>
+          φ ∈ (0,1) — коефіцієнт загасання тренду
+        </div>
+        <div class="f-note">При φ=1 — стандартний Holt (лінійний тренд назавжди). При φ→0 — SES (тренд миттєво зникає). Типові значення: φ = 0.80–0.98. Вибирають оптимізацією по MSE на навчальній вибірці. Для RetailPulse φ≈0.90 часто дає кращий результат на 4+ тижневому горизонті.</div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="ic" style="background:rgba(52,211,153,.12);color:#34d399">Holt</div>
+          <h6>Стандартний Holt</h6>
+          <p>Лінійна екстраполяція тренду. Відмінно на 1–2 кроки. На довгих горизонтах переоцінює або недооцінює у разі нестабільного тренду.</p>
+        </div>
+        <div class="card">
+          <div class="ic" style="background:rgba(167,139,250,.12);color:#a78bfa">φ</div>
+          <h6>Damped Holt</h6>
+          <p>Тренд поступово затухає до нуля. Більш консервативний на довгих горизонтах. Емпірично часто перемагає у конкурсах M-Competition на горизонтах 5+ кроків.</p>
+        </div>
+        <div class="card">
+          <div class="ic" style="background:rgba(245,158,11,.12);color:#f59e0b">H-W</div>
+          <h6>Holt-Winters + φ</h6>
+          <p>Загасаючий тренд можна поєднувати з сезонністю (Holt-Winters damped). Часто найкраща єдина модель для типових рядів роздрібної торгівлі.</p>
+        </div>
+      </div>
+
+      <!-- Interview Q&A -->
+      <div class="interview-qa">
+        <div class="interview-qa-header">
+          <div class="iq-icon">Q&amp;A</div>
+          <h5>Питання для самоперевірки</h5>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">01</span><span class="qa-q-text">Чим відрізняється ковзне середнє від експоненціального згладжування?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Ковзне середнє дає рівні ваги T останнім спостереженням і нуль — всім попереднім (різкий «обрив»). Експоненціальне згладжування дає ваги, що спадають геометрично: найновіше спостереження — вага α, попереднє — α(1−α), позапопереднє — α(1−α)², і так далі до нескінченності (але практично дуже малі). ЕЗ «пам'ятає» всю історію, але з поступовим загасанням. Також ЕЗ природно записується у рекурентній формі й може прогнозувати вперед.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">02</span><span class="qa-q-text">Що станеться з прогнозом Holt, якщо β → 0?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">При β → 0 нахил тренду b̂_t майже не оновлюється — модель «замерзає» у початковому нахилі. Це корисно, якщо тренд дуже стабільний і ми не хочемо, щоб тимчасові коливання його змінили. При β → 1 нахил оновлюється дуже агресивно, майже лінійно прив'язуючись до останньої різниці. Практично β ≈ 0.1–0.3 зазвичай дає кращі результати.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">03</span><span class="qa-q-text">Коли потрібна мультиплікативна версія Holt-Winters замість адитивної?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Мультиплікативна потрібна, коли амплітуда сезонних коливань <em>пропорційна</em> поточному рівню ряду. Ознака: на графіку сезонні «гірки» стають вищими у міру зростання тренду. Для RetailPulse: якщо у 2022 р. новорічний пік давав +200 тис. грн, а у 2025 р. (після зростання мережі) — +800 тис., то сезонність мультиплікативна. Якщо б пік залишився +200 тис. незалежно від загального обсягу — адитивна.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">04</span><span class="qa-q-text">Теорема Брауна–Маєра — що вона стверджує і навіщо потрібна?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Теорема Брауна–Маєра встановлює лінійний зв'язок між показниками <em>вищого порядку експоненціальних середніх</em> (ŷ[1], ŷ[2], ..., ŷ[n+1]) і коефіцієнтами полінома тренду (c₀, c₁, ..., cₙ). Це означає: замість того, щоб розв'язувати систему рівнянь для поліноміального тренду кожного разу з нуля, можна просто обчислити n+1 середніх і отримати коефіцієнти через одне матричне множення. Практична цінність: рекурентно оновлювати поліноміальний тренд складності n у режимі реального часу без матричних обернень.</div>
+        </div>
+      </div>
+
+      <div class="assignment">
+        <div class="a-label">Завдання до Модуля 3</div>
+        <h5>Порівняння методів згладжування на RetailPulse</h5>
+        <ol>
+          <li>Для того самого ряду з Milestone 1 реалізуйте три методи: просте ЕЗ, модель Холта та Holt-Winters (адитивну). Підберіть параметри α, β, γ мінімізацією MAE на навчальній вибірці (scikit-learn <code>GridSearchCV</code> або <code>scipy.optimize.minimize</code>).</li>
+          <li>Зробіть прогноз на 4 тижні вперед кожним методом. Намалюйте три прогнози на одному графіку разом із реальними значеннями. Покажіть 95% інтервал прогнозування.</li>
+          <li>Порівняйте MAPE, MAE і RMSE трьох методів із baseline (naive). Яка модель перемогла? Чому?</li>
+          <li>Поясніть у 2–3 реченнях: чому для RetailPulse Holt-Winters підходить краще, ніж просте ЕЗ?</li>
+        </ol>
+        <div class="deliverable"><strong>Deliverable:</strong> Jupyter-ноутбук із кодом, таблицею порівняння метрик і висновком.</div>
+      </div>
+
+      <div class="module-code">
+        <div class="mc-label">Практичний Python — M3</div>
+
+        <div class="code-panel">
+          <div class="code-panel-hdr">
+            <span class="code-badge">Python</span>
+            <span class="code-fname">m3_smoothing.py</span>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+              <button class="code-btn" onclick="toggleCode(this)">розгорнути</button>
+              <button class="code-btn" onclick="copyCode(this)">копіювати</button>
+            </div>
+          </div>
+          <div class="code-desc">Ковзне середнє MA-12, SES з автопідбором α, Holt та Damped Holt — MAPE кожного методу</div>
+          <div class="code-wrap collapsed">
+            <pre><code>import pandas as pd
+import numpy as np
+from statsmodels.tsa.holtwinters import SimpleExpSmoothing, Holt
+
+train = weekly.iloc[:-13]
+test  = weekly.iloc[-13:]
+
+def mape(y, p): return np.mean(np.abs((y - p) / y)) * 100
+
+# 1. Ковзне середнє MA-12 (центроване)
+ma12 = weekly.rolling(window=12, center=True).mean()
+
+# 2. SES (Brown) — пошук оптимального α
+ses_opt = SimpleExpSmoothing(train).fit(optimized=True)
+ses_fc  = ses_opt.forecast(13)
+alpha   = ses_opt.params['smoothing_level']
+print(f"SES  α={alpha:.3f}  MAPE={mape(test.values, ses_fc.values):.1f}%")
+
+# 3. Holt (лінійний тренд)
+holt = Holt(train, exponential=False).fit(optimized=True)
+holt_fc = holt.forecast(13)
+a = holt.params['smoothing_level']
+b = holt.params['smoothing_trend']
+print(f"Holt α={a:.3f}  β={b:.3f}  MAPE={mape(test.values, holt_fc.values):.1f}%")
+
+# Damped Holt (φ — загасання тренду)
+holt_d = Holt(train, damped_trend=True).fit(optimized=True)
+holt_dfc = holt_d.forecast(13)
+print(f"Holt-Damped φ={holt_d.params['damping_trend']:.3f}  "
+      f"MAPE={mape(test.values, holt_dfc.values):.1f}%")</code></pre>
+          </div>
+        </div>
+
+        <div class="code-panel">
+          <div class="code-panel-hdr">
+            <span class="code-badge">Python</span>
+            <span class="code-fname">m3_holtwinters_boxcox.py</span>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+              <button class="code-btn" onclick="toggleCode(this)">розгорнути</button>
+              <button class="code-btn" onclick="copyCode(this)">копіювати</button>
+            </div>
+          </div>
+          <div class="code-desc">Box-Cox λ (scipy), Holt–Winters адитивний і мультиплікативний, параметри α/β/γ та порівняння MAPE</div>
+          <div class="code-wrap collapsed">
+            <pre><code>from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from scipy.stats import boxcox
+import numpy as np
+
+# 1. Box-Cox трансформація (стабілізація дисперсії)
+# +1 щоб уникнути нулів; λ≈0 → log; λ≈0.5 → корінь; λ≈1 → без змін
+series_bc, lambda_opt = boxcox(train.values + 1)
+print(f"Оптимальний λ = {lambda_opt:.4f}")
+
+# 2. Holt–Winters адитивний
+hw_add = ExponentialSmoothing(
+    train,
+    trend='add',
+    seasonal='add',
+    seasonal_periods=52
+).fit(optimized=True)
+
+fc_add = hw_add.forecast(13)
+print(f"HW-Additive  MAPE={mape(test.values, fc_add.values):.1f}%")
+print(f"  α={hw_add.params['smoothing_level']:.3f} "
+      f"β={hw_add.params['smoothing_trend']:.3f} "
+      f"γ={hw_add.params['smoothing_seasonal']:.3f}")
+
+# 3. Holt–Winters мультиплікативний
+hw_mul = ExponentialSmoothing(
+    train + 1,
+    trend='add',
+    seasonal='mul',
+    seasonal_periods=52
+).fit(optimized=True)
+
+fc_mul = hw_mul.forecast(13) - 1
+print(f"HW-Multiplicative  MAPE={mape(test.values, fc_mul.values):.1f}%")</code></pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 4 -->
+<section class="module" id="module-4">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">04</div>
+      <div class="mod-meta">
+        <div class="reading-time">~25 хв читання</div>
+        <div class="mod-week">Тижні 7–8 · ~20 год навчання</div>
+        <h2 class="mod-title">Циклічні компоненти та <em>SSA</em></h2>
+        <p class="mod-lead">Хвилі ділового циклу, багаторічні тренди, нерегулярні коливання попиту — ці явища існують у даних, але їх неможливо виявити через Фур'є-аналіз або Holt-Winters, бо вони не мають фіксованого відомого заздалегідь  periodу. Метод сингулярного спектрального аналізу (SSA) вирішує цю задачу без жодних апріорних припущень про структуру сигналу.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Чому Фур'є-аналіз не підходить для реальних рядів</h4>
+      <p>Перетворення Фур'є є потужним інструментом для аналізу <em>стаціонарних, нескінченних сигналів</em>. Але реальні часові ряди — короткі, зашумлені, нестаціонарні. Застосування Фур'є до них породжує <strong>спектральні артефакти</strong>: хибні частоти, яких у сигналі немає, і відсутність справжніх, які не помітні через шум.</p>
+
+      <div class="analogy">
+        <div class="an-label">Аналогія: зіпсований мікрофон</div>
+        <p>Уявіть, що ви записуєте мелодію зіпсованим мікрофоном, що додає шум і спотворює сигнал, — і потім намагаєтеся знайти ноти через спектрограму. Замість справжньої мелодії ви побачите хмару шуму й фальшиві «призраки» нот. SSA — це алгоритм, що відокремлює справжню мелодію від шуму навіть із поганого запису.</p>
+      </div>
+
+      <h4>Ідея SSA: від ряду до матриці й назад</h4>
+      <p>SSA (Singular Spectrum Analysis, або метод «Гусениця») ґрунтується на ключовому прийомі — перетворити одновимірний часовий ряд у багатовимірну матрицю («траєкторну матрицю»), а потім розкласти її через SVD. Метод не вимагає жодних апріорних припущень про тип компонент.</p>
+
+      <!-- SSA pipeline SVG -->
+      <div class="diagram">
+        <svg viewBox="0 0 920 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+          <!-- Step boxes -->
+          <!-- 1. Original series -->
+          <rect x="20" y="60" width="160" height="80" rx="10" fill="rgba(52,211,153,.08)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="100" y="96" text-anchor="middle" fill="#34d399" font-size="12" font-weight="700">Часовий ряд</text>
+          <text x="100" y="114" text-anchor="middle" fill="#9a9a95" font-size="11">y₁, y₂, ..., yₙ</text>
+          <text x="100" y="30" text-anchor="middle" fill="#6a6a66" font-size="10" letter-spacing="1">КРОК 1</text>
+
+          <!-- arrow -->
+          <line x1="185" y1="100" x2="215" y2="100" stroke="#6a6a66" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+          <!-- 2. Embedding -->
+          <rect x="220" y="60" width="160" height="80" rx="10" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5"/>
+          <text x="300" y="91" text-anchor="middle" fill="#4ecdc4" font-size="12" font-weight="700">Вкладення</text>
+          <text x="300" y="109" text-anchor="middle" fill="#9a9a95" font-size="11">Матриця X (L×K)</text>
+          <text x="300" y="125" text-anchor="middle" fill="#6a6a66" font-size="10">«вікно» L</text>
+          <text x="300" y="30" text-anchor="middle" fill="#6a6a66" font-size="10" letter-spacing="1">КРОК 2</text>
+
+          <!-- arrow -->
+          <line x1="385" y1="100" x2="415" y2="100" stroke="#6a6a66" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+          <!-- 3. SVD -->
+          <rect x="420" y="60" width="160" height="80" rx="10" fill="rgba(167,139,250,.08)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="500" y="91" text-anchor="middle" fill="#a78bfa" font-size="12" font-weight="700">SVD</text>
+          <text x="500" y="109" text-anchor="middle" fill="#9a9a95" font-size="11">X = UΣVᵀ</text>
+          <text x="500" y="125" text-anchor="middle" fill="#6a6a66" font-size="10">сингулярні числа</text>
+          <text x="500" y="30" text-anchor="middle" fill="#6a6a66" font-size="10" letter-spacing="1">КРОК 3</text>
+
+          <!-- arrow -->
+          <line x1="585" y1="100" x2="615" y2="100" stroke="#6a6a66" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+          <!-- 4. Grouping -->
+          <rect x="620" y="60" width="160" height="80" rx="10" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="700" y="91" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">Групування</text>
+          <text x="700" y="109" text-anchor="middle" fill="#9a9a95" font-size="11">тренд / цикл / шум</text>
+          <text x="700" y="30" text-anchor="middle" fill="#6a6a66" font-size="10" letter-spacing="1">КРОК 4</text>
+
+          <!-- arrow -->
+          <line x1="785" y1="100" x2="815" y2="100" stroke="#6a6a66" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+          <!-- 5. Reconstruction -->
+          <rect x="820" y="60" width="90" height="80" rx="10" fill="rgba(239,107,107,.08)" stroke="#ef6b6b" stroke-width="1.5"/>
+          <text x="865" y="91" text-anchor="middle" fill="#ef6b6b" font-size="11" font-weight="700">Рекон-</text>
+          <text x="865" y="107" text-anchor="middle" fill="#ef6b6b" font-size="11" font-weight="700">струкція</text>
+          <text x="865" y="30" text-anchor="middle" fill="#6a6a66" font-size="10" letter-spacing="1">КРОК 5</text>
+
+          <defs>
+            <marker id="arr2" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#6a6a66"/>
+            </marker>
+          </defs>
+        </svg>
+        <div class="diagram-caption">SSA pipeline: від вихідного ряду до виокремлених компонент</div>
+      </div>
+
+      <h4>Крок 1–2: Вкладення та траєкторна матриця</h4>
+      <p>Вибираємо довжину вікна <code>L</code> (параметр методу) і формуємо матрицю <code>X</code> розміром <code>L × K</code>, де <code>K = N − L + 1</code>. Кожен стовпець — це «зсунуте вікно» довжиною L:</p>
+
+      <div class="formula-box">
+        <div class="f-label">Траєкторна (Ганкелева) матриця</div>
+        <div class="f-body">
+          X = [Y₁ | Y₂ | ... | Yₖ]<br>
+          де Yᵢ = (yᵢ, yᵢ₊₁, ..., yᵢ₊ₗ₋₁)ᵀ — вектор-вікно<br><br>
+          Властивість: X є симетричною відносно антидіагоналі (матриця Ганкеля)
+        </div>
+        <div class="f-note">Вибір L критично важливий: L має бути достатньо великим, щоб охопити один цикл (L ≥ m, де m — очікуваний період), але не більше N/2. Для річних даних із тижневою частотою (N=200) і 52-тижневим циклом — L ≈ 52–100.</div>
+      </div>
+
+      <h4>Власні числа і вектори — фундамент SVD</h4>
+      <p>SVD спирається на апарат власних чисел і векторів. Перш ніж перейти до сингулярного розкладу, розберемо ці поняття геометрично — без них SVD лишається «чорним ящиком».</p>
+
+      <div class="formula-box">
+        <div class="f-label">Власне число і власний вектор</div>
+        <div class="f-body">
+          A · v = λ · v<br><br>
+          v ≠ 0 — власний вектор (eigenvector) матриці A<br>
+          λ   — власне число (eigenvalue), що відповідає v<br><br>
+          Характеристичне рівняння: det(A − λI) = 0
+        </div>
+        <div class="f-note">Геометрично: власний вектор — це напрям, вздовж якого лінійне перетворення A лише «масштабує» вектор, не повертає його. λ — коефіцієнт масштабування. Від'ємне λ означає відображення. Симетрична матриця завжди має речові власні числа та ортогональні власні вектори.</div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Аналогія: власні моди коливань</div>
+        <p>Уявіть пружну систему: якщо вдарити довільно, вона коливатиметься хаотично. Але є <em>власні напрями</em> (моди коливань), вдаривши вздовж яких, система коливається рівно в одному напрямку — без перехресних рухів. Це і є власні вектори. Власне число — «енергія» (частота) коливань у цьому напрямку. SSA використовує той самий принцип: знаходить власні напрями варіації часового ряду через матрицю XᵀX. Найбільше власне число відповідає тренду (найпотужнішій структурі), менші — циклам і шуму.</p>
+      </div>
+
+      <div class="diagram">
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+          <!-- Left panel: arbitrary vector -->
+          <rect x="20" y="20" width="300" height="180" rx="8" fill="rgba(255,255,255,.02)" stroke="#26262b" stroke-width="1"/>
+          <text x="170" y="44" text-anchor="middle" fill="#6a6a66" font-size="10" letter-spacing="1">ДОВІЛЬНИЙ ВЕКТОР</text>
+          <line x1="170" y1="130" x2="240" y2="80" stroke="#9a9a95" stroke-width="2" marker-end="url(#eA1)"/>
+          <text x="248" y="76" fill="#9a9a95" font-size="10">v</text>
+          <line x1="170" y1="130" x2="120" y2="60" stroke="#ef6b6b" stroke-width="2" marker-end="url(#eA2)"/>
+          <text x="108" y="56" fill="#ef6b6b" font-size="10">Av</text>
+          <text x="170" y="178" text-anchor="middle" fill="#6a6a66" font-size="9">Напрям і довжина змінились</text>
+          <!-- Right panel: eigenvector -->
+          <rect x="370" y="20" width="300" height="180" rx="8" fill="rgba(255,255,255,.02)" stroke="#26262b" stroke-width="1"/>
+          <text x="520" y="44" text-anchor="middle" fill="#6a6a66" font-size="10" letter-spacing="1">ВЛАСНИЙ ВЕКТОР</text>
+          <line x1="480" y1="150" x2="550" y2="100" stroke="#a78bfa" stroke-width="2" marker-end="url(#eA3)"/>
+          <text x="558" y="96" fill="#a78bfa" font-size="10">v</text>
+          <line x1="480" y1="150" x2="606" y2="60" stroke="#34d399" stroke-width="2.5" marker-end="url(#eA4)"/>
+          <text x="614" y="56" fill="#34d399" font-size="10">λv</text>
+          <text x="520" y="178" text-anchor="middle" fill="#34d399" font-size="9">Тільки масштаб — напрям незмінний</text>
+          <defs>
+            <marker id="eA1" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#9a9a95"/></marker>
+            <marker id="eA2" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ef6b6b"/></marker>
+            <marker id="eA3" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a78bfa"/></marker>
+            <marker id="eA4" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#34d399"/></marker>
+          </defs>
+        </svg>
+        <div class="diagram-caption">Власний вектор: перетворення A лише масштабує напрям, не повертає його</div>
+      </div>
+
+      <p>У контексті SSA матриця <code>XᵀX</code> є квадратною симетричною — її власні вектори завжди ортогональні й утворюють нову «систему координат» у просторі вікон. Сингулярні вектори <code>uᵢ, vᵢ</code> у SVD — це власні вектори матриць <code>XXᵀ</code> і <code>XᵀX</code> відповідно, а сингулярні значення <code>σᵢ = √λᵢ</code>.</p>
+
+      <h4>Крок 3: Сингулярний розклад (SVD)</h4>
+      <p>Ганкелеву матрицю X розкладаємо через SVD: <code>X = UΣVᵀ</code>. Отримуємо <code>r = rank(X)</code> «елементарних» матриць, упорядкованих за спаданням сингулярних значень σ₁ ≥ σ₂ ≥ ... ≥ σᵣ.</p>
+
+      <div class="formula-box">
+        <div class="f-label">SVD декомпозиція</div>
+        <div class="f-body">
+          X = Σᵢ σᵢ · uᵢ · vᵢᵀ = X₁ + X₂ + ... + Xᵣ<br><br>
+          σᵢ² — власні числа матриці XᵀX<br>
+          uᵢ — ліві сингулярні вектори (власні вектори XXᵀ)<br>
+          vᵢ — праві сингулярні вектори (власні вектори XᵀX)
+        </div>
+        <div class="f-note">Кожна складова Xᵢ = σᵢuᵢvᵢᵀ — це «елементарна матриця», що відповідає одній моді коливань. Великі σᵢ → домінантні компоненти (зазвичай тренд або сильні гармоніки). Малі σᵢ → шум.</div>
+      </div>
+
+      <h4>Крок 4–5: Групування та відновлення</h4>
+      <p>Групуємо елементарні матриці у групи — тренд, гармоніки, шум — і для кожної групи відновлюємо одновимірний ряд через <strong>діагональне усереднення</strong> (ганкелізацію). Ключ до успіху — правильне групування, яке роблять на основі:</p>
+      <ul>
+        <li>Внесок σᵢ у загальну дисперсію (перші вектори — тренд)</li>
+        <li>Парне розміщення на «діаграмі розсіювання» парних головних компонент (ознака гармоніки)</li>
+        <li>Візуальний аналіз реконструйованих компонент</li>
+      </ul>
+
+      <div class="diagram">
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+          <line x1="60" y1="180" x2="660" y2="180" stroke="#26262b" stroke-width="1.5"/>
+          <line x1="60" y1="20" x2="60" y2="180" stroke="#26262b" stroke-width="1.5"/>
+          <text x="360" y="210" text-anchor="middle" fill="#6a6a66" font-size="10">Номер компоненти →</text>
+          <text x="18" y="100" fill="#6a6a66" font-size="10" transform="rotate(-90,18,100)">Внесок σᵢ (%)</text>
+          <!-- Component 1: trend -->
+          <rect x="80" y="38" width="38" height="142" fill="#a78bfa" rx="3" opacity=".85"/>
+          <text x="99" y="30" text-anchor="middle" fill="#a78bfa" font-size="9">Тренд</text>
+          <!-- Components 2-3: annual harmonic pair -->
+          <rect x="132" y="96" width="38" height="84" fill="#34d399" rx="3" opacity=".85"/>
+          <rect x="184" y="98" width="38" height="82" fill="#34d399" rx="3" opacity=".85"/>
+          <text x="175" y="88" text-anchor="middle" fill="#34d399" font-size="9">Річна гармоніка (пара)</text>
+          <!-- Components 4-5: half-year harmonic -->
+          <rect x="236" y="138" width="38" height="42" fill="#f59e0b" rx="3" opacity=".8"/>
+          <rect x="288" y="140" width="38" height="40" fill="#f59e0b" rx="3" opacity=".8"/>
+          <text x="278" y="130" text-anchor="middle" fill="#f59e0b" font-size="9">Піврічна</text>
+          <!-- Components 6+: noise -->
+          <rect x="340" y="160" width="28" height="20" fill="#6a6a66" rx="2" opacity=".6"/>
+          <rect x="373" y="163" width="28" height="17" fill="#6a6a66" rx="2" opacity=".5"/>
+          <rect x="406" y="165" width="28" height="15" fill="#6a6a66" rx="2" opacity=".42"/>
+          <rect x="439" y="167" width="28" height="13" fill="#6a6a66" rx="2" opacity=".35"/>
+          <rect x="472" y="169" width="28" height="11" fill="#6a6a66" rx="2" opacity=".28"/>
+          <rect x="505" y="171" width="28" height="9" fill="#6a6a66" rx="2" opacity=".22"/>
+          <rect x="538" y="172" width="28" height="8" fill="#6a6a66" rx="2" opacity=".18"/>
+          <rect x="571" y="173" width="28" height="7" fill="#6a6a66" rx="2" opacity=".15"/>
+          <rect x="604" y="174" width="28" height="6" fill="#6a6a66" rx="2" opacity=".12"/>
+          <text x="585" y="155" text-anchor="middle" fill="#6a6a66" font-size="9">Шум</text>
+          <!-- y-axis ticks -->
+          <text x="52" y="41" text-anchor="end" fill="#6a6a66" font-size="9">50%</text>
+          <text x="52" y="99" text-anchor="end" fill="#6a6a66" font-size="9">25%</text>
+          <text x="52" y="139" text-anchor="end" fill="#6a6a66" font-size="9">10%</text>
+          <text x="52" y="183" text-anchor="end" fill="#6a6a66" font-size="9">0%</text>
+          <!-- x labels -->
+          <text x="99" y="196" text-anchor="middle" fill="#6a6a66" font-size="9">1</text>
+          <text x="151" y="196" text-anchor="middle" fill="#6a6a66" font-size="9">2</text>
+          <text x="203" y="196" text-anchor="middle" fill="#6a6a66" font-size="9">3</text>
+          <text x="255" y="196" text-anchor="middle" fill="#6a6a66" font-size="9">4</text>
+          <text x="307" y="196" text-anchor="middle" fill="#6a6a66" font-size="9">5</text>
+          <text x="359" y="196" text-anchor="middle" fill="#6a6a66" font-size="9">6+</text>
+          <!-- cutoff line -->
+          <line x1="332" y1="25" x2="332" y2="180" stroke="#ef6b6b" stroke-width="1.2" stroke-dasharray="4,3"/>
+          <text x="334" y="22" fill="#ef6b6b" font-size="9">← ВІДСІКАННЯ ШУМУ</text>
+        </svg>
+        <div class="diagram-caption">Scree plot: перші 5 компонент несуть сигнал (тренд + гармоніки), решта — шум</div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Аналогія: музичний розклад</div>
+        <p>Оркестр грає симфонію — це і є ваш часовий ряд. SVD «розкладає» запис на окремі інструменти: перша скрипка (тренд, найгучніший), далі секції оркестру (гармоніки з різними частотами), наприкінці — шерех зали (шум). Після «ізоляції» кожного інструменту їх можна прогнозувати незалежно й потім скласти назад.</p>
+      </div>
+
+      <div class="pitfall">
+        <div class="pt-label">SSA vs Фур'є: ключова відмінність</div>
+        <p>SSA — модельно-незалежний: він не припускає, що сигнал є сумою синусів. Він лише знаходить домінуючі структури в даних. Тому SSA ефективно виявляє аперіодичні тренди, «наполовину-циклічні» коливання ділового циклу й навіть поступові зміни у структурі ряду — все те, з чим Фур'є безсилий. Але SSA потребує більше даних: загальне правило — N ≥ 4L, де L ≥ 2m.</p>
+      </div>
+
+      <h4>SSA-прогнозування — рекурентний алгоритм (r-SSA)</h4>
+      <p>SSA-декомпозиція дає минуле — як же зробити прогноз? <strong>Рекурентний SSA (r-SSA)</strong> використовує власні вектори U для побудови лінійного рекурентного співвідношення (ЛРС), що продовжує кожну компоненту вперед:</p>
+
+      <div class="formula-box">
+        <div class="f-label">Рекурентне SSA-прогнозування (r-SSA)</div>
+        <div class="f-body">
+Крок 1. Знаходимо «прогнозний вектор» R:
+  R = (1/(1 − π²)) · Σᵢ∈I πᵢ·Uᵢ[1:L-1]
+
+  де Uᵢ — обрані власні вектори (з групи I — сигнал)
+     πᵢ = Uᵢ[L] — останній елемент i-го власного вектора
+     π² = Σᵢ∈I πᵢ²   (має бути < 1; інакше ЛРС нестійке)
+
+Крок 2. Лінійне рекурентне співвідношення:
+  ŷₙ₊ₕ = Σⱼ₌₁ᴸ⁻¹ Rⱼ · ŷₙ₊ₕ₋ⱼ
+
+  (прогнозований хʼ₋ᵢ  — елементи реконструйованого сигналу)
+
+Крок 3. Повторюємо h разів для горизонту h.
+        </div>
+        <div class="f-note">Умова стійкості: π² &lt; 1. Якщо π² близьке до 1 (малий знаменник), прогноз нестабільний. Це аналог умови стаціонарності для ARIMA. Для тренду π² може бути &gt; 0.99 — тренд продовжується, але шум наростає швидко. На практиці: прогнозуйте тренд і кожну гармоніку окремо, потім складайте. Python: бібліотека <code>pySSA</code> або реалізація через NumPy власних векторів.</div>
+      </div>
+
+      <div class="diagram" style="margin:24px 0">
+        <svg viewBox="0 0 660 180" width="100%" style="max-width:660px;display:block;margin:0 auto">
+          <defs>
+            <marker id="rssa-arr" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#34d399"/></marker>
+          </defs>
+          <!-- History portion -->
+          <rect x="10" y="20" width="340" height="100" rx="8" fill="#17171a" stroke="rgba(167,139,250,.3)" stroke-width="1.5"/>
+          <text x="180" y="44" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing=".08em">НАЯВНИЙ РЯД y₁...yₙ</text>
+          <!-- TS line inside history -->
+          <polyline points="20,110 60,90 100,80 140,65 180,50 220,60 260,72 300,62 340,78" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+          <!-- r-SSA engine box -->
+          <rect x="370" y="20" width="140" height="100" rx="8" fill="#17171a" stroke="rgba(52,211,153,.4)" stroke-width="1.5"/>
+          <text x="440" y="50" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="10">r-SSA</text>
+          <text x="440" y="70" text-anchor="middle" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="11">SVD → U,σ</text>
+          <text x="440" y="88" text-anchor="middle" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="11">Вектор R</text>
+          <text x="440" y="106" text-anchor="middle" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="11">ЛРС: ŷ = Σ Rⱼŷ</text>
+          <!-- Arrow -->
+          <line x1="350" y1="70" x2="370" y2="70" stroke="#34d399" stroke-width="1.5" marker-end="url(#rssa-arr)"/>
+          <!-- Forecast box -->
+          <rect x="530" y="20" width="120" height="100" rx="8" fill="#17171a" stroke="rgba(245,158,11,.3)" stroke-width="1.5"/>
+          <text x="590" y="44" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="10">ПРОГНОЗ h</text>
+          <!-- forecast line (continuation) -->
+          <line x1="530" y1="78" x2="650" y2="60" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <!-- confidence cone -->
+          <line x1="530" y1="78" x2="650" y2="45" stroke="rgba(245,158,11,.25)" stroke-width="1" stroke-dasharray="3,4"/>
+          <line x1="530" y1="78" x2="650" y2="75" stroke="rgba(245,158,11,.25)" stroke-width="1" stroke-dasharray="3,4"/>
+          <!-- Arrow -->
+          <line x1="510" y1="70" x2="530" y2="70" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#rssa-arr)"/>
+          <!-- Caption -->
+          <text x="330" y="155" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="11">Ряд → SVD → вектор R → ЛРС → прогноз (без припущень про форму сигналу)</text>
+          <text x="330" y="170" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="10">Прогнозуємо кожну компоненту окремо → складаємо</text>
+        </svg>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">RetailPulse: SSA-прогноз на 4 тижні</div>
+        <p>Після декомпозиції SSA з L=52: тренд (компоненти 1–2), річна гармоніка (3–4), квартальна (5–6), шум (7+). Прогнозуємо тренд і кожну гармоніку окремо через r-SSA, потім складаємо. Перевага перед ARIMA: тренд і гармоніки прогнозуються незалежно, що дає стійкіший прогноз на довші горизонти (8–14 тижнів). Недолік: не дає формальних інтервалів прогнозування (тільки бутстрап).</p>
+      </div>
+
+      <!-- Interview Q&A -->
+      <div class="interview-qa">
+        <div class="interview-qa-header">
+          <div class="iq-icon">Q&amp;A</div>
+          <h5>Питання для самоперевірки</h5>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">01</span><span class="qa-q-text">Чому SSA перевершує Фур'є для реальних зашумлених нестаціонарних рядів?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Фур'є оптимальний для стаціонарних нескінченних сигналів, що є сумою синусоїд. Реальні ряди — короткі, нестаціонарні, зашумлені, і їхні «цикли» не мають точного відомого заздалегідь  periodу. Фур'є на таких даних породжує артефакти — хибні частоти через кінцевість вибірки і шум. SSA не припускає ніякої форми сигналу: він просто знаходить структури через SVD. Погані сингулярні числа (шум) автоматично відкидаються при групуванні.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">02</span><span class="qa-q-text">Як вибрати довжину вікна L в SSA?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">L повинна бути: (1) достатньо великою, щоб охопити найдовший очікуваний цикл (L ≥ m), (2) значно меншою за N (L ≤ N/2, краще N/3). Якщо відома сезонність — L = m або L = 2m. Якщо невідома — перевіряють кілька значень і порівнюють якість реконструкції. Для RetailPulse (тижневі дані, 3 роки = N=156): L=52 (річний цикл) або L=26 (напівріч) є розумними стартовими точками.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">03</span><span class="qa-q-text">Як у SSA відрізнити тренд від гармоніки, а гармоніку від шуму?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Тренд: перший (або перший-другий) сингулярний вектор, монотонний, поступово змінюється, відповідає найбільшому σ₁. Гармоніка: пара сингулярних векторів зі схожими σᵢ, що утворюють окружність на «діаграмі розсіювання» (scatter plot pᵢ vs pⱼ). Візуально реконструйована компонента виглядає як синусоїда. Шум: малі σᵢ, реконструйовані компоненти нагадують білий шум (немає структури в ACF). На практиці 80% внеску перших K компонент — хороший орієнтир для відсікання шуму.</div>
+        </div>
+      </div>
+
+      <div class="milestone">
+        <div class="m-label">Project Milestone 2 — RetailPulse</div>
+        <h5>SSA-декомпозиція та аналіз прихованих циклів</h5>
+        <ul>
+          <li>Оберіть продажі SKU з добре вираженою сезонністю (наприклад, соки або шоколад). Застосуйте SSA з вікном L=52 (тижні). Побудуйте графік відносних внесків сингулярних значень (scree plot).</li>
+          <li>Визначте, які компоненти відповідають тренду (перший-другий вектори), яким гармонікам (пари з близькими σ) і шуму. Реконструюйте тренд, три-чотири провідні гармоніки і залишки окремо.</li>
+          <li>Порівняйте SSA-тренд із ковзним середнім (T=12): який метод виглядає «природніше»? Обчисліть кореляцію між ними.</li>
+          <li>Спрогнозуйте ряд на 4 тижні вперед, склавши прогнози окремих SSA-компонент. Порівняйте точність із Holt-Winters із Milestone 1 за MAPE.</li>
+        </ul>
+      </div>
+
+      <div class="module-code">
+        <div class="mc-label">Практичний Python — M4</div>
+
+        <div class="code-panel">
+          <div class="code-panel-hdr">
+            <span class="code-badge">Python</span>
+            <span class="code-fname">m4_ssa.py</span>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+              <button class="code-btn" onclick="toggleCode(this)">розгорнути</button>
+              <button class="code-btn" onclick="copyCode(this)">копіювати</button>
+            </div>
+          </div>
+          <div class="code-desc">Траєкторна матриця L×K, SVD, діагональне усереднення компонент, scree plot внесків</div>
+          <div class="code-wrap collapsed">
+            <pre><code>import numpy as np
+
+def diagonal_average(M):
+    """Ганкелізація: матриця → ряд діагональним усередненням"""
+    L, K = M.shape
+    N = L + K - 1
+    result = np.zeros(N)
+    for k in range(N):
+        diag = [M[k - j, j] for j in range(max(0, k - K + 1),
+                                             min(L, k + 1))]
+        result[k] = np.mean(diag)
+    return result
+
+def ssa(series, L):
+    """SSA: embedding → SVD → компоненти → діагональне усереднення"""
+    N = len(series)
+    K = N - L + 1
+
+    # Крок 1-2: Траєкторна матриця X (L × K)
+    X = np.array([series[i:i + L] for i in range(K)]).T
+
+    # Крок 3: SVD
+    U, sigma, Vt = np.linalg.svd(X, full_matrices=False)
+
+    # Крок 4: Окремі елементарні матриці та їх усереднення
+    components = []
+    for i in range(len(sigma)):
+        Xi = sigma[i] * np.outer(U[:, i], Vt[i, :])
+        components.append(diagonal_average(Xi))
+
+    return components, sigma, U, Vt
+
+# RetailPulse: SSA з L=52 (тижнева сезонність)
+series_vals = series_clean.dropna().values
+components, sigma, U, Vt = ssa(series_vals, L=52)
+
+# Scree plot — внесок компонент
+power = sigma ** 2
+total = power.sum()
+print("Топ-6 компонент SSA:")
+for i in range(6):
+    print(f"  RC{i+1}: σ={sigma[i]:.1f}  внесок={power[i]/total:.1%}")
+
+# Реконструкція (r=6: тренд + 2 пари гармонік)
+r = 6
+reconstruction = sum(components[:r])</code></pre>
+          </div>
+        </div>
+
+        <div class="code-panel">
+          <div class="code-panel-hdr">
+            <span class="code-badge">Python</span>
+            <span class="code-fname">m4_ssa_forecast.py</span>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+              <button class="code-btn" onclick="copyCode(this)">копіювати</button>
+            </div>
+          </div>
+          <div class="code-desc">Коефіцієнти ЛРС з власних векторів U; рекурентний прогноз на steps кроків</div>
+          <div class="code-wrap">
+            <pre><code>import numpy as np
+
+def ssa_forecast(series, U, r, steps):
+    """r-SSA прогнозування через лінійне рекурентне співвідношення"""
+    L = U.shape[0]
+    Ur = U[:, :r]                              # перші r власних векторів
+    nu2 = np.sum(Ur[-1, :] ** 2)              # вертикальність
+    a   = (Ur[:-1, :] @ Ur[-1, :]) / (1 - nu2)  # коефіцієнти ЛРС
+
+    buf = list(series[-(L - 1):])             # останні L-1 значень
+    for _ in range(steps):
+        next_val = float(np.dot(a, buf[-(L - 1):]))
+        buf.append(next_val)
+    return np.array(buf[L - 1:])
+
+# Прогноз на 13 тижнів (r=6)
+fc_ssa = ssa_forecast(series_vals, U, r=6, steps=13)
+print(f"SSA прогноз (перші 5 значень): {fc_ssa[:5].round(1)}")</code></pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEXT CTA -->
+<div class="next-cta">
+  <div class="container">
+    <a href="pa_part1_foundations.html" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:8px;background:transparent;border:1px solid var(--border);font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--fg-muted);transition:all .2s;margin-bottom:48px;text-decoration:none" onmouseover="this.style.borderColor='var(--p2)';this.style.color='var(--p2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--fg-muted)'">← Частина 1: Основи &amp; часові ряди</a>
+    <div class="section-label">◆ Далі</div>
+    <h2>Частина 3<br><em>Стохастичні моделі.</em></h2>
+    <p>Дискретні випадкові процеси, функція автокореляції, стаціонарність — і головна зброя аналізу часових рядів: AR, MA, ARMA та ARIMA. Фінал: RetailPulse у production.</p>
+    <a class="btn" href="pa_part3_models.html">Перейти до Частини 3 →</a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    PA &amp; TSA Course · Частина 2 · RetailPulse Project ·
+    <a href="../index.html" style="border-bottom:none">← Головна</a>
+  </div>
+</footer>
+
+<script>
+window.addEventListener('scroll',()=>{
+  const doc=document.documentElement;
+  const prog=(doc.scrollTop/(doc.scrollHeight-doc.clientHeight))*100;
+  document.getElementById('reading-progress').style.width=prog+'%';
+});
+function toggleQA(el){
+  const item=el.closest('.qa-item');
+  const ans=item.querySelector('.qa-a');
+  item.classList.toggle('open');
+  ans.classList.toggle('open');
+}
+
+function copyCode(btn){
+  const code=btn.closest('.code-panel').querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='скопійовано ✓';
+    btn.classList.add('cp-ok');
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('cp-ok');},2000);
+  });
+}
+function toggleCode(btn){
+  const wrap=btn.closest('.code-panel').querySelector('.code-wrap');
+  const c=wrap.classList.contains('collapsed');
+  wrap.classList.toggle('collapsed',!c);
+  btn.textContent=c?'згорнути':'розгорнути';
+}
+</script>
+</body>
+</html>

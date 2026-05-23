@@ -1,0 +1,2109 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PA &amp; TSA · Частина 3 — Стохастичні моделі</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0b;--bg-2:#111113;--bg-3:#17171a;--bg-card:#131316;
+  --border:#26262b;--border-soft:#1e1e22;
+  --fg:#f4f4f2;--fg-muted:#9a9a95;--fg-dim:#6a6a66;
+  --accent:#f59e0b;--accent-2:#d97706;--accent-soft:rgba(245,158,11,.12);
+  --pro:#34d399;--con:#ef6b6b;--info:#4ecdc4;--violet:#a78bfa;
+  --serif:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono','Courier New',monospace;
+  --sans:'Inter Tight',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(245,158,11,.07),transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 10%,rgba(217,119,6,.04),transparent 60%);
+  background-attachment:fixed;min-height:100vh;}
+::selection{background:var(--accent);color:#000}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(245,158,11,.3);transition:all .2s}
+a:hover{color:var(--accent-2);border-color:var(--accent-2)}
+code,.mono{font-family:var(--mono)}
+
+nav.top{position:sticky;top:0;z-index:50;background:rgba(10,10,11,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-soft)}
+nav.top .inner{max-width:1240px;margin:0 auto;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-weight:600;font-size:18px;letter-spacing:-.01em}
+.brand-dot{width:10px;height:10px;background:var(--accent);border-radius:50%;box-shadow:0 0 12px var(--accent)}
+.nav-links{display:flex;gap:28px;font-size:13px;font-weight:500}
+.nav-links a{color:var(--fg-muted);border:none;letter-spacing:.02em}
+.nav-links a:hover{color:var(--accent)}
+.container{max-width:1240px;margin:0 auto;padding:0 32px}
+
+.hero{padding:120px 0 80px}
+.hero-label{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.hero-label::before{content:'';width:32px;height:1px;background:var(--accent)}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(48px,8vw,112px);line-height:.95;letter-spacing:-.03em;margin-bottom:32px}
+.hero h1 em{font-style:italic;color:var(--accent);font-weight:300}
+.hero-sub{font-size:20px;color:var(--fg-muted);max-width:720px;line-height:1.5;margin-bottom:48px}
+
+section{padding:96px 0;border-top:1px solid var(--border-soft)}
+.section-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.section-title{font-family:var(--serif);font-size:clamp(36px,5vw,64px);font-weight:400;letter-spacing:-.02em;line-height:1.05;margin-bottom:32px;max-width:900px}
+.section-title em{font-style:italic;color:var(--accent);font-weight:300}
+.section-intro{font-size:18px;color:var(--fg-muted);max-width:720px;margin-bottom:56px;line-height:1.6}
+
+.module{padding:120px 0;border-top:1px solid var(--border-soft)}
+.module-header{display:grid;grid-template-columns:140px 1fr;gap:40px;margin-bottom:64px;align-items:start}
+.mod-num{font-family:var(--serif);font-size:120px;font-weight:300;font-style:italic;color:var(--accent);line-height:.9;letter-spacing:-.04em}
+.mod-meta{padding-top:16px}
+.mod-week{font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-bottom:16px}
+.mod-title{font-family:var(--serif);font-size:clamp(36px,4.5vw,56px);font-weight:400;line-height:1.05;letter-spacing:-.02em;margin-bottom:20px}
+.mod-title em{font-style:italic;color:var(--accent);font-weight:300}
+.mod-lead{font-size:18px;color:var(--fg-muted);line-height:1.6;max-width:760px}
+
+.mod-content h4{font-family:var(--serif);font-size:32px;font-weight:500;font-style:italic;margin:56px 0 24px;letter-spacing:-.01em;color:var(--fg)}
+.mod-content h5{font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:40px 0 16px}
+.mod-content p{margin-bottom:16px;color:var(--fg);max-width:860px}
+.mod-content ul{margin:16px 0 24px 24px;max-width:860px}
+.mod-content ul li{margin-bottom:10px;color:var(--fg)}
+.mod-content ul li::marker{color:var(--accent)}
+.mod-content strong{color:var(--fg);font-weight:600}
+.mod-content code{background:var(--bg-3);padding:2px 8px;border-radius:4px;font-size:.9em;color:var(--accent);border:1px solid var(--border-soft)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:32px 0}
+.card{padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);transition:all .3s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card h6{font-family:var(--serif);font-size:20px;margin-bottom:10px;font-weight:500}
+.card p{font-size:14px;color:var(--fg-muted);line-height:1.5;margin:0}
+.card .ic{width:32px;height:32px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-family:var(--mono);font-weight:700;font-size:13px}
+
+.table-wrap{margin:32px 0;border:1px solid var(--border);border-radius:12px;overflow:auto;background:var(--bg-card)}
+table.compare{width:100%;border-collapse:collapse;font-size:14px;min-width:600px}
+table.compare thead{background:var(--bg-3)}
+table.compare th{text-align:left;padding:16px 20px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-muted);font-weight:500;border-bottom:1px solid var(--border)}
+table.compare td{padding:16px 20px;border-bottom:1px solid var(--border-soft);vertical-align:top;color:var(--fg)}
+table.compare tr:last-child td{border-bottom:none}
+table.compare tr:hover td{background:rgba(245,158,11,.03)}
+table.compare td:first-child{font-weight:600}
+table.compare .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:10px}
+table.compare .badge.good{background:rgba(52,211,153,.15);color:#34d399}
+table.compare .badge.bad{background:rgba(239,107,107,.15);color:#ef6b6b}
+table.compare .badge.mid{background:rgba(245,158,11,.15);color:#f59e0b}
+
+.diagram{margin:40px 0;padding:32px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);text-align:center}
+.diagram svg{max-width:100%;height:auto}
+.diagram-caption{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim);margin-top:20px}
+
+.assignment{margin:48px 0;padding:32px 40px;border:1px solid var(--accent);border-radius:12px;background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(217,119,6,.03))}
+.assignment .a-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.assignment h5{color:var(--fg)!important;margin:0 0 20px!important;font-family:var(--serif)!important;font-size:24px!important;text-transform:none!important;letter-spacing:-.01em!important;font-weight:500!important}
+.assignment ol{margin:16px 0 16px 24px;max-width:720px}
+.assignment ol li{margin-bottom:10px;color:var(--fg)}
+.assignment ol li::marker{color:var(--accent);font-weight:700}
+.assignment .deliverable{margin-top:24px;padding:16px;background:rgba(0,0,0,.3);border-radius:8px;font-family:var(--mono);font-size:13px;color:var(--fg-muted);border-left:2px solid var(--accent)}
+.assignment .deliverable strong{color:var(--accent)}
+
+.milestone{margin:48px 0;padding:32px 40px;border-radius:12px;background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(167,139,250,.04));border:1px solid rgba(245,158,11,.35)}
+.milestone .m-label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.milestone .m-label::before{content:'◆';color:var(--accent)}
+.milestone h5{color:var(--fg)!important;margin:0 0 16px!important;font-family:var(--serif)!important;font-size:24px!important;text-transform:none!important;letter-spacing:-.01em!important;font-weight:500!important}
+.milestone ul{max-width:760px;margin:12px 0 0 24px}
+.milestone ul li::marker{color:var(--accent)}
+
+.capstone-hero{border:1px solid rgba(245,158,11,.4);border-radius:20px;padding:56px;background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(167,139,250,.04),rgba(52,211,153,.03));position:relative;overflow:hidden;margin:48px 0}
+.capstone-hero::before{content:'RetailPulse';position:absolute;right:-30px;bottom:-50px;font-family:var(--serif);font-size:180px;font-style:italic;font-weight:300;color:rgba(245,158,11,.05);letter-spacing:-.04em;pointer-events:none}
+.capstone-hero .cp-tag{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.capstone-hero h3{font-family:var(--serif);font-size:clamp(32px,4vw,56px);font-weight:400;letter-spacing:-.02em;margin-bottom:20px}
+.capstone-hero h3 em{font-style:italic;color:var(--accent);font-weight:300}
+.capstone-hero p{color:var(--fg-muted);font-size:16px;line-height:1.6;max-width:760px;position:relative;z-index:1}
+
+.deliverable-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:32px 0}
+.deliverable-card{padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);position:relative}
+.deliverable-card .dc-num{font-family:var(--serif);font-size:48px;font-weight:300;font-style:italic;color:var(--accent);line-height:1;margin-bottom:12px;opacity:.6}
+.deliverable-card h6{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:8px}
+.deliverable-card p{font-size:13px;color:var(--fg-muted);line-height:1.5;margin:0}
+
+.interview-qa{margin:56px 0 0;border:1px solid rgba(245,158,11,.3);border-radius:12px;overflow:hidden;background:var(--bg-card)}
+.interview-qa-header{padding:20px 28px;background:linear-gradient(90deg,rgba(245,158,11,.08),transparent);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.interview-qa-header .iq-icon{width:30px;height:30px;background:rgba(245,158,11,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700;flex-shrink:0}
+.interview-qa-header h5{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0!important;padding:0!important}
+.qa-item{border-bottom:1px solid var(--border-soft)}
+.qa-item:last-child{border-bottom:none}
+.qa-q{padding:16px 28px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;transition:background .2s;list-style:none}
+.qa-q:hover{background:rgba(245,158,11,.04)}
+.qa-q-inner{display:flex;gap:12px;align-items:flex-start;flex:1}
+.qa-q-num{font-family:var(--mono);font-size:11px;color:var(--accent);flex-shrink:0;margin-top:2px;min-width:20px}
+.qa-q-text{font-size:14px;font-weight:500;color:var(--fg);line-height:1.4}
+.qa-toggle{font-family:var(--mono);font-size:16px;color:var(--fg-dim);flex-shrink:0;transition:transform .2s}
+.qa-item.open .qa-toggle{transform:rotate(45deg)}
+.qa-a{display:none;padding:4px 28px 20px 60px;color:var(--fg-muted);font-size:14px;line-height:1.6;max-width:860px}
+.qa-a.open{display:block}
+.qa-a code{background:var(--bg-3);padding:2px 6px;border-radius:4px;font-size:.88em;color:var(--accent);border:1px solid var(--border-soft)}
+
+.analogy{margin:20px 0;padding:18px 22px;border-radius:10px;background:linear-gradient(135deg,rgba(78,205,196,.06),rgba(52,211,153,.03));border-left:3px solid var(--info);max-width:860px}
+.analogy .an-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
+.analogy p{margin:0;font-size:14px;color:var(--fg-muted);line-height:1.6;font-style:italic}
+
+.pitfall{margin:20px 0;padding:18px 22px;border-radius:10px;background:rgba(239,107,107,.05);border-left:3px solid var(--con);max-width:860px}
+.pitfall .pt-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--con);margin-bottom:6px}
+.pitfall p{margin:0;font-size:14px;color:var(--fg);line-height:1.5}
+
+.reading-time{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--fg-dim);padding:3px 10px;border:1px solid var(--border-soft);border-radius:100px;margin-bottom:14px;letter-spacing:.05em}
+
+.part-nav{display:flex;gap:6px;align-items:center}
+.part-nav a{font-family:var(--mono);font-size:10px;padding:3px 10px;border:1px solid var(--border);border-radius:100px;color:var(--fg-dim);letter-spacing:.08em;transition:all .2s}
+.part-nav a:hover,.part-nav a.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.part-nav a{border-bottom:none}
+
+#reading-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:200;width:0;transition:width .1s linear;pointer-events:none}
+
+.formula-box{margin:24px 0;padding:20px 24px;background:var(--bg-3);border:1px solid var(--border-soft);border-radius:10px;max-width:860px;border-left:3px solid var(--accent)}
+.formula-box .f-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.formula-box .f-body{font-family:var(--mono);font-size:14px;color:var(--fg);line-height:2}
+.formula-box .f-note{font-size:13px;color:var(--fg-muted);margin-top:10px;line-height:1.5}
+
+.acf-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px 0;max-width:860px}
+.acf-box{padding:20px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card)}
+.acf-box .ab-label{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.acf-box h6{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:8px}
+.acf-box p{font-size:13px;color:var(--fg-muted);line-height:1.5;margin:0}
+
+@media(max-width:768px){
+  nav.top .inner{padding:12px 20px}
+  .nav-links{display:none}
+  .container{padding:0 20px}
+  .hero{padding:80px 0 60px}
+  .module-header{grid-template-columns:1fr;gap:16px}
+  .mod-num{font-size:80px}
+  .assignment,.milestone{padding:24px}
+  .capstone-hero{padding:28px}
+  .acf-grid{grid-template-columns:1fr}
+}
+
+.code-panel{margin:40px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.code-panel-hdr{display:flex;align-items:center;gap:10px;padding:10px 20px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--border)}
+.code-badge{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;padding:3px 9px;border-radius:4px;background:rgba(245,158,11,.1);color:var(--accent);flex-shrink:0}
+.code-fname{font-family:var(--mono);font-size:12px;color:var(--fg-dim);flex:1}
+.code-btn{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--fg-dim);cursor:pointer;transition:all .18s;letter-spacing:.04em}
+.code-btn:hover{border-color:var(--accent);color:var(--accent)}
+.code-btn.cp-ok{border-color:#34d399;color:#34d399}
+.code-wrap{position:relative;overflow:hidden}
+.code-wrap.collapsed{max-height:210px}
+.code-wrap.collapsed::after{content:'';position:absolute;bottom:0;left:0;right:0;height:56px;background:linear-gradient(transparent,#0c0c0f);pointer-events:none}
+.code-panel pre{margin:0;padding:22px 24px;overflow-x:auto;background:#0c0c0f}
+.code-panel code{font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#94a3b8;white-space:pre}
+.code-desc{padding:8px 24px 10px;font-size:12px;color:var(--fg-dim);font-family:var(--sans);line-height:1.4;background:rgba(0,0,0,.25);border-bottom:1px solid var(--border)}
+.module-code{margin:40px 0 0;padding-top:36px;border-top:1px solid var(--border-soft)}
+.mc-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.mc-label::before{content:'{ }';opacity:.6;font-size:12px}
+</style>
+</head>
+<body>
+<div id="reading-progress"></div>
+
+<nav class="top">
+  <div class="inner">
+    <div class="brand"><span class="brand-dot"></span> PA &amp; TSA</div>
+    <div class="nav-links">
+      <a href="#module-5">М5</a>
+      <a href="#module-6">М6</a>
+      <a href="#capstone">Capstone</a>
+    </div>
+    <div class="part-nav">
+      <a href="pa_part1_foundations.html">Part 01</a>
+      <a href="pa_part2_methods.html">Part 02</a>
+      <a class="active" href="pa_part3_models.html">Part 03</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="hero-label">Частина 3 з 3 · Стохастичні моделі</div>
+    <h1>ARMA &amp;<br><em>стохастичні процеси.</em></h1>
+    <p class="hero-sub">Залишки часового ряду — це не просто «шум». За ними ховається структура: автокореляція, стаціонарність, пам'ять. AR, MA, ARMA та ARIMA — мова, якою ця структура описується й використовується для прогнозування.</p>
+  </div>
+</header>
+
+<!-- MODULE 5 -->
+<section class="module" id="module-5">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">05</div>
+      <div class="mod-meta">
+        <div class="reading-time">~25 хв читання</div>
+        <div class="mod-week">Тижні 9–10 · ~20 год навчання</div>
+        <h2 class="mod-title">Моделі залишків — <em>випадкові процеси</em></h2>
+        <p class="mod-lead">Після виокремлення тренду і сезонності залишається компонента, яку ми умовно назвали «шумом». Але навіть у цьому «шумі» часто є структура — автокореляція між сусідніми значеннями. Розбираємо математичний апарат дискретних випадкових процесів, АКФ і ЧАКФ, і головне поняття курсу — стаціонарність.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Дискретний випадковий процес</h4>
+      <p>Залишки часового ряду — не детерміновані числа, а <strong>реалізація</strong> випадкового процесу. Дискретний випадковий процес — це сукупність випадкових величин <code>{εₜ, t ∈ ℤ}</code>, де кожна <code>εₜ</code> описується своїм розподілом, але між різними <code>εₜ</code> існує статистична залежність.</p>
+
+      <div class="analogy">
+        <div class="an-label">Аналогія</div>
+        <p>Уявіть температуру повітря кожного дня протягом року. Це не окремі незалежні вимірювання: холодна п'ятниця з більшою ймовірністю означає холодну суботу, ніж жарку. Послідовність таких залежних випадкових величин і є випадковим процесом. Одна конкретна реалізована послідовність температур — це часовий ряд.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="ic">WN</div>
+          <h6>Білий шум (White Noise)</h6>
+          <p>Некорельований процес: <code>E[εₜ]=0</code>, <code>Var[εₜ]=σ²</code>, <code>Cov(εₜ, εₛ)=0</code> при t≠s. Ідеальний залишок — ознака, що модель захопила весь сигнал.</p>
+        </div>
+        <div class="card">
+          <div class="ic">WGN</div>
+          <h6>Гаусів білий шум</h6>
+          <p>Білий шум із нормальним розподілом <code>εₜ ~ N(0, σ²)</code>. Незалежні (не просто некорельовані). Основа більшості параметричних моделей часових рядів.</p>
+        </div>
+        <div class="card">
+          <div class="ic">RW</div>
+          <h6>Випадкове блукання (Random Walk)</h6>
+          <p><code>Yₜ = Yₜ₋₁ + εₜ</code>. Кожний крок — незалежне збурення. Нестаціонарний. Класична модель цін на фінансових ринках. Дисперсія зростає лінійно з часом: <code>Var[Yₜ] = t·σ²</code>.</p>
+        </div>
+      </div>
+
+      <!-- SVG: White Noise vs Random Walk -->
+      <div class="diagram">
+        <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+          <!-- Left panel: White Noise -->
+          <text x="220" y="20" text-anchor="middle" fill="#34d399" font-size="12" font-weight="700" letter-spacing="1">БІЛИЙ ШУМ (WN)</text>
+          <line x1="20" y1="230" x2="420" y2="230" stroke="#26262b" stroke-width="1"/>
+          <line x1="20" y1="50" x2="20" y2="230" stroke="#26262b" stroke-width="1"/>
+          <line x1="20" y1="140" x2="420" y2="140" stroke="rgba(52,211,153,.2)" stroke-width="1" stroke-dasharray="4,4"/>
+          <!-- WN bars (simulated) -->
+          <g stroke="#34d399" stroke-width="2">
+            <line x1="40" y1="140" x2="40" y2="110"/><line x1="60" y1="140" x2="60" y2="165"/><line x1="80" y1="140" x2="80" y2="120"/>
+            <line x1="100" y1="140" x2="100" y2="170"/><line x1="120" y1="140" x2="120" y2="108"/><line x1="140" y1="140" x2="140" y2="155"/>
+            <line x1="160" y1="140" x2="160" y2="125"/><line x1="180" y1="140" x2="180" y2="160"/><line x1="200" y1="140" x2="200" y2="115"/>
+            <line x1="220" y1="140" x2="220" y2="168"/><line x1="240" y1="140" x2="240" y2="112"/><line x1="260" y1="140" x2="260" y2="152"/>
+            <line x1="280" y1="140" x2="280" y2="128"/><line x1="300" y1="140" x2="300" y2="162"/><line x1="320" y1="140" x2="320" y2="118"/>
+            <line x1="340" y1="140" x2="340" y2="155"/><line x1="360" y1="140" x2="360" y2="125"/><line x1="380" y1="140" x2="380" y2="150"/>
+            <line x1="400" y1="140" x2="400" y2="118"/>
+          </g>
+          <text x="220" y="254" text-anchor="middle" fill="#6a6a66" font-size="10">Нульове середнє, без тренду, без АКФ</text>
+
+          <!-- Right panel: Random Walk -->
+          <text x="660" y="20" text-anchor="middle" fill="#ef6b6b" font-size="12" font-weight="700" letter-spacing="1">ВИПАДКОВЕ БЛУКАННЯ (RW)</text>
+          <line x1="460" y1="230" x2="860" y2="230" stroke="#26262b" stroke-width="1"/>
+          <line x1="460" y1="50" x2="460" y2="230" stroke="#26262b" stroke-width="1"/>
+          <!-- RW path (simulated cumulative) -->
+          <polyline points="
+            460,140 480,135 500,128 520,132 540,120 560,108 580,115 600,105 620,118
+            640,130 660,120 680,108 700,95 720,88 740,100 760,112 780,105 800,90 820,80 840,92 860,82
+          " fill="none" stroke="#ef6b6b" stroke-width="2"/>
+          <line x1="460" y1="140" x2="860" y2="140" stroke="rgba(239,107,107,.2)" stroke-width="1" stroke-dasharray="4,4"/>
+          <text x="660" y="254" text-anchor="middle" fill="#6a6a66" font-size="10">Дисперсія зростає з часом — нестаціонарний</text>
+        </svg>
+        <div class="diagram-caption">Білий шум (стаціонарний) vs випадкове блукання (нестаціонарне)</div>
+      </div>
+
+      <h4>Ергодичність — чому одна реалізація достатня</h4>
+      <p>Стохастичний процес — це ансамбль нескінченно багатьох можливих реалізацій. На практиці ми маємо лише <em>одну</em> — один спостережуваний ряд. Як тоді оцінювати μ, γ(k)? Відповідь — <strong>ергодичність</strong>.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Ергодичність за середнім</div>
+        <div class="f-body">
+          Часове середнє:     T̄(y) = (1/T) Σₜ₌₁ᵀ yₜ<br>
+          Ансамблеве середнє: E[yₜ] = μ<br><br>
+          Ергодичний процес:  T̄(y) →  μ   при T → ∞  (зб. майже напевно)
+        </div>
+        <div class="f-note">Ергодичний процес: часова статистика (середня по одному довгому ряду) збігається з ансамблевою (середня по багатьох незалежних реалізаціях). Стаціонарність необхідна, але не достатня. Практичний наслідок: ми маємо право оцінювати АКФ і параметри ARIMA з одного ряду RetailPulse, бо він ергодичний — довгий ряд «обходить» всі типові стани процесу.</div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Аналогія: кидання кубика</div>
+        <p>Кинути один кубик 600 разів і усереднити (часова статистика) — майже те саме, що кинути 600 різних кубиків одночасно (ансамблева статистика). Для ергодичного процесу «один ряд, але довгий» еквівалентний «багатьом рядам, але коротким». Саме ця властивість дозволяє нам будувати SARIMA для RetailPulse, маючи лише 3-річну історію продажів — замість паралельного запуску 1000 незалежних мереж.</p>
+      </div>
+
+      <h4>Процес Гаусса–Маркова</h4>
+      <p>Між білим шумом (без пам'яті) і загальними ARMA-моделями є важливий клас: <strong>процеси Гаусса–Маркова</strong> — гауссівські процеси з «марківською властивістю», де прогноз визначається лише поточним станом.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Процес Гаусса–Маркова першого порядку</div>
+        <div class="f-body">
+          yₜ = φ·yₜ₋₁ + εₜ,   εₜ ~ N(0, σ²),   |φ| &lt; 1<br><br>
+          E[yₜ₊₁ | y₀, y₁, ..., yₜ] = E[yₜ₊₁ | yₜ] = φ·yₜ   ← марківська властивість<br>
+          γ(k) = σ²·φᵏ / (1 − φ²)                               ← АКФ спадає як φᵏ
+        </div>
+        <div class="f-note">Марківська властивість: знаючи поточний стан yₜ, минуле не дає жодної додаткової інформації для прогнозу. Це AR(1) з нормальним шумом. При φ=0 — білий шум. При |φ|=1 — випадкове блукання (нестаціонарне). При |φ|&lt;1 — стаціонарний процес із поверненням до середнього (mean reversion).</div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="ic" style="background:rgba(167,139,250,.12);color:#a78bfa">|φ|&lt;1</div>
+          <h6>Стаціонарний GM</h6>
+          <p>Процес повертається до середнього (mean reversion). АКФ спадає геометрично як φᵏ. Найпростіший стаціонарний процес із «пам'яттю» — основа AR(1) і фундаментальний будівельний блок усієї класи ARMA.</p>
+        </div>
+        <div class="card">
+          <div class="ic" style="background:rgba(239,107,107,.12);color:#ef6b6b">φ=1</div>
+          <h6>Випадкове блукання</h6>
+          <p>Вироджений граничний випадок GM. Немає повернення до середнього. Дисперсія зростає лінійно з часом. Нестаціонарний — потрібне диференціювання (d=1 в ARIMA).</p>
+        </div>
+        <div class="card">
+          <div class="ic" style="background:rgba(52,211,153,.12);color:#34d399">AR(p)</div>
+          <h6>Узагальнення</h6>
+          <p>GM вищого порядку відповідає AR(p). Стаціонарність забезпечується, коли всі корені характеристичного рівняння лежать поза одиничним колом. Це теж стосується повного класу причинних ARMA-моделей.</p>
+        </div>
+      </div>
+
+      <h4>Автокореляційна функція (АКФ)</h4>
+      <p>АКФ вимірює статистичний зв'язок між значеннями часового ряду, зсунутими на <code>k</code> кроків відносно один одного. Це головний інструмент для виявлення структури у залишках і вибору порядку ARMA-моделі.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Функція автоковаріації та АКФ</div>
+        <div class="f-body">
+          γ(k) = Cov(yₜ, yₜ₋ₖ) = E[(yₜ − μ)(yₜ₋ₖ − μ)]<br>
+          ρ(k) = γ(k) / γ(0) ∈ [−1, +1]    ← АКФ при лагу k<br><br>
+          Оцінка: r(k) = Σ(yₜ − ȳ)(yₜ₋ₖ − ȳ) / Σ(yₜ − ȳ)²
+        </div>
+        <div class="f-note">ρ(0) = 1 завжди (кореляція з самим собою). Для білого шуму ρ(k) ≈ 0 при k &gt; 0. Якщо ACF повільно спадає — ряд нестаціонарний. Якщо ACF обривається після лагу q — натяк на MA(q). Якщо поступово спадає — натяк на AR(p).</div>
+      </div>
+
+      <div class="acf-grid">
+        <div class="acf-box">
+          <div class="ab-label">АКФ (ACF)</div>
+          <h6>Автокореляційна функція</h6>
+          <p>Пряма кореляція <code>yₜ</code> та <code>yₜ₋ₖ</code>. Включає як прямий, так і непрямий вплив. Використовується для визначення порядку q в MA-моделях: ACF «обривається» на лагу q.</p>
+        </div>
+        <div class="acf-box">
+          <div class="ab-label">ЧАКФ (PACF)</div>
+          <h6>Часткова автокореляційна функція</h6>
+          <p>Кореляція <code>yₜ</code> та <code>yₜ₋ₖ</code> після виключення впливу проміжних лагів. Чистий прямий ефект лагу k. Використовується для визначення порядку p в AR-моделях: PACF «обривається» на лагу p.</p>
+        </div>
+      </div>
+
+      <div class="formula-box">
+        <div class="f-label">ЧАКФ — формальне визначення через проекцію</div>
+        <div class="f-body">
+ЧАКФ(k) = φₖₖ — k-й коефіцієнт AR(k)-моделі (YW порядку k):
+
+  yₜ = φₖ₁yₜ₋₁ + φₖ₂yₜ₋₂ + ... + φₖₖyₜ₋ₖ + εₜ
+
+Тобто ЧАКФ(k) = Cor(yₜ − Proj(yₜ | yₜ₋₁,...,yₜ₋ₖ₊₁),
+                     yₜ₋ₖ − Proj(yₜ₋ₖ | yₜ₋₁,...,yₜ₋ₖ₊₁))
+
+Смуга значущості: |ЧАКФ(k)| > 1.96/√n  ← 95% рівень
+        </div>
+        <div class="f-note">Інтерпретація через YW: якщо підібрати AR(k) методом Юла–Вокера, останній коефіцієнт φₖₖ і є ЧАКФ(k). Тому ЧАКФ = «діагональ» матриці YW-оцінок при зростаючому порядку. Для AR(p): ЧАКФ(k)≠0 при k≤p і ЧАКФ(k)≈0 при k&gt;p — ось чому ЧАКФ «обривається» на лагу p.</div>
+      </div>
+
+      <h4>Типові патерни АКФ і ЧАКФ</h4>
+      <p>Правильне читання АКФ/ЧАКФ — ключ до ідентифікації моделі за методологією Бокса–Дженкінса. Нижче показані типові «сигнатури» для основних класів моделей.</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 860 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+          <!-- Column headers -->
+          <text x="270" y="20" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="700" letter-spacing="1">АКФ</text>
+          <text x="600" y="20" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700" letter-spacing="1">ЧАКФ</text>
+          <!-- ROW 1: AR(p) -->
+          <text x="55" y="66" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="700">AR(p)</text>
+          <rect x="110" y="34" width="310" height="62" rx="4" fill="rgba(167,139,250,.05)" stroke="#26262b" stroke-width="1"/>
+          <line x1="120" y1="65" x2="410" y2="65" stroke="#26262b" stroke-width="1"/>
+          <rect x="145" y="42" width="10" height="23" fill="#a78bfa" opacity=".9"/>
+          <rect x="170" y="47" width="10" height="18" fill="#a78bfa" opacity=".75"/>
+          <rect x="195" y="51" width="10" height="14" fill="#a78bfa" opacity=".6"/>
+          <rect x="220" y="54" width="10" height="11" fill="#a78bfa" opacity=".5"/>
+          <rect x="245" y="57" width="10" height="8" fill="#a78bfa" opacity=".4"/>
+          <rect x="270" y="60" width="10" height="5" fill="#a78bfa" opacity=".3"/>
+          <rect x="295" y="62" width="10" height="3" fill="#a78bfa" opacity=".2"/>
+          <text x="270" y="90" text-anchor="middle" fill="#6a6a66" font-size="9">Геометричне спадання (∞)</text>
+          <rect x="440" y="34" width="310" height="62" rx="4" fill="rgba(52,211,153,.05)" stroke="#26262b" stroke-width="1"/>
+          <line x1="450" y1="65" x2="740" y2="65" stroke="#26262b" stroke-width="1"/>
+          <rect x="475" y="42" width="10" height="23" fill="#34d399" opacity=".9"/>
+          <rect x="500" y="42" width="10" height="23" fill="#34d399" opacity=".9"/>
+          <rect x="525" y="63" width="10" height="2" fill="#34d399" opacity=".3"/>
+          <rect x="550" y="64" width="10" height="1" fill="#34d399" opacity=".2"/>
+          <rect x="575" y="64" width="10" height="1" fill="#34d399" opacity=".2"/>
+          <text x="600" y="90" text-anchor="middle" fill="#6a6a66" font-size="9">Обривається після p лагів</text>
+          <!-- ROW 2: MA(q) -->
+          <text x="55" y="152" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="700">MA(q)</text>
+          <rect x="110" y="118" width="310" height="62" rx="4" fill="rgba(167,139,250,.05)" stroke="#26262b" stroke-width="1"/>
+          <line x1="120" y1="150" x2="410" y2="150" stroke="#26262b" stroke-width="1"/>
+          <rect x="145" y="128" width="10" height="22" fill="#a78bfa" opacity=".9"/>
+          <rect x="170" y="128" width="10" height="22" fill="#a78bfa" opacity=".9"/>
+          <rect x="195" y="149" width="10" height="1" fill="#a78bfa" opacity=".2"/>
+          <rect x="220" y="149" width="10" height="1" fill="#a78bfa" opacity=".2"/>
+          <text x="270" y="175" text-anchor="middle" fill="#6a6a66" font-size="9">Обривається після q лагів</text>
+          <rect x="440" y="118" width="310" height="62" rx="4" fill="rgba(52,211,153,.05)" stroke="#26262b" stroke-width="1"/>
+          <line x1="450" y1="150" x2="740" y2="150" stroke="#26262b" stroke-width="1"/>
+          <rect x="475" y="130" width="10" height="20" fill="#34d399" opacity=".9"/>
+          <rect x="500" y="134" width="10" height="16" fill="#34d399" opacity=".75"/>
+          <rect x="525" y="138" width="10" height="12" fill="#34d399" opacity=".6"/>
+          <rect x="550" y="141" width="10" height="9" fill="#34d399" opacity=".5"/>
+          <rect x="575" y="144" width="10" height="6" fill="#34d399" opacity=".35"/>
+          <rect x="600" y="146" width="10" height="4" fill="#34d399" opacity=".25"/>
+          <text x="600" y="175" text-anchor="middle" fill="#6a6a66" font-size="9">Геометричне спадання (∞)</text>
+          <!-- ROW 3: ARMA -->
+          <text x="55" y="238" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="700">ARMA</text>
+          <rect x="110" y="204" width="310" height="62" rx="4" fill="rgba(167,139,250,.05)" stroke="#26262b" stroke-width="1"/>
+          <line x1="120" y1="235" x2="410" y2="235" stroke="#26262b" stroke-width="1"/>
+          <rect x="145" y="214" width="10" height="21" fill="#a78bfa" opacity=".9"/>
+          <rect x="170" y="212" width="10" height="23" fill="#a78bfa" opacity=".85"/>
+          <rect x="195" y="218" width="10" height="17" fill="#a78bfa" opacity=".7"/>
+          <rect x="220" y="222" width="10" height="13" fill="#a78bfa" opacity=".55"/>
+          <rect x="245" y="226" width="10" height="9" fill="#a78bfa" opacity=".4"/>
+          <rect x="270" y="230" width="10" height="5" fill="#a78bfa" opacity=".3"/>
+          <text x="270" y="261" text-anchor="middle" fill="#6a6a66" font-size="9">Поступово спадає після q</text>
+          <rect x="440" y="204" width="310" height="62" rx="4" fill="rgba(52,211,153,.05)" stroke="#26262b" stroke-width="1"/>
+          <line x1="450" y1="235" x2="740" y2="235" stroke="#26262b" stroke-width="1"/>
+          <rect x="475" y="214" width="10" height="21" fill="#34d399" opacity=".9"/>
+          <rect x="500" y="218" width="10" height="17" fill="#34d399" opacity=".75"/>
+          <rect x="525" y="222" width="10" height="13" fill="#34d399" opacity=".6"/>
+          <rect x="550" y="226" width="10" height="9" fill="#34d399" opacity=".45"/>
+          <rect x="575" y="229" width="10" height="6" fill="#34d399" opacity=".3"/>
+          <text x="600" y="261" text-anchor="middle" fill="#6a6a66" font-size="9">Поступово спадає після p</text>
+          <!-- ROW 4: Seasonal -->
+          <text x="55" y="320" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="700">Сезонний</text>
+          <rect x="110" y="286" width="310" height="62" rx="4" fill="rgba(245,158,11,.05)" stroke="#26262b" stroke-width="1"/>
+          <line x1="120" y1="317" x2="410" y2="317" stroke="#26262b" stroke-width="1"/>
+          <rect x="145" y="301" width="9" height="16" fill="#f59e0b" opacity=".9"/>
+          <rect x="163" y="315" width="9" height="2" fill="#f59e0b" opacity=".3"/>
+          <rect x="181" y="315" width="9" height="2" fill="#f59e0b" opacity=".2"/>
+          <rect x="199" y="315" width="9" height="2" fill="#f59e0b" opacity=".2"/>
+          <rect x="217" y="315" width="9" height="2" fill="#f59e0b" opacity=".2"/>
+          <rect x="235" y="315" width="9" height="2" fill="#f59e0b" opacity=".2"/>
+          <rect x="253" y="301" width="9" height="16" fill="#f59e0b" opacity=".75"/>
+          <rect x="325" y="299" width="9" height="18" fill="#f59e0b" opacity=".6"/>
+          <text x="270" y="344" text-anchor="middle" fill="#6a6a66" font-size="9">Піки на лагах 1, m, 2m (m = сезон)</text>
+          <rect x="440" y="286" width="310" height="62" rx="4" fill="rgba(245,158,11,.05)" stroke="#26262b" stroke-width="1"/>
+          <line x1="450" y1="317" x2="740" y2="317" stroke="#26262b" stroke-width="1"/>
+          <rect x="475" y="301" width="9" height="16" fill="#f59e0b" opacity=".9"/>
+          <rect x="493" y="315" width="9" height="2" fill="#f59e0b" opacity=".3"/>
+          <rect x="511" y="315" width="9" height="2" fill="#f59e0b" opacity=".2"/>
+          <rect x="529" y="315" width="9" height="2" fill="#f59e0b" opacity=".2"/>
+          <rect x="547" y="315" width="9" height="2" fill="#f59e0b" opacity=".2"/>
+          <rect x="565" y="315" width="9" height="2" fill="#f59e0b" opacity=".2"/>
+          <rect x="583" y="303" width="9" height="14" fill="#f59e0b" opacity=".65"/>
+          <text x="600" y="344" text-anchor="middle" fill="#6a6a66" font-size="9">Великий пік на лагу m, потім спад</text>
+        </svg>
+        <div class="diagram-caption">Типові патерни АКФ/ЧАКФ — головний інструмент ідентифікації моделі</div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Модель</th><th>АКФ</th><th>ЧАКФ</th><th>Мнемоніка</th></tr></thead>
+          <tbody>
+            <tr><td>AR(p)</td><td>Геометрично спадає</td><td>Обривається після p</td><td>ACF затухає — PACF обривається</td></tr>
+            <tr><td>MA(q)</td><td>Обривається після q</td><td>Геометрично спадає</td><td>ACF обривається — PACF затухає</td></tr>
+            <tr><td>ARMA(p,q)</td><td>Поступово спадає після q</td><td>Поступово спадає після p</td><td>Обидві — поступово затухають</td></tr>
+            <tr><td>Сезонний (m)</td><td>Піки на 1, m, 2m</td><td>Пік на m, потім спад</td><td>Тижнева: піки на лагах 7, 14, 21</td></tr>
+            <tr><td>Нестаціонарний</td><td>Повільне спадання від ≈1</td><td>Перший лаг ≈ 1</td><td>ACF «не вмирає» — диференціюйте</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Стаціонарність — фундаментальна властивість</h4>
+      <p>Більшість методів аналізу часових рядів (ARMA, спектральний аналіз) вимагають <strong>стаціонарності</strong>. Строга стаціонарність складна для перевірки; зазвичай перевіряють <em>слабку</em> (коваріаційну) стаціонарність:</p>
+
+      <div class="formula-box">
+        <div class="f-label">Умови слабкої стаціонарності</div>
+        <div class="f-body">
+          1) E[yₜ] = μ = const  (постійне середнє)<br>
+          2) Var[yₜ] = σ² &lt; ∞ = const  (постійна дисперсія)<br>
+          3) Cov(yₜ, yₜ₊ₖ) = γ(k)  (залежить лише від лагу k, не від t)
+        </div>
+        <div class="f-note">Ряд із трендом нестаціонарний (порушення умови 1). Ряд із сезонністю нестаціонарний (порушення умов 1 і 2). Випадкове блукання нестаціонарне (дисперсія зростає). Для застосування ARMA потрібно спочатку «зробити» ряд стаціонарним — зазвичай через диференціювання.</div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pt-label">Як перевірити стаціонарність на практиці</div>
+        <p>Три підходи: (1) Візуально — чи є очевидний тренд або зростаюча/спадаюча дисперсія на графіку? (2) ACF — якщо повільно спадає без чіткого відсікання, ряд нестаціонарний. (3) Тест Дікі–Фуллера (<code>ADF test</code>, statsmodels): нульова гіпотеза — наявність одиничного кореня (нестаціонарність). Якщо p-value &lt; 0.05 — відкидаємо H₀ і вважаємо ряд стаціонарним.</p>
+      </div>
+
+      <h4>Детерміністичний vs стохастичний тренд</h4>
+      <p>Нестаціонарність буває двох типів — і вибір методу усунення кардинально різниться:</p>
+
+      <div class="cards">
+        <div class="card" style="border-color:rgba(167,139,250,.3)">
+          <div class="card-tag" style="color:var(--accent)">Детерміністичний тренд (DS)</div>
+          <div class="card-title">yₜ = α + βt + εₜ</div>
+          <p>Тренд — фіксована функція часу. Шоки мають <em>тимчасовий</em> вплив: ряд завжди повертається до лінії тренду. Лікування: <strong>видалення тренду</strong> (detrending) — OLS-регресія на t, залишки стаціонарні.</p>
+        </div>
+        <div class="card" style="border-color:rgba(245,158,11,.3)">
+          <div class="card-tag" style="color:var(--p3)">Стохастичний тренд (DS / одиничний корінь)</div>
+          <div class="card-title">yₜ = yₜ₋₁ + εₜ  (RW)</div>
+          <p>Тренд «вмонтований» у структуру ряду. Шоки мають <em>постійний</em> вплив: ряд ніколи не повертається до попереднього рівня. Лікування: <strong>диференціювання</strong> — ∇yₜ = yₜ − yₜ₋₁ стаціонарне.</p>
+        </div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Аналогія: гумка vs. п'яний матрос</div>
+        <p><strong>Детерміністичний тренд</strong> — як м'яч на гумці, прив'язаній до лінії: скільки б його не відкинути — він повернеться. <strong>Стохастичний тренд (RW)</strong> — як п'яний матрос: кожен крок випадковий, і попередньої «якірної точки» немає. Якщо ви по-помилку диференціюєте DS-ряд, отримаєте MA(1) з від'ємним коренем — «зайве» диференціювання (overdifferencing).</p>
+      </div>
+
+      <div class="pitfall">
+        <div class="pt-label">Overdifferencing — як розпізнати зайве диференціювання</div>
+        <p><strong>Симптом:</strong> після диференціювання MA(q)-компонента у залишках має коефіцієнт θ₁ ≈ −0.9..−1.0. Це ознака того, що ряд був уже стаціонарним до диференціювання (або DS, а не SS), і d обрано надмірно. <strong>Наслідки:</strong> модель перепараметризована, стандартні похибки роздуті, AIC гірший. <strong>Виправлення:</strong> спробуйте d−1 і порівняйте AIC. Якщо KPSS приймає H₀ (ряд стаціонарний) вже при d=0 — диференціювання взагалі не потрібне. Правило: якщо ACF після Δ¹yₜ виглядає добре, не диференціюйте двічі без підстав.</p>
+      </div>
+
+      <div class="formula-box">
+        <div class="f-label">Тест KPSS (Kwiatkowski–Phillips–Schmidt–Shin)</div>
+        <div class="f-body">
+H₀ (KPSS): ряд стаціонарний (немає одиничного кореня)
+H₁ (KPSS): ряд нестаціонарний
+
+Статистика:  η̂ = (1/T²) · Σₜ Sₜ² / σ̂²
+де Sₜ = Σⱼ₌₁ᵗ ê_j  — часткові суми OLS-залишків
+
+Критичні значення (рівень): 0.10 → 0.347 | 0.05 → 0.463 | 0.01 → 0.739
+Якщо η̂ > крит. знач. — відкидаємо H₀ (ряд нестаціонарний)
+        </div>
+        <div class="f-note">KPSS і ADF — <strong>взаємодоповнюючі</strong>: ADF (H₀ = нестаціонарний), KPSS (H₀ = стаціонарний). Якщо обидва «погоджуються» → надійний висновок. Якщо суперечать → можливий тренд-стаціонарний процес або структурний злам. Використовуйте разом: <code>statsmodels.tsa.stattools.kpss</code>.</div>
+      </div>
+
+      <div class="diagram" style="margin:24px 0">
+        <svg viewBox="0 0 660 160" width="100%" style="max-width:660px;display:block;margin:0 auto">
+          <defs>
+            <marker id="ah-dst" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#a78bfa"/></marker>
+            <marker id="ah-dst2" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#f59e0b"/></marker>
+          </defs>
+          <!-- DS box -->
+          <rect x="20" y="30" width="180" height="100" rx="10" fill="#17171a" stroke="rgba(167,139,250,.35)" stroke-width="1.5"/>
+          <text x="110" y="60" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing=".1em">ДЕТЕРМІНІСТИЧНИЙ</text>
+          <text x="110" y="82" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="13">yₜ = α + βt + εₜ</text>
+          <text x="110" y="106" text-anchor="middle" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="12">Усуваємо: OLS-detrending</text>
+          <text x="110" y="122" text-anchor="middle" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="12">∇̂ yₜ = yₜ − ŷₜ(t)</text>
+          <!-- Arrow -->
+          <line x1="290" y1="80" x2="370" y2="80" stroke="#6a6a66" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#ah-dst)"/>
+          <text x="330" y="72" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="11">ADF vs KPSS</text>
+          <!-- Stoch box -->
+          <rect x="460" y="30" width="180" height="100" rx="10" fill="#17171a" stroke="rgba(245,158,11,.3)" stroke-width="1.5"/>
+          <text x="550" y="60" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing=".1em">СТОХАСТИЧНИЙ</text>
+          <text x="550" y="82" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="13">yₜ = yₜ₋₁ + εₜ</text>
+          <text x="550" y="106" text-anchor="middle" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="12">Усуваємо: differencing</text>
+          <text x="550" y="122" text-anchor="middle" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="12">∇yₜ = yₜ − yₜ₋₁</text>
+          <!-- Caption -->
+          <text x="330" y="152" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="11">Виберіть тип нестаціонарності → правильне лікування</text>
+        </svg>
+      </div>
+
+      <!-- Interview Q&A -->
+      <div class="interview-qa">
+        <div class="interview-qa-header">
+          <div class="iq-icon">Q&amp;A</div>
+          <h5>Питання для самоперевірки</h5>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">01</span><span class="qa-q-text">Чим відрізняється «некорельованість» від «незалежності» для WN vs WGN?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Некорельованість означає відсутність <em>лінійного</em> зв'язку між εₜ та εₛ (при t≠s). Незалежність — сильніша умова: жодного статистичного зв'язку (лінійного чи нелінійного). Для гаусівського білого шуму (WGN) некорельованість ↔ незалежність, бо для нормального розподілу нульова коваріація еквівалентна незалежності. Для негаусівського WN це не так: можуть бути некорельовані, але залежні (наприклад, через нелінійний зв'язок — квадратична залежність).</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">02</span><span class="qa-q-text">Чому ACF поступово спадає для AR-процесу, але різко обривається для MA?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">AR(p): кожне значення залежить від p попередніх, але через ланцюг «yₜ → yₜ₋₁ → yₜ₋₂ → ...» непряма кореляція передається нескінченно (поступово загасаючи). Тому ACF має «хвіст» без різкого відсікання. MA(q): кожне значення залежить лише від q попередніх шумів εₜ. Якщо k &gt; q — прямого спільного шуму між yₜ та yₜ₋ₖ немає → ρ(k)=0 для k&gt;q. Тому ACF різко «обривається» на лагу q. Це «правило АКФ–ЧАКФ» — головний інструмент вибору p і q.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">03</span><span class="qa-q-text">Ціна акції — це випадкове блукання. Що це означає для прогнозування?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Якщо ціна є Random Walk: Pₜ = Pₜ₋₁ + εₜ, то найкращий прогноз на будь-який горизонт — це поточна ціна. Дисперсія прогнозу зростає лінійно з горизонтом, а кожен поступальний крок непередбачуваний. Це і є гіпотеза ефективного ринку (Fama): жодна стратегія не може стабільно «бити» ринок, бо всі доступні публічно новини вже враховані в поточній ціні. Практичний висновок: для RW ARMA-моделі не дають кращого прогнозу, ніж наївний «завтра = сьогодні».</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">04</span><span class="qa-q-text">Що таке ергодичність і чому вона дозволяє оцінювати АКФ з єдиного ряду?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Процес ергодичний, якщо часові середні збігаються з ансамблевими (по множині паралельних реалізацій). Формально: (1/T)·Σyₜ → E[yₜ] при T→∞. Без ергодичності статистика одного ряду не оцінює параметри розподілу — потрібні сотні незалежних реалізацій. На практиці нестаціонарний процес (детермінований тренд, RW) не є ергодичним: часове середнє дрейфує і не збігається до константи. Після стаціонаризації (диференціювання, видалення тренду) процес стає ергодичним, і ми можемо надійно оцінити γ(k) = (1/T)·Σyₜ·yₜ₋ₖ з єдиного спостережуваного ряду. Саме тому перевірка стаціонарності — перший обов'язковий крок у методології Бокса–Дженкінса.</div>
+        </div>
+      </div>
+
+      <div class="assignment">
+        <div class="a-label">Завдання до Модуля 5</div>
+        <h5>Аналіз залишків RetailPulse після Holt-Winters</h5>
+        <ol>
+          <li>Після прогнозу Holt-Winters з Milestone 1 збережіть залишки (residuals = actual − fitted). Побудуйте їхній графік, гістограму та Q-Q plot. Чи нагадують вони нормальний розподіл?</li>
+          <li>Побудуйте АКФ і ЧАКФ залишків (statsmodels <code>plot_acf</code>, <code>plot_pacf</code>) для перших 20 лагів. Намалюйте 95% довірчі межі. Чи є статистично значущі піки?</li>
+          <li>Проведіть тест Дікі–Фуллера (<code>adfuller</code>) на оригінальний ряд і на залишки. Порівняйте p-value. Зробіть висновок: чи є залишки стаціонарними?</li>
+          <li>Якщо AKF/ПАКФ залишків показує значущу автокореляцію — це означає, що Holt-Winters «не добрала» частину сигналу. Запропонуйте, яку ARMA-структуру можна додати.</li>
+        </ol>
+        <div class="deliverable"><strong>Deliverable:</strong> Ноутбук із графіками ACF/PACF, результатами ADF-тесту та висновком.</div>
+      </div>
+
+      <div class="module-code">
+        <div class="mc-label">Практичний Python — M5</div>
+
+        <div class="code-panel">
+          <div class="code-panel-hdr">
+            <span class="code-badge">Python</span>
+            <span class="code-fname">m5_stationarity.py</span>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+              <button class="code-btn" onclick="toggleCode(this)">розгорнути</button>
+              <button class="code-btn" onclick="copyCode(this)">копіювати</button>
+            </div>
+          </div>
+          <div class="code-desc">Симуляція WN, RW, AR(1); ADF (H₀: одиничний корінь) та KPSS тести з інтерпретацією p-value</div>
+          <div class="code-wrap collapsed">
+            <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.tsa.stattools import adfuller, kpss
+
+# 1. Симуляція трьох типів процесів
+np.random.seed(42)
+n = 200
+wn  = np.random.normal(0, 1, n)          # White Noise
+rw  = np.cumsum(wn)                       # Random Walk (нестаціонарний)
+ar1 = np.zeros(n)                         # AR(1), φ=0.8 (стаціонарний)
+for t in range(1, n):
+    ar1[t] = 0.8 * ar1[t-1] + np.random.normal(0, 1)
+
+fig, axes = plt.subplots(3, 1, figsize=(12, 8), sharex=True)
+for ax, (name, proc) in zip(axes,
+        [('WN', wn), ('RW', rw), ('AR(1) φ=0.8', ar1)]):
+    ax.plot(proc, linewidth=0.8)
+    ax.set_ylabel(name)
+plt.tight_layout()
+plt.show()
+
+# 2. ADF тест (H₀: є одиничний корінь → нестаціонарний)
+series = weekly.dropna()
+adf_stat, adf_p, _, _, crits, _ = adfuller(series, autolag='AIC')
+print(f"ADF  stat={adf_stat:.3f}  p={adf_p:.4f}  крит.5%={crits['5%']:.3f}")
+print("     →", "СТАЦІОНАРНИЙ" if adf_p &lt; 0.05 else "НЕСТАЦІОНАРНИЙ")
+
+# 3. KPSS тест (H₀: стаціонарний)
+kpss_stat, kpss_p, _, _ = kpss(series, regression='c', nlags='auto')
+print(f"KPSS stat={kpss_stat:.3f}  p={kpss_p:.4f}")
+print("     →", "СТАЦІОНАРНИЙ" if kpss_p &gt; 0.05 else "НЕСТАЦІОНАРНИЙ")</code></pre>
+          </div>
+        </div>
+
+        <div class="code-panel">
+          <div class="code-panel-hdr">
+            <span class="code-badge">Python</span>
+            <span class="code-fname">m5_acf_pacf.py</span>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+              <button class="code-btn" onclick="copyCode(this)">копіювати</button>
+            </div>
+          </div>
+          <div class="code-desc">plot_acf/plot_pacf диференційованого ряду; оцінки AR(2) через yule_walker</div>
+          <div class="code-wrap">
+            <pre><code>from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.regression.linear_model import yule_walker
+import matplotlib.pyplot as plt
+
+# Диференційований ряд (стаціонарний — для ідентифікації p, q)
+diff_series = weekly.diff().dropna()
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 4))
+plot_acf(diff_series,  lags=52, alpha=0.05, ax=axes[0], title='АКФ (∇yₜ)')
+plot_pacf(diff_series, lags=26, alpha=0.05, ax=axes[1], title='ЧАКФ (∇yₜ)')
+plt.tight_layout()
+plt.show()
+
+# Рівняння Юла–Уокера для AR(2) вручну
+rho, sigma_sq = yule_walker(diff_series, order=2)
+print(f"YW оцінки AR(2):  φ₁={rho[0]:.3f},  φ₂={rho[1]:.3f}")
+print(f"Дисперсія шуму:   σ² = {sigma_sq:.4f}")</code></pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 6 -->
+<section class="module" id="module-6">
+  <div class="container">
+    <div class="module-header">
+      <div class="mod-num">06</div>
+      <div class="mod-meta">
+        <div class="reading-time">~30 хв читання</div>
+        <div class="mod-week">Тижні 11–12 · ~20 год навчання</div>
+        <h2 class="mod-title">AR, MA, ARMA, <em>ARIMA</em></h2>
+        <p class="mod-lead">Клас ARMA-моделей — це ключовий інструментарій аналізу стаціонарних часових рядів. Авторегресійна (AR) компонента описує, як минулі значення ряду впливають на поточне. Компонента ковзного середнього (MA) — як минулі шуми впливають на поточне. Разом вони утворюють ARMA, а додавання диференціювання для нестаціонарних рядів дає ARIMA.</p>
+      </div>
+    </div>
+
+    <div class="mod-content">
+      <h4>Оператор зсуву B (back-shift / lag operator)</h4>
+      <p>Перш ніж переходити до ARMA-моделей, введемо зручне позначення — <strong>оператор зсуву B</strong>. Він робить запис складних моделей компактним і дозволяє маніпулювати ними як звичайними многочленами.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Визначення та властивості оператора B</div>
+        <div class="f-body">
+Визначення:    B·yₜ = yₜ₋₁       (зрушує ряд на 1 крок назад)
+Степені:       B²·yₜ = yₜ₋₂,   Bᵏ·yₜ = yₜ₋ₖ
+B⁰·yₜ = yₜ                       (одиничний оператор)
+
+Різниця першого порядку:
+  (1 − B)·yₜ = yₜ − yₜ₋₁ = Δyₜ
+
+d-та різниця:
+  (1 − B)ᵈ·yₜ = Δᵈyₜ
+
+Сезонна різниця (лаг m):
+  (1 − Bᵐ)·yₜ = yₜ − yₜ₋ₘ = Δₘyₜ
+
+AR(p) через B:   (1 − φ₁B − φ₂B² − ... − φₚBᵖ)·yₜ = εₜ
+MA(q) через B:   yₜ = (1 + θ₁B + θ₂B² + ... + θ_qBq)·εₜ
+ARMA(p,q):       φ(B)·yₜ = θ(B)·εₜ
+ARIMA(p,d,q):    φ(B)·(1−B)ᵈ·yₜ = θ(B)·εₜ
+        </div>
+        <div class="f-note">Поліноми φ(B) і θ(B) — це звичайні многочлени від «аргументу B». Правила алгебри зберігаються: φ(B)·θ(B) = добуток многочленів, і так далі. Завдяки цьому SARIMA у вигляді φ(B)Φ(Bᵐ)(1−B)ᵈ(1−Bᵐ)ᴰyₜ = θ(B)Θ(Bᵐ)εₜ читається як звичайне алгебраїчне рівняння над B.</div>
+      </div>
+
+      <h4>Авторегресійна модель AR(p)</h4>
+      <p>AR(p) стверджує: поточне значення ряду є лінійною комбінацією p попередніх значень плюс білий шум. Найпростіша і найінтуїтивніша модель — «завтра залежить від вчора».</p>
+
+      <div class="formula-box">
+        <div class="f-label">Авторегресійна модель AR(p)</div>
+        <div class="f-body">
+          yₜ = φ₁yₜ₋₁ + φ₂yₜ₋₂ + ... + φₚyₜ₋ₚ + εₜ<br><br>
+          AR(1): yₜ = φ·yₜ₋₁ + εₜ<br>
+          Умова стаціонарності: |φ| &lt; 1  (для AR(1))
+        </div>
+        <div class="f-note">Параметри φᵢ оцінюються методом найменших квадратів або MLE. При |φ| = 1 — одиничний корінь (Random Walk). При |φ| &gt; 1 — ряд вибухово нестабільний. Для AR(p) умова стаціонарності: всі корені характеристичного полінома 1 − φ₁z − ... − φₚzᵖ = 0 за модулем &gt; 1.</div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Аналогія AR(1) для продажів</div>
+        <p>Якщо φ=0.8, то: «Якщо цього тижня продали на 10 тис. більше за середнє, наступного тижня (в середньому) продамо на 8 тис. більше за середнє». Потім ефект затухає: через тиждень — +6.4 тис., ще через — +5.1 тис. AR(1) описує «пам'ять» ринку — попит не стрибає хаотично, а має інерцію.</p>
+      </div>
+
+      <div class="formula-box">
+        <div class="f-label">Рівняння Юла–Вокера (Yule–Walker)</div>
+        <div class="f-body">
+Для AR(p) ковариаційна структура підпорядковується системі:
+
+ρ(k) = φ₁·ρ(k−1) + φ₂·ρ(k−2) + ... + φₚ·ρ(k−p),   k = 1, 2, ..., p
+
+У матричному вигляді:   R·φ = ρ
+
+де R = [ρ(i−j)]ᵢ,ⱼ — матриця АКФ (розмір p×p)
+    φ = (φ₁, ..., φₚ)ᵀ — вектор AR-коефіцієнтів
+    ρ = (ρ(1), ..., ρ(p))ᵀ — вектор значень АКФ
+
+Розв'язок:   φ̂ = R⁻¹·ρ̂   (оцінки через вибіркову АКФ)
+        </div>
+        <div class="f-note">Практичне значення: (1) Юла–Вокер пов'язує AR-параметри напряму з АКФ — тому АКФ/ЧАКФ є діагностичним інструментом. (2) Оцінки YW не потребують ітеративної оптимізації — просто лінійна система. (3) ЧАКФ при лагу k — це коефіцієнт φₖ у Yule-Walker системі порядку k (тому ЧАКФ = PACF «обривається» на справжньому порядку AR). В Python: <code>statsmodels.regression.linear_model.yule_walker(y, order=p)</code>.</div>
+      </div>
+
+      <div class="diagram" style="margin:24px 0">
+        <svg viewBox="0 0 640 130" width="100%" style="max-width:640px;display:block;margin:0 auto">
+          <defs>
+            <marker id="yw-arr" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#a78bfa"/></marker>
+          </defs>
+          <!-- ACF box -->
+          <rect x="10" y="30" width="160" height="70" rx="8" fill="#17171a" stroke="rgba(167,139,250,.3)" stroke-width="1.5"/>
+          <text x="90" y="56" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="11">Вибіркова АКФ</text>
+          <text x="90" y="76" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="13">ρ̂(1)...ρ̂(p)</text>
+          <text x="90" y="92" text-anchor="middle" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="11">з даних</text>
+          <!-- Arrow -->
+          <line x1="170" y1="65" x2="240" y2="65" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#yw-arr)"/>
+          <text x="205" y="58" text-anchor="middle" fill="#6a6a66" font-family="JetBrains Mono,monospace" font-size="9">R⁻¹·ρ̂</text>
+          <!-- YW box -->
+          <rect x="240" y="30" width="180" height="70" rx="8" fill="#17171a" stroke="rgba(52,211,153,.3)" stroke-width="1.5"/>
+          <text x="330" y="56" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="11">Юла–Вокера</text>
+          <text x="330" y="76" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="13">φ̂₁,...,φ̂ₚ</text>
+          <text x="330" y="92" text-anchor="middle" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="11">оцінки AR</text>
+          <!-- Arrow -->
+          <line x1="420" y1="65" x2="490" y2="65" stroke="#34d399" stroke-width="1.5" marker-end="url(#yw-arr)"/>
+          <text x="455" y="58" text-anchor="middle" fill="#6a6a66" font-family="JetBrains Mono,monospace" font-size="9">AR(p)</text>
+          <!-- Model box -->
+          <rect x="490" y="30" width="140" height="70" rx="8" fill="#17171a" stroke="rgba(245,158,11,.3)" stroke-width="1.5"/>
+          <text x="560" y="56" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="11">Модель AR(p)</text>
+          <text x="560" y="76" text-anchor="middle" fill="#f4f4f2" font-family="JetBrains Mono,monospace" font-size="13">φ(B)yₜ = εₜ</text>
+          <text x="560" y="92" text-anchor="middle" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="11">прогноз</text>
+          <!-- caption -->
+          <text x="320" y="120" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="11">АКФ → Yule-Walker → φ̂ → AR(p) прогноз — лінійний шлях без ітерацій</text>
+        </svg>
+      </div>
+
+      <h4>Модель ковзного середнього MA(q)</h4>
+      <p>MA(q) стверджує: поточне значення залежить від q попередніх шокових впливів (шумів), а не від попередніх значень самого ряду. Менш інтуїтивна, але дуже ефективна на практиці.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Модель ковзного середнього MA(q)</div>
+        <div class="f-body">
+          yₜ = εₜ + θ₁εₜ₋₁ + θ₂εₜ₋₂ + ... + θqεₜ₋q<br><br>
+          MA(1): yₜ = εₜ + θ·εₜ₋₁<br>
+          Умова оберненості: |θ| &lt; 1  (для MA(1))
+        </div>
+        <div class="f-note">MA(q) завжди стаціонарна (якщо виконана умова оберненості). АКФ MA(q) дорівнює нулю для лагів k &gt; q — «обривається» на q. Це ключова ознака для діагностики. Умова оберненості потрібна для існування еквівалентного AR(∞)-представлення.</div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Аналогія MA для магазинних залишків</div>
+        <p>Уявіть, що на полицях раптово закінчився популярний товар (шок εₜ). Це вплине на продажі наступних двох тижнів, поки завезуть нову партію (θ₁, θ₂ ≠ 0). Але після двох тижнів (q=2) ефект зникне — продажі повернуться до нормального. MA(q) якраз описує ефекти короткострокових шоків з обмеженою тривалістю.</p>
+      </div>
+
+      <h4>Загальна модель ARMA(p, q)</h4>
+      <p>Об'єднуємо AR і MA в одній моделі: ряд залежить і від своїх минулих значень, і від минулих шоків. Більша гнучкість при меншій кількості параметрів.</p>
+
+      <div class="formula-box">
+        <div class="f-label">ARMA(p, q)</div>
+        <div class="f-body">
+          yₜ = φ₁yₜ₋₁ + ... + φₚyₜ₋ₚ + εₜ + θ₁εₜ₋₁ + ... + θqεₜ₋q<br><br>
+          У компактній формі через оператор зсуву B (By_t = y_{t-1}):<br>
+          Φ(B)·yₜ = Θ(B)·εₜ
+        </div>
+        <div class="f-note">Принцип ощадливості (parsimony): ARMA(1,1) з двома параметрами часто краще підходить до реальних даних, ніж AR(8) або MA(8) — бо пояснює схожу автокореляційну структуру меншою кількістю параметрів і менше перенавчається.</div>
+      </div>
+
+      <h4>ARIMA(p, d, q) — для нестаціонарних рядів</h4>
+      <p>ARIMA — Autoregressive Integrated Moving Average. «I» — «Integrated» — позначає d-кратне диференціювання, яке перетворює нестаціонарний ряд на стаціонарний перед застосуванням ARMA.</p>
+
+      <div class="formula-box">
+        <div class="f-label">ARIMA(p, d, q)</div>
+        <div class="f-body">
+          wₜ = Δᵈyₜ  — d-кратна різниця<br>
+          ARMA(p, q) застосовується до wₜ<br><br>
+          ARIMA(1,1,0): wₜ = yₜ − yₜ₋₁ = φ·wₜ₋₁ + εₜ<br>
+          ARIMA(0,1,0): wₜ = εₜ → Random Walk (якщо d=1)
+        </div>
+        <div class="f-note">d=1 усуває лінійний тренд; d=2 — квадратичний. Для більшості реальних рядів d=1 або d=2 достатньо. SARIMA(p,d,q)(P,D,Q)[m] розширює модель, додаючи AR, I, MA компоненти для сезонного лагу m — найбільш практична модель для RetailPulse.</div>
+      </div>
+
+      <div class="diagram">
+        <svg viewBox="0 0 860 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+          <!-- Left: non-stationary -->
+          <text x="215" y="18" text-anchor="middle" fill="#ef6b6b" font-size="11" font-weight="700" letter-spacing="1">ВИХІДНИЙ РЯД (нестаціонарний)</text>
+          <line x1="20" y1="220" x2="410" y2="220" stroke="#26262b" stroke-width="1"/>
+          <line x1="20" y1="30" x2="20" y2="220" stroke="#26262b" stroke-width="1"/>
+          <polyline points="20,210 50,198 80,186 110,192 140,176 170,162 200,168 230,152 260,138 290,145 320,128 350,112 380,120 410,100"
+            fill="none" stroke="#ef6b6b" stroke-width="2.5"/>
+          <line x1="20" y1="215" x2="410" y2="95" stroke="rgba(239,107,107,.3)" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <text x="215" y="244" text-anchor="middle" fill="#6a6a66" font-size="9">Тренд вгору — E[yₜ] ≠ const, ADF p &gt; 0.05</text>
+          <!-- Arrow -->
+          <text x="447" y="128" text-anchor="middle" fill="#a78bfa" font-size="22">→</text>
+          <text x="447" y="148" text-anchor="middle" fill="#a78bfa" font-size="10">Δ¹yₜ</text>
+          <!-- Right: after differencing -->
+          <text x="648" y="18" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700" letter-spacing="1">ПІСЛЯ Δ¹yₜ (стаціонарний)</text>
+          <line x1="468" y1="220" x2="858" y2="220" stroke="#26262b" stroke-width="1"/>
+          <line x1="468" y1="30" x2="468" y2="220" stroke="#26262b" stroke-width="1"/>
+          <line x1="468" y1="125" x2="858" y2="125" stroke="rgba(52,211,153,.2)" stroke-width="1" stroke-dasharray="4,4"/>
+          <polyline points="468,125 498,115 528,108 558,120 588,110 618,108 648,118 678,106 708,114 738,122 768,108 798,104 828,116 858,106"
+            fill="none" stroke="#34d399" stroke-width="2.5"/>
+          <text x="648" y="244" text-anchor="middle" fill="#6a6a66" font-size="9">Постійне середнє — ADF p &lt; 0.05, вибираємо d=1</text>
+        </svg>
+        <div class="diagram-caption">Перше диференціювання Δ¹yₜ = yₜ − yₜ₋₁ усуває лінійний тренд, роблячи ряд стаціонарним</div>
+      </div>
+
+      <!-- Comparison table -->
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Модель</th><th>Запис</th><th>АКФ</th><th>ЧАКФ</th><th>Застосування</th></tr></thead>
+          <tbody>
+            <tr><td>AR(p)</td><td>φ(B)·yₜ = εₜ</td><td>Повільне геометричне спадання</td><td>Обривається на лагу p</td><td>Ряди з «пам'яттю» — ціни, попит, швидкості</td></tr>
+            <tr><td>MA(q)</td><td>yₜ = θ(B)·εₜ</td><td>Обривається на лагу q</td><td>Повільне спадання</td><td>Ефекти короткострокових шоків — запаси, аномалії</td></tr>
+            <tr><td>ARMA(p,q)</td><td>φ(B)·yₜ = θ(B)·εₜ</td><td>Змішана після q лагів</td><td>Змішана після p лагів</td><td>Гнучка модель для стаціонарних рядів</td></tr>
+            <tr><td>ARIMA(p,d,q) <span class="badge good">Практична</span></td><td>φ(B)(1-B)ᵈ·yₜ = θ(B)·εₜ</td><td>Стаціонарна після диференціювання</td><td>Аналогічно ARMA</td><td>Більшість реальних нестаціонарних рядів</td></tr>
+            <tr><td>SARIMA(p,d,q)(P,D,Q)[m] <span class="badge good">Для PA</span></td><td>Сезонне розширення</td><td>Піки на сезонних лагах</td><td>Аналогічно</td><td>Сезонні ряди — RetailPulse і більшість рітейлу</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>SARIMA — сезонне розширення ARIMA</h4>
+      <p>SARIMA(p,d,q)(P,D,Q)[m] — найпрактичніша модель для реальних рядів із сезонністю. Вона складається з двох шарів: короткострокові оператори (p,d,q) і сезонні (P,D,Q) з кроком m лагів.</p>
+
+      <div class="formula-box">
+        <div class="f-label">SARIMA(p,d,q)(P,D,Q)[m] — повний запис</div>
+        <div class="f-body">
+          φ(B)·Φ(Bᵐ)·(1−B)ᵈ·(1−Bᵐ)ᴰ·yₜ = θ(B)·Θ(Bᵐ)·εₜ<br><br>
+          (1−B)   = Δ¹yₜ = yₜ − yₜ₋₁        ← звичайна різниця<br>
+          (1−Bᵐ)  = Δₘyₜ = yₜ − yₜ₋ₘ        ← сезонна різниця<br><br>
+          φ(B)  — AR(p) на лагах 1..p<br>
+          Φ(Bᵐ) — AR(P) на лагах m, 2m, ..., Pm<br>
+          θ(B)  — MA(q) на лагах 1..q<br>
+          Θ(Bᵐ) — MA(Q) на лагах m, 2m, ..., Qm
+        </div>
+        <div class="f-note">RetailPulse (тижневі дані, m=52): SARIMA(1,1,1)(1,1,1)[52] — класична стартова точка. d=1 усуває звичайний тренд, D=1 усуває сезонну нестаціонарність. Всього 4 параметри — набагато ощадливіше за AR(52) з 52 параметрами.</div>
+      </div>
+
+      <div class="diagram">
+        <svg viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+          <!-- Short-term layer -->
+          <rect x="20" y="20" width="370" height="75" rx="8" fill="rgba(167,139,250,.08)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="205" y="42" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="700" letter-spacing="1">КОРОТКОСТРОКОВИЙ ШАР (p, d, q)</text>
+          <text x="205" y="62" text-anchor="middle" fill="#9a9a95" font-size="10">φ(B) · (1−B)ᵈ  та  θ(B)</text>
+          <text x="205" y="80" text-anchor="middle" fill="#6a6a66" font-size="9">Лаги 1, 2, ..., p  ·  Різниці d кроків</text>
+          <!-- Seasonal layer -->
+          <rect x="430" y="20" width="370" height="75" rx="8" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="615" y="42" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700" letter-spacing="1">СЕЗОННИЙ ШАР (P, D, Q)[m]</text>
+          <text x="615" y="62" text-anchor="middle" fill="#9a9a95" font-size="10">Φ(Bᵐ) · (1−Bᵐ)ᴰ  та  Θ(Bᵐ)</text>
+          <text x="615" y="80" text-anchor="middle" fill="#6a6a66" font-size="9">Лаги m, 2m, ..., Pm  ·  Сезонна різниця D</text>
+          <!-- Multiply arrow -->
+          <line x1="390" y1="57" x2="430" y2="57" stroke="#26262b" stroke-width="1.5" marker-end="url(#saArr)"/>
+          <text x="410" y="50" text-anchor="middle" fill="#6a6a66" font-size="10">×</text>
+          <!-- Example rows -->
+          <rect x="20" y="118" width="370" height="62" rx="6" fill="rgba(255,255,255,.02)" stroke="#26262b" stroke-width="1"/>
+          <text x="205" y="138" text-anchor="middle" fill="#6a6a66" font-size="9" font-weight="700">Приклади параметрів</text>
+          <text x="205" y="156" text-anchor="middle" fill="#9a9a95" font-size="9">p=1: вплив минулого тижня</text>
+          <text x="205" y="172" text-anchor="middle" fill="#9a9a95" font-size="9">d=1: усуває тренд</text>
+          <rect x="430" y="118" width="370" height="62" rx="6" fill="rgba(255,255,255,.02)" stroke="#26262b" stroke-width="1"/>
+          <text x="615" y="138" text-anchor="middle" fill="#6a6a66" font-size="9" font-weight="700">RetailPulse (m = 52 тижні)</text>
+          <text x="615" y="156" text-anchor="middle" fill="#9a9a95" font-size="9">P=1: вплив того ж тижня минулого року</text>
+          <text x="615" y="172" text-anchor="middle" fill="#9a9a95" font-size="9">D=1: усуває сезонну нестаціонарність</text>
+          <defs><marker id="saArr" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#26262b"/></marker></defs>
+        </svg>
+        <div class="diagram-caption">SARIMA = короткостроковий шар × сезонний шар — два незалежні AR/MA механізми на різних масштабах часу</div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Параметр</th><th>Що контролює</th><th>Типові значення</th><th>Ознака в АКФ/ЧАКФ</th></tr></thead>
+          <tbody>
+            <tr><td>p</td><td>Авторегресійний порядок (короткий)</td><td>0–2</td><td>ЧАКФ обривається на лагу p</td></tr>
+            <tr><td>d</td><td>Кількість звичайних різниць</td><td>0–2</td><td>Визначають ADF-тестом на вихідному ряді</td></tr>
+            <tr><td>q</td><td>MA-порядок (короткий)</td><td>0–2</td><td>АКФ обривається на лагу q</td></tr>
+            <tr><td>P</td><td>Сезонний AR-порядок</td><td>0–1</td><td>ЧАКФ значущий на лагу m</td></tr>
+            <tr><td>D</td><td>Кількість сезонних різниць</td><td>0–1</td><td>АКФ пік на лагу m «тягнеться» → D=1</td></tr>
+            <tr><td>Q</td><td>Сезонний MA-порядок</td><td>0–1</td><td>АКФ пік на лагу m обривається → Q=1</td></tr>
+            <tr><td>m</td><td>Довжина сезонного циклу</td><td>7, 12, 52</td><td>Піки АКФ саме на лагах m, 2m, 3m</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>ARIMAX — ARIMA з екзогенними змінними</h4>
+      <p>ARIMA описує ряд лише через його власну історію. Але що, якщо відомі зовнішні чинники (ціни, свята, погода), які впливають на попит? <strong>ARIMAX</strong> (ARIMA with eXogenous inputs) додає регресійну складову на зовнішні змінні:</p>
+
+      <div class="formula-box">
+        <div class="f-label">ARIMAX(p, d, q) — регресія з ARIMA-помилками</div>
+        <div class="f-body">
+φ(B)·∇ᵈyₜ = β₁x₁ₜ + β₂x₂ₜ + ... + βₖxₖₜ + θ(B)·εₜ
+
+Або еквівалентно:
+
+yₜ = β·Xₜ + ηₜ,    де ηₜ = φ(B)⁻¹θ(B)·εₜ — ARMA-помилки
+
+xᵢₜ — екзогенні змінні (можуть бути: індикатори свят, ціна,
+        акційна знижка, середня температура, dummy-злам)
+βᵢ  — коефіцієнти регресії (оцінюються спільно з φ, θ)
+εₜ  — WN (стандартний шум моделі)
+        </div>
+        <div class="f-note">Відмінність від звичайної регресії: тут помилки ηₜ — не WN, а ARMA-процес. Ігнорування цього (звичайний OLS) дає зміщені стандартні похибки та хибні t-тести. Правильна оцінка: MLE або умовний МНК. В Python: <code>statsmodels.tsa.statespace.SARIMAX(y, exog=X)</code> — той самий клас SARIMAX приймає exog-матрицю X.</div>
+      </div>
+
+      <div class="cards">
+        <div class="card" style="border-color:rgba(52,211,153,.3)">
+          <div class="card-tag" style="color:var(--p2)">Коли додавати екзогенні змінні</div>
+          <p>Є чітка бізнес-логіка: «у дні акцій попит зростає». Є достатньо даних. Зовнішня змінна доступна на горизонті прогнозу (або прогнозується окремо). АКФ залишків ARIMA показує систематичну структуру → можливо, пропущена змінна.</p>
+        </div>
+        <div class="card" style="border-color:rgba(245,158,11,.3)">
+          <div class="card-tag" style="color:var(--p3)">RetailPulse: ARIMAX з 4 змінними</div>
+          <p><code>SARIMAX(1,1,1)(1,1,1)[52]</code> з екзогенними: <strong>promo_flag</strong> (1/0 акція), <strong>price_ratio</strong> (ціна / середня), <strong>holiday</strong> (1/0 свято), <strong>store_open</strong> (1/0 не закрито). Зниження MAPE на 1.5 пп проти чистої SARIMA. Ключ: ці змінні відомі заздалегідь (акції планують за 2 тижні).</p>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pt-label">Зовнішня змінна невідома на горизонті → прогноз стає умовним</div>
+        <p>Якщо xₜ₊ₕ невідома (наприклад, завтрашня температура), прогноз ŷₜ₊ₕ є умовним: «якщо температура = 15°C, то продажі будуть Х». Щоб отримати безумовний прогноз, треба спочатку прогнозувати xₜ₊ₕ окремою моделлю — і тоді похибка прогнозу X накопичується разом із похибкою y. Використовуйте ARIMAX лише з тими змінними, що відомі або легко прогнозуються на потрібному горизонті.</p>
+      </div>
+
+      <h4>Лінійні процеси і теорема Вольда</h4>
+      <p>AR, MA та ARMA є частковими випадками ширшого класу — <strong>лінійних процесів</strong>. Розуміння цього класу пояснює, чому ARMA покриває практично всі стаціонарні ряди.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Лінійний процес (MA(∞) представлення)</div>
+        <div class="f-body">
+          yₜ = μ + Σⱼ₌₀^∞ ψⱼ · εₜ₋ⱼ,   εₜ ~ WN(0, σ²)<br><br>
+          ψ₀ = 1 (нормування),   Σψⱼ² &lt; ∞   (квадратична сумовність)<br><br>
+          γ(k) = σ² · Σⱼ₌₀^∞ ψⱼ · ψⱼ₊ₖ     ← АКФ через ψ-ваги
+        </div>
+        <div class="f-note">Будь-який стаціонарний ARMA(p,q) має MA(∞) представлення через рекурентну заміну AR-частини. Коефіцієнти ψⱼ — impulse response (імпульсна відповідь): вплив одиничного шоку εₜ через j кроків. Спадання ψⱼ→0 означає «загасаючу пам'ять» моделі.</div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">Теорема Вольда (декомпозиція Уолда)</div>
+        <p>Будь-який стаціонарний процес можна точно представити як суму: (1) детермінованих (абсолютно передбачуваних) компонент + (2) лінійного процесу MA(∞). Лінійна частина — саме те, що ARMA(p,q) апроксимує скінченною кількістю параметрів. Звідси принцип парсимонії: шукаємо найменшу модель із достатнім p і q, яка вловлює всю лінійну структуру даних.</p>
+      </div>
+
+      <h4>Причинність і оборотність ARMA-моделей</h4>
+      <p>Не кожна ARMA-специфікація практично корисна. Дві ключові умови — <strong>причинність</strong> (causal) і <strong>оборотність</strong> (invertible) — визначають, чи придатна модель для оцінки та прогнозування.</p>
+
+      <div class="formula-box">
+        <div class="f-label">Умови причинності та оборотності</div>
+        <div class="f-body">
+          AR-поліном: φ(z) = 1 − φ₁z − φ₂z² − ... − φₚzᵖ<br>
+          MA-поліном: θ(z) = 1 + θ₁z + θ₂z² + ... + θqzq<br><br>
+          Причинність:  всі корені φ(z) = 0 лежать ПОЗА одиничним колом  |z| &gt; 1<br>
+          Оборотність: всі корені θ(z) = 0 лежать ПОЗА одиничним колом  |z| &gt; 1
+        </div>
+        <div class="f-note">AR(1): yₜ = φyₜ₋₁ + εₜ → причинний ↔ |φ| &lt; 1. MA(1): yₜ = εₜ + θεₜ₋₁ → оборотний ↔ |θ| &lt; 1. Якщо причинність порушена — AR-частина нестаціонарна. Якщо оборотність порушена — MA неідентифікована (дві різні моделі мають однакову АКФ).</div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="ic" style="background:rgba(52,211,153,.12);color:#34d399">Causal</div>
+          <h6>Причинність</h6>
+          <p>Причинний процес: yₜ залежить лише від минулих шоків εₜ₋ⱼ (j≥0), а не майбутніх. Забезпечує збіжне MA(∞) представлення із ψⱼ→0. AR(1) причинний тоді і тільки тоді, коли |φ|&lt;1.</p>
+        </div>
+        <div class="card">
+          <div class="ic" style="background:rgba(167,139,250,.12);color:#a78bfa">Inv</div>
+          <h6>Оборотність</h6>
+          <p>Оборотна MA-модель: шок εₜ виражається через минулі yₜ (AR(∞) представлення). Без цього MLE не може відновити εₜ із спостережень — оцінювання некоректне. MA(1) оборотний ↔ |θ|&lt;1.</p>
+        </div>
+        <div class="card">
+          <div class="ic" style="background:rgba(245,158,11,.12);color:#f59e0b">Ident</div>
+          <h6>Ідентифікованість</h6>
+          <p>MA(1) з θ і MA(1) з 1/θ мають однакову АКФ — вони неідентифіковані між собою. Оборотність усуває цю неоднозначність: завжди беремо канонічне представлення з |θ|&lt;1.</p>
+        </div>
+      </div>
+
+      <div class="diagram" style="margin:24px 0">
+        <svg viewBox="0 0 560 280" width="100%" style="max-width:560px;display:block;margin:0 auto">
+          <defs>
+            <marker id="uc-arr" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#26262b"/></marker>
+          </defs>
+          <!-- Axes -->
+          <line x1="40" y1="140" x2="280" y2="140" stroke="#26262b" stroke-width="1.5" marker-end="url(#uc-arr)"/>
+          <line x1="160" y1="260" x2="160" y2="20" stroke="#26262b" stroke-width="1.5" marker-end="url(#uc-arr)"/>
+          <text x="285" y="144" fill="#6a6a66" font-family="JetBrains Mono,monospace" font-size="10">Re(z)</text>
+          <text x="164" y="18" fill="#6a6a66" font-family="JetBrains Mono,monospace" font-size="10">Im(z)</text>
+          <!-- Unit circle -->
+          <circle cx="160" cy="140" r="90" fill="none" stroke="rgba(167,139,250,.4)" stroke-width="1.5" stroke-dasharray="5,4"/>
+          <!-- Labels on unit circle -->
+          <text x="255" y="144" fill="rgba(167,139,250,.6)" font-family="JetBrains Mono,monospace" font-size="9">|z|=1</text>
+          <!-- Radius markers -->
+          <text x="205" y="136" fill="#6a6a66" font-family="JetBrains Mono,monospace" font-size="9">1</text>
+          <line x1="160" y1="140" x2="250" y2="140" stroke="#6a6a66" stroke-width="1" stroke-dasharray="2,3"/>
+          <!-- CASE 1: AR(1) stationary root outside unit circle -->
+          <circle cx="310" cy="140" r="7" fill="#34d399" opacity=".9"/>
+          <text x="318" y="136" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="9">z₁: |z|&gt;1</text>
+          <text x="318" y="148" fill="#34d399" font-family="Inter Tight,sans-serif" font-size="10">Стаціонарний</text>
+          <!-- CASE 2: Non-stationary root inside unit circle -->
+          <circle cx="130" cy="110" r="7" fill="#ef6b6b" opacity=".9"/>
+          <text x="60" y="105" fill="#ef6b6b" font-family="JetBrains Mono,monospace" font-size="9">z₂: |z|&lt;1</text>
+          <text x="60" y="117" fill="#ef6b6b" font-family="Inter Tight,sans-serif" font-size="10">Нестаціонарний</text>
+          <!-- CASE 3: Unit root ON the circle -->
+          <circle cx="250" cy="140" r="7" fill="#f59e0b" opacity=".9"/>
+          <text x="258" y="165" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="9">z₃: |z|=1</text>
+          <text x="258" y="177" fill="#f59e0b" font-family="Inter Tight,sans-serif" font-size="10">Одиничний</text>
+          <text x="258" y="189" fill="#f59e0b" font-family="Inter Tight,sans-serif" font-size="10">корінь (RW)</text>
+          <!-- Complex pair -->
+          <circle cx="340" cy="90" r="7" fill="#34d399" opacity=".7"/>
+          <circle cx="340" cy="190" r="7" fill="#34d399" opacity=".7"/>
+          <text x="350" y="94" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="8">z=a±bi</text>
+          <text x="350" y="106" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="9">Комплексна пара</text>
+          <text x="350" y="118" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="9">→ AR осцилює</text>
+          <!-- Caption -->
+          <text x="185" y="270" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="11">Комплексна z-площина: корені φ(z)=0 мають бути ПОЗА одиничним колом</text>
+        </svg>
+      </div>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Положення кореня z</th><th>|z|</th><th>Тип процесу</th><th>Що робити</th></tr></thead>
+          <tbody>
+            <tr><td>Поза колом (Re осі)</td><td>&gt; 1</td><td>Стаціонарний AR, монотонне затухання АКФ</td><td>Модель придатна</td></tr>
+            <tr><td>Поза колом (комплексна пара)</td><td>&gt; 1</td><td>Стаціонарний AR з осциляціями АКФ</td><td>Модель придатна</td></tr>
+            <tr><td>На колі</td><td>= 1</td><td>Одиничний корінь → Random Walk, нестаціонарний</td><td>Диференціювати (d↑)</td></tr>
+            <tr><td>Всередині кола</td><td>&lt; 1</td><td>Вибухово нестабільний (ADF відхилить)</td><td>Перевірити специфікацію</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Ідентифікація моделі: методологія Бокса–Дженкінса</h4>
+      <p>Найпопулярніший систематичний підхід до вибору p, d, q — покрокова методологія Бокса–Дженкінса. Ключові правила:</p>
+      <ul>
+        <li><strong>Крок 1 — Стаціонаризація:</strong> візуально і ADF-тест. Якщо нестаціонарний — диференціюємо (d=1, потім d=2 за потреби)</li>
+        <li><strong>Крок 2 — Визначення p і q:</strong> аналіз АКФ (дає q) і ЧАКФ (дає p) стаціонарного ряду</li>
+        <li><strong>Крок 3 — Оцінка:</strong> MLE або умовний МНК для кількох кандидатів</li>
+        <li><strong>Крок 4 — Діагностика залишків:</strong> залишки мають бути білим шумом (ADF, Ljung-Box тест, ACF залишків)</li>
+        <li><strong>Крок 5 — Вибір кращої моделі:</strong> AIC або BIC (штрафують за складність). Менший — краще</li>
+      </ul>
+
+      <div class="formula-box">
+        <div class="f-label">Критерії вибору моделі: AIC і BIC</div>
+        <div class="f-body">
+          AIC = −2·ℓ + 2·k<br>
+          BIC = −2·ℓ + k·ln(n)<br><br>
+          ℓ — log-likelihood оціненої моделі<br>
+          k — кількість параметрів (p + q + P + Q + константа)<br>
+          n — кількість спостережень
+        </div>
+        <div class="f-note">Менший AIC/BIC — краща модель. BIC штрафує сильніше (ln(n) > 2 при n > 7), тому частіше обирає простіші моделі. Практичне правило: якщо ΔAIC &lt; 2 між двома моделями — різниця несуттєва, обирають простішу. AIC краще для прогнозу; BIC — для інтерпретації та пошуку «справжньої» структури.</div>
+      </div>
+
+      <div class="formula-box">
+        <div class="f-label">Тест Льюнга–Бокса — перевірка залишків на білий шум</div>
+        <div class="f-body">
+          Q(h) = n(n+2) · Σₖ₌₁ʰ r²(k) / (n−k)<br><br>
+          r(k) — вибіркова АКФ залишків при лагу k<br>
+          H₀: r(1) = r(2) = ... = r(h) = 0   (залишки — WN)<br><br>
+          Q ~ χ²(h − p − q)   при H₀
+        </div>
+        <div class="f-note">Якщо p-value &lt; 0.05 — залишки мають структуру, яку модель не захопила (збільшуємо p або q). Рекомендовано перевіряти h = 10 і h = 20. Код: <code>sm.stats.acorr_ljungbox(residuals, lags=[10,20])</code>. Успіх = p-value &gt; 0.05 при обох значеннях h.</div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Метод оцінювання</th><th>Принцип</th><th>Плюси</th><th>Мінуси / Коли</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Юла–Вокера (YW)</strong></td>
+              <td>Лінійна система ρ = R·φ; замкнений розв'язок</td>
+              <td>Швидкий, без ітерацій; завжди стаціонарний результат</td>
+              <td>Тільки для AR(p); зміщений на малих вибірках</td>
+            </tr>
+            <tr>
+              <td><strong>Умовний МНК (CSS)</strong></td>
+              <td>Мінімізує Σεₜ² за умови ε₀=0; εₜ обчислюються рекурентно</td>
+              <td>Простий, швидкий; добре для стартових значень</td>
+              <td>Зміщений через граничні умови; не оптимальний</td>
+            </tr>
+            <tr>
+              <td><strong>Точний MLE <span class="badge good">Рекомендовано</span></strong></td>
+              <td>Максимізує повну функцію правдоподібності (Innovations algorithm)</td>
+              <td>Ефективний, незміщений; дає SE для AIC/BIC</td>
+              <td>Повільніший; потрібна стаціонарність</td>
+            </tr>
+            <tr>
+              <td><strong>State-Space / Kalman</strong></td>
+              <td>ARIMA у просторі станів; фільтр Калмана для likelihood</td>
+              <td>Обробляє пропуски; розширюється до SARIMAX/VARMA</td>
+              <td>Складніша реалізація; Python: <code>SARIMAX()</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pitfall">
+        <div class="pt-label">CSS vs MLE: не плутайте результати</div>
+        <p>statsmodels за замовчуванням використовує <code>method='lbfgs'</code> (наближений MLE). Якщо вказати <code>method='css'</code> — отримаєте умовний МНК: швидше, але стандартні помилки коефіцієнтів відрізнятимуться. Для невеликих вибірок різниця суттєва. Для порівняння моделей за AIC завжди використовуйте однаковий метод оцінювання.</p>
+      </div>
+
+      <h4>4-панельна діагностика залишків</h4>
+      <p>Перевірка якості ARIMA-моделі починається з візуального аналізу залишків. Чотири обов'язкові панелі — стандарт у будь-якому аналітичному звіті:</p>
+
+      <div class="diagram" style="margin:24px 0">
+        <svg viewBox="0 0 660 300" width="100%" style="max-width:660px;display:block;margin:0 auto">
+          <!-- Panel 1: residuals over time -->
+          <rect x="10" y="10" width="300" height="125" rx="8" fill="#17171a" stroke="#26262b" stroke-width="1"/>
+          <text x="20" y="28" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing=".08em">ПАНЕЛЬ 1 — залишки у часі</text>
+          <line x1="20" y1="75" x2="300" y2="75" stroke="#26262b" stroke-width="1"/>
+          <!-- squiggle residuals -->
+          <polyline points="25,75 50,58 75,82 100,60 125,78 150,55 175,85 200,62 225,80 250,56 275,74 300,70" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="160" y="118" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="10">Мають виглядати як WN: без тренду, без гетероскедастичності</text>
+
+          <!-- Panel 2: ACF of residuals -->
+          <rect x="350" y="10" width="300" height="125" rx="8" fill="#17171a" stroke="#26262b" stroke-width="1"/>
+          <text x="360" y="28" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing=".08em">ПАНЕЛЬ 2 — АКФ залишків</text>
+          <line x1="360" y1="75" x2="640" y2="75" stroke="#26262b" stroke-width="1"/>
+          <!-- significance bands -->
+          <line x1="360" y1="58" x2="640" y2="58" stroke="rgba(245,158,11,.4)" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="360" y1="92" x2="640" y2="92" stroke="rgba(245,158,11,.4)" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="645" y="61" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="9">+1.96/√n</text>
+          <text x="645" y="95" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="9">−1.96/√n</text>
+          <!-- bars inside bands -->
+          <rect x="375" y="64" width="10" height="11" fill="rgba(52,211,153,.5)"/>
+          <rect x="400" y="70" width="10" height="5" fill="rgba(52,211,153,.5)"/>
+          <rect x="425" y="72" width="10" height="3" fill="rgba(52,211,153,.5)"/>
+          <rect x="450" y="74" width="10" height="1" fill="rgba(52,211,153,.5)"/>
+          <rect x="475" y="73" width="10" height="2" fill="rgba(52,211,153,.5)"/>
+          <rect x="500" y="71" width="10" height="4" fill="rgba(52,211,153,.5)"/>
+          <text x="500" y="118" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="10">Всі лаги всередині смуг ±1.96/√n → WN</text>
+
+          <!-- Panel 3: histogram + normal curve -->
+          <rect x="10" y="165" width="300" height="125" rx="8" fill="#17171a" stroke="#26262b" stroke-width="1"/>
+          <text x="20" y="183" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing=".08em">ПАНЕЛЬ 3 — гістограма + N(0,σ²)</text>
+          <rect x="60" y="250" width="20" height="20" fill="rgba(167,139,250,.4)"/>
+          <rect x="90" y="228" width="20" height="42" fill="rgba(167,139,250,.4)"/>
+          <rect x="120" y="210" width="20" height="60" fill="rgba(167,139,250,.4)"/>
+          <rect x="150" y="220" width="20" height="50" fill="rgba(167,139,250,.4)"/>
+          <rect x="180" y="235" width="20" height="35" fill="rgba(167,139,250,.4)"/>
+          <rect x="210" y="248" width="20" height="22" fill="rgba(167,139,250,.4)"/>
+          <!-- normal curve -->
+          <polyline points="55,272 80,252 105,225 130,210 155,215 180,232 205,252 230,268 255,274" fill="none" stroke="#a78bfa" stroke-width="2"/>
+          <text x="160" y="280" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="10">Форма близька до дзвону → нормальність залишків</text>
+
+          <!-- Panel 4: Q-Q plot -->
+          <rect x="350" y="165" width="300" height="125" rx="8" fill="#17171a" stroke="#26262b" stroke-width="1"/>
+          <text x="360" y="183" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing=".08em">ПАНЕЛЬ 4 — Q-Q Plot</text>
+          <!-- 45-degree line -->
+          <line x1="375" y1="270" x2="625" y2="180" stroke="#26262b" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <!-- dots on line -->
+          <circle cx="385" cy="267" r="3" fill="rgba(52,211,153,.7)"/>
+          <circle cx="415" cy="254" r="3" fill="rgba(52,211,153,.7)"/>
+          <circle cx="445" cy="241" r="3" fill="rgba(52,211,153,.7)"/>
+          <circle cx="475" cy="226" r="3" fill="rgba(52,211,153,.7)"/>
+          <circle cx="505" cy="213" r="3" fill="rgba(52,211,153,.7)"/>
+          <circle cx="535" cy="200" r="3" fill="rgba(52,211,153,.7)"/>
+          <circle cx="565" cy="188" r="3" fill="rgba(52,211,153,.7)"/>
+          <text x="500" y="280" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="10">Точки вздовж діагоналі → нормальний розподіл</text>
+        </svg>
+      </div>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Панель</th><th>Що перевіряємо</th><th>«Добре» виглядає як</th><th>Проблема → дія</th></tr></thead>
+          <tbody>
+            <tr><td>1. Залишки у часі</td><td>Структура, гетероскедастичність</td><td>Центровані навколо нуля, рівномірна дисперсія</td><td>Тренд/кластери → d↑ або GARCH</td></tr>
+            <tr><td>2. АКФ залишків</td><td>Автокореляція, що залишилась</td><td>Всі лаги у смузі ±1.96/√n</td><td>Значущі лаги → p↑ або q↑</td></tr>
+            <tr><td>3. Гістограма</td><td>Нормальність розподілу</td><td>Симетричний дзвін без важких хвостів</td><td>Товсті хвости → бутстрап-інтервали</td></tr>
+            <tr><td>4. Q-Q plot</td><td>Нормальність точніше</td><td>Точки на діагоналі y=x</td><td>S-крива → ненормальний розподіл</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pitfall">
+        <div class="pt-label">Auto-ARIMA — не срібна куля</div>
+        <p>Бібліотека <code>pmdarima.auto_arima</code> автоматично підбирає p, d, q. Зручно для прототипування, але: (1) може пропустити кращу модель; (2) не враховує доменні знання (наприклад, відому сезонність); (3) схильна до перевибору параметрів на малих вибірках. Використовуйте auto_arima як стартову точку, але завжди перевіряйте залишки і порівнюйте з простішими конкурентами.</p>
+      </div>
+
+      <h4>Walk-forward validation — правильна оцінка для часових рядів</h4>
+      <p>Звичайний random train/test split <em>неприпустимий</em> для часових рядів — він порушує часову впорядкованість і дає нереалістично низьку помилку (модель «бачить майбутнє» при навчанні). Правильний підхід: <strong>walk-forward validation</strong>.</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 820 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+          <line x1="20" y1="195" x2="800" y2="195" stroke="#26262b" stroke-width="1.5" marker-end="url(#wArr)"/>
+          <text x="410" y="210" text-anchor="middle" fill="#6a6a66" font-size="10">Час →</text>
+          <!-- Fold labels -->
+          <text x="14" y="48" text-anchor="end" fill="#6a6a66" font-size="9">1</text>
+          <text x="14" y="82" text-anchor="end" fill="#6a6a66" font-size="9">2</text>
+          <text x="14" y="116" text-anchor="end" fill="#6a6a66" font-size="9">3</text>
+          <text x="14" y="150" text-anchor="end" fill="#6a6a66" font-size="9">4</text>
+          <text x="14" y="184" text-anchor="end" fill="#6a6a66" font-size="9">5</text>
+          <!-- Train blocks (expanding) -->
+          <rect x="20" y="30" width="290" height="24" rx="3" fill="rgba(167,139,250,.25)" stroke="#a78bfa" stroke-width="1"/>
+          <text x="165" y="47" text-anchor="middle" fill="#a78bfa" font-size="9">Train</text>
+          <rect x="20" y="64" width="350" height="24" rx="3" fill="rgba(167,139,250,.25)" stroke="#a78bfa" stroke-width="1"/>
+          <text x="195" y="81" text-anchor="middle" fill="#a78bfa" font-size="9">Train</text>
+          <rect x="20" y="98" width="410" height="24" rx="3" fill="rgba(167,139,250,.25)" stroke="#a78bfa" stroke-width="1"/>
+          <text x="225" y="115" text-anchor="middle" fill="#a78bfa" font-size="9">Train</text>
+          <rect x="20" y="132" width="470" height="24" rx="3" fill="rgba(167,139,250,.25)" stroke="#a78bfa" stroke-width="1"/>
+          <rect x="20" y="166" width="530" height="24" rx="3" fill="rgba(167,139,250,.25)" stroke="#a78bfa" stroke-width="1"/>
+          <!-- Test blocks -->
+          <rect x="314" y="30" width="60" height="24" rx="3" fill="rgba(52,211,153,.3)" stroke="#34d399" stroke-width="1.2"/>
+          <text x="344" y="47" text-anchor="middle" fill="#34d399" font-size="9">Test</text>
+          <rect x="374" y="64" width="60" height="24" rx="3" fill="rgba(52,211,153,.3)" stroke="#34d399" stroke-width="1.2"/>
+          <text x="404" y="81" text-anchor="middle" fill="#34d399" font-size="9">Test</text>
+          <rect x="434" y="98" width="60" height="24" rx="3" fill="rgba(52,211,153,.3)" stroke="#34d399" stroke-width="1.2"/>
+          <text x="464" y="115" text-anchor="middle" fill="#34d399" font-size="9">Test</text>
+          <rect x="494" y="132" width="60" height="24" rx="3" fill="rgba(52,211,153,.3)" stroke="#34d399" stroke-width="1.2"/>
+          <text x="524" y="149" text-anchor="middle" fill="#34d399" font-size="9">Test</text>
+          <rect x="554" y="166" width="60" height="24" rx="3" fill="rgba(52,211,153,.3)" stroke="#34d399" stroke-width="1.2"/>
+          <text x="584" y="183" text-anchor="middle" fill="#34d399" font-size="9">Test</text>
+          <!-- Average MAPE label -->
+          <text x="690" y="108" text-anchor="middle" fill="#34d399" font-size="9">Середнє MAPE</text>
+          <text x="690" y="122" text-anchor="middle" fill="#34d399" font-size="9">по 5 фолдах</text>
+          <defs><marker id="wArr" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#26262b"/></marker></defs>
+        </svg>
+        <div class="diagram-caption">Walk-forward (expanding window): train завжди передує test у часі — імітація реального прогнозування</div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="ic" style="background:rgba(239,107,107,.12);color:#ef6b6b">✗</div>
+          <h6>Random Split — помилка</h6>
+          <p>Тестові точки розкидані по всьому ряду — модель «бачила» майбутнє під час навчання. Результат: нереально низька MAPE. У production така модель провалюється.</p>
+        </div>
+        <div class="card">
+          <div class="ic" style="background:rgba(52,211,153,.12);color:#34d399">Exp</div>
+          <h6>Expanding Window</h6>
+          <p>Train-set накопичується з часом. Кожен фолд: навчаємо на всьому минулому, тестуємо на d наступних кроків. Підходить, коли більше даних = краща модель.</p>
+        </div>
+        <div class="card">
+          <div class="ic" style="background:rgba(167,139,250,.12);color:#a78bfa">Roll</div>
+          <h6>Rolling Window</h6>
+          <p>Розмір train-set фіксований: давні дані «відпадають». Підходить при структурних зсувах. RetailPulse: rolling 2 роки при нестабільному ринку після кризи.</p>
+        </div>
+      </div>
+
+      <h4>Інтервали прогнозування</h4>
+      <p>Точковий прогноз без інтервалу — лише половина роботи. <strong>Інтервал прогнозування</strong> показує діапазон, де з заданою ймовірністю опиниться реальне значення. Він принципово ширший за довірчий інтервал середнього.</p>
+
+      <div class="formula-box">
+        <div class="f-label">95% інтервал прогнозування ARIMA(p,d,q)</div>
+        <div class="f-body">
+          ŷₜ₊ₕ ± 1.96 · σ̂ₕ<br><br>
+          σ̂²ₕ = σ²ε · Σⱼ₌₀ʰ⁻¹ ψⱼ²     ← дисперсія h-крокового прогнозу<br><br>
+          ψⱼ — impulse response коефіцієнти (MA(∞) представлення)<br>
+          h = 1: σ̂² = σ²ε  (мінімум — тільки один крок)<br>
+          h → ∞: σ̂²ₕ → Var[yₜ]  (насичення на дисперсії ряду)
+        </div>
+        <div class="f-note">Ширина конусу зростає з горизонтом — це не дефект моделі, а математична властивість. Для RetailPulse (h=14 тижнів): якщо σε = 50 тис. грн і ψ₁≈0.8, ψ₂≈0.6, ..., інтервал на h=14 може бути ±300 тис. Показуйте інтервал замовнику завжди — він визначає стратегію замовлення товару.</div>
+      </div>
+
+      <div class="diagram">
+        <svg viewBox="0 0 820 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+          <line x1="30" y1="180" x2="800" y2="180" stroke="#26262b" stroke-width="1.5"/>
+          <line x1="30" y1="20" x2="30" y2="180" stroke="#26262b" stroke-width="1.5"/>
+          <!-- History / Forecast divider -->
+          <line x1="430" y1="20" x2="430" y2="180" stroke="#26262b" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <text x="225" y="14" text-anchor="middle" fill="#6a6a66" font-size="9" letter-spacing="1">历ТОРИЧНІ ДАНІ</text>
+          <text x="620" y="14" text-anchor="middle" fill="#a78bfa" font-size="9" letter-spacing="1">ПРОГНОЗ (14 тижнів)</text>
+          <!-- Historical series -->
+          <polyline points="30,140 60,128 90,135 120,118 150,126 180,110 210,118 240,104 270,112 300,98 330,106 360,92 390,100 420,88 430,94"
+            fill="none" stroke="#9a9a95" stroke-width="2"/>
+          <!-- Point forecast -->
+          <polyline points="430,94 470,87 510,81 550,76 590,72 630,69 670,67 710,65 750,64 790,63"
+            fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="8,4"/>
+          <!-- 95% PI upper -->
+          <polyline points="430,94 470,79 510,66 550,55 590,46 630,39 670,33 710,28 750,24 790,21"
+            fill="none" stroke="rgba(167,139,250,.5)" stroke-width="1.5"/>
+          <!-- 95% PI lower -->
+          <polyline points="430,94 470,95 510,96 550,97 590,98 630,99 670,101 710,102 750,104 790,105"
+            fill="none" stroke="rgba(167,139,250,.5)" stroke-width="1.5"/>
+          <!-- Fill cone -->
+          <polygon points="430,94 470,79 510,66 550,55 590,46 630,39 670,33 710,28 750,24 790,21 790,105 750,104 710,102 670,101 630,99 590,98 550,97 510,96 470,95"
+            fill="rgba(167,139,250,.07)"/>
+          <!-- Labels -->
+          <text x="750" y="60" fill="#a78bfa" font-size="9">Прогноз</text>
+          <text x="750" y="19" fill="#a78bfa" font-size="8" opacity=".6">95% PI</text>
+          <text x="750" y="109" fill="#a78bfa" font-size="8" opacity=".6">95% PI</text>
+          <!-- h markers -->
+          <line x1="510" y1="180" x2="510" y2="170" stroke="#6a6a66" stroke-width="1" stroke-dasharray="2,3"/>
+          <text x="510" y="194" text-anchor="middle" fill="#6a6a66" font-size="8">h=4</text>
+          <line x1="630" y1="180" x2="630" y2="170" stroke="#6a6a66" stroke-width="1" stroke-dasharray="2,3"/>
+          <text x="630" y="194" text-anchor="middle" fill="#6a6a66" font-size="8">h=8</text>
+          <line x1="790" y1="180" x2="790" y2="170" stroke="#6a6a66" stroke-width="1" stroke-dasharray="2,3"/>
+          <text x="790" y="194" text-anchor="middle" fill="#6a6a66" font-size="8">h=14</text>
+        </svg>
+        <div class="diagram-caption">Конус прогнозу RetailPulse — невизначеність зростає з горизонтом і насичується на рівні Var[yₜ]</div>
+      </div>
+
+      <h4>Структурні зламини — коли ряд «змінює правила»</h4>
+      <p>Структурний злам (structural break) — це момент часу, в якому параметри моделі різко змінюються. Це не аномалія-одиночка, а <em>зміна режиму</em>. Ігнорування зламу: модель намагається підібрати середнє між двома режимами — і не описує жодного коректно.</p>
+
+      <div class="cards">
+        <div class="card" style="border-color:rgba(167,139,250,.3)">
+          <div class="card-tag" style="color:var(--accent)">Тест Чоу (Chow test)</div>
+          <p>Перевірка злому в заздалегідь відомій точці τ. Порівнює RSS повної моделі (один ARMA на всі дані) з RSS двох субмоделей (до τ і після τ). Статистика F ~ F(k, n−2k). Недолік: треба знати τ заздалегідь.</p>
+        </div>
+        <div class="card" style="border-color:rgba(52,211,153,.3)">
+          <div class="card-tag" style="color:var(--p2)">Тест Квятковського–Перрона (sup-F / CUSUM)</div>
+          <p>Тест на злам у невідомій точці: перебирає всі τ і обирає той, де статистика F максимальна. CUSUM-тест відстежує кумулятивну суму залишків рекурсивної регресії — відхилення від горизонталі вказує на злам.</p>
+        </div>
+        <div class="card" style="border-color:rgba(245,158,11,.3)">
+          <div class="card-tag" style="color:var(--p3)">RetailPulse: COVID-злам (березень 2020)</div>
+          <p>Попит на окремі категорії (санітайзери, консерви) зрісна 5σ за два тижні. Рішення: (1) окремі моделі «до» та «після», (2) dummy-змінна в ARIMAX, (3) rolling window — стара передісторія не бере участі у навчанні.</p>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pt-label">Структурний злам ≠ викид</div>
+        <p>Викид (outlier) — поодинока точка, яка не впливає на подальші значення; після неї ряд повертається до попереднього рівня. Структурний злам — зміна генеруючого процесу: середнє, тренд або параметри ARMA назавжди змінились. Лікування різне: викид — заміна/коректура точки; злам — розділення вибірки або dummy-змінна.</p>
+      </div>
+
+      <h4>Комбінування прогнозів — мудрість натовпу</h4>
+      <p>Жодна окрема модель не є оптимальною за всіх умов. Комбінування (forecast combination) знижує варіансу і захищає від помилки вибору моделі:</p>
+
+      <div class="formula-box">
+        <div class="f-label">Комбінований прогноз</div>
+        <div class="f-body">
+ŷₜ₊ₕᶜᵒᵐᵇ = Σᵢ wᵢ · ŷₜ₊ₕ⁽ⁱ⁾
+
+Simple Average:   wᵢ = 1/M  (M — кількість моделей)
+Variance-based:   wᵢ ∝ 1/σᵢ²  (менша помилка → більша вага)
+OLS combination:  w* = argmin Σₜ (yₜ − Σᵢ wᵢŷₜ⁽ⁱ⁾)²
+        </div>
+        <div class="f-note">Теорема Бейтса–Грейнджера (1969): комбінований прогноз завжди має дисперсію похибки, не гіршу за найкращу окрему модель (за умови некорельованості похибок). На практиці: просте середнє часто перемагає складні схеми зважування.</div>
+      </div>
+
+      <div class="analogy">
+        <div class="an-label">RetailPulse: ensemble прогноз</div>
+        <p>Для 50 000 SKUs RetailPulse використовує ансамбль: <strong>Naive Seasonal</strong> (базова лінія) + <strong>Holt-Winters</strong> (тренд+сезонність) + <strong>SARIMA</strong> (стохастична структура). Ваги визначаються за MAE на останніх 8 тижнях walk-forward validation. Комбінований прогноз стабільно дає MAPE на 1.5–2.5 пп нижче найкращої одиночної моделі — особливо для нестабільних SKUs із структурними зламами.</p>
+      </div>
+
+      <!-- Interview Q&A -->
+      <div class="interview-qa">
+        <div class="interview-qa-header">
+          <div class="iq-icon">Q&amp;A</div>
+          <h5>Питання для самоперевірки</h5>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">01</span><span class="qa-q-text">Як за графіками ACF і PACF розпізнати AR(2) процес?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Для AR(2): ACF поступово спадає (не обривається — можуть бути осциляції при від'ємних φ). PACF обривається після лагу 2 — значущі тільки лаги 1 і 2, всі подальші статистично незначущі (у межах ±1.96/√n). Ключове правило: якщо PACF «обривається» на лагу p — розглядаємо AR(p).</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">02</span><span class="qa-q-text">Що таке умова причинності (causality) для AR-моделі і навіщо вона потрібна?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Умова причинності для AR(p): всі корені характеристичного полінома φ(z) = 1 − φ₁z − ... − φₚzᵖ лежать поза одиничним колом (|zᵢ| &gt; 1). Вона гарантує, що yₜ залежить тільки від минулого (yₜ₋₁, yₜ₋₂,...) і теперішнього шуму — не від майбутнього. Якщо умова порушена — модель «нефізична»: майбутнє «пояснює» минуле. Практично перевіряють: statsmodels після оцінки виводить warning, якщо корені близькі до одиничного кола.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">03</span><span class="qa-q-text">AIC vs BIC — коли використовувати який критерій вибору моделі?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">AIC (Akaike Information Criterion) мінімізує помилку прогнозу на нових даних — схильний обирати складніші моделі. BIC (Bayesian IC) додає більший штраф за параметри: більш суворий і схильний до простоти. Правило: якщо мета — якнайточніший прогноз і вибірка велика — AIC. Якщо мета — інтерпретабельна, «справжня» модель або вибірка мала — BIC. Для RetailPulse з великим обсягом даних — AIC. Для коротких рядів по окремих SKU — BIC.</div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q" onclick="toggleQA(this)">
+            <div class="qa-q-inner"><span class="qa-q-num">04</span><span class="qa-q-text">Чому залишки хорошої ARIMA-моделі мають бути «білим шумом»?</span></div>
+            <span class="qa-toggle">+</span>
+          </div>
+          <div class="qa-a">Якщо залишки мають автокореляцію — модель не захопила весь лінійний сигнал у даних. Цю автокореляцію можна було б використати для кращого прогнозу, але ми цього не зробили. Тест Ljung-Box перевіряє, чи є в залишках значуща автокореляція (H₀: залишки — WN). Якщо p-value &lt; 0.05 — залишки не є WN і модель неповна. Крім того, залишки «WN» — умова коректності довірчих інтервалів прогнозу.</div>
+        </div>
+      </div>
+
+      <div class="assignment">
+        <div class="a-label">Завдання до Модуля 6</div>
+        <h5>Побудова SARIMA-моделі для RetailPulse</h5>
+        <ol>
+          <li>Для стаціонаризованого ряду продажів (після d-кратного диференціювання з Milestone 1) намалюйте ACF і PACF. Ідентифікуйте можливі значення p і q. Також перевірте ACF на сезонних лагах (52, 104 для тижневих даних) для визначення P і Q.</li>
+          <li>Підберіть 3–4 кандидатні моделі SARIMA(p,d,q)(P,D,Q)[52] і порівняйте їх за AIC. Оберіть найкращу. Перевірте залишки: Ljung-Box тест, ACF залишків, гістограма.</li>
+          <li>Побудуйте прогноз на 4 тижні вперед з 95%-ним інтервалом прогнозування. Порівняйте MAPE із Holt-Winters і baseline. Побудуйте зведену таблицю результатів усіх методів курсу.</li>
+          <li>Який метод дав найменшу помилку для вашого SKU? Чому, з точки зору структури ряду?</li>
+        </ol>
+        <div class="deliverable"><strong>Deliverable:</strong> Ноутбук із повним Box-Jenkins аналізом, порівняльна таблиця моделей, висновок.</div>
+      </div>
+
+      <div class="module-code">
+        <div class="mc-label">Практичний Python — M6</div>
+
+        <div class="code-panel">
+          <div class="code-panel-hdr">
+            <span class="code-badge">Python</span>
+            <span class="code-fname">m6_arima_select.py</span>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+              <button class="code-btn" onclick="toggleCode(this)">розгорнути</button>
+              <button class="code-btn" onclick="copyCode(this)">копіювати</button>
+            </div>
+          </div>
+          <div class="code-desc">Grid search SARIMA(p,d,q)×(P,D,Q)[52] по AIC; прогноз та MAPE найкращої моделі</div>
+          <div class="code-wrap collapsed">
+            <pre><code>import numpy as np
+import itertools
+import warnings
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+warnings.filterwarnings('ignore')
+
+def grid_search_sarima(series, pdq, PDQ, m=52):
+    """Підбір SARIMA(p,d,q)(P,D,Q)[m] за мінімальним AIC"""
+    best = {'aic': np.inf, 'order': None, 'seasonal': None}
+    for (p, d, q), (P, D, Q) in itertools.product(pdq, PDQ):
+        try:
+            res = SARIMAX(series,
+                          order=(p, d, q),
+                          seasonal_order=(P, D, Q, m)).fit(disp=False)
+            if res.aic &lt; best['aic']:
+                best.update({'aic': res.aic, 'order': (p, d, q),
+                             'seasonal': (P, D, Q, m), 'result': res})
+        except Exception:
+            continue
+    return best
+
+# Сітка пошуку (невелика для швидкості)
+pdq = list(itertools.product([0, 1, 2], [1], [0, 1, 2]))
+PDQ = list(itertools.product([0, 1], [1], [0, 1]))
+
+best = grid_search_sarima(train, pdq, PDQ, m=52)
+print(f"Найкраща модель: SARIMA{best['order']}x{best['seasonal']}")
+print(f"AIC = {best['aic']:.2f}")
+
+# Прогноз
+fc = best['result'].forecast(13)
+print(f"MAPE = {np.mean(np.abs((test.values - fc.values) / test.values))*100:.1f}%")</code></pre>
+          </div>
+        </div>
+
+        <div class="code-panel">
+          <div class="code-panel-hdr">
+            <span class="code-badge">Python</span>
+            <span class="code-fname">m6_walk_forward.py</span>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+              <button class="code-btn" onclick="toggleCode(this)">розгорнути</button>
+              <button class="code-btn" onclick="copyCode(this)">копіювати</button>
+            </div>
+          </div>
+          <div class="code-desc">Expanding-window валідація: перенавчання SARIMA на кожному кроці, MAPE та MAE</div>
+          <div class="code-wrap collapsed">
+            <pre><code>import numpy as np
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+def walk_forward(series, train_size, order, seasonal_order, horizon=1):
+    """Walk-forward (expanding window) — найчесніша оцінка моделі"""
+    preds, actuals = [], []
+    for i in range(train_size, len(series) - horizon + 1):
+        tr = series.iloc[:i]
+        try:
+            res = SARIMAX(tr, order=order,
+                          seasonal_order=seasonal_order).fit(disp=False)
+            fc  = res.forecast(horizon)
+            preds.append(float(fc.iloc[-1]))
+            actuals.append(float(series.iloc[i + horizon - 1]))
+        except Exception:
+            continue
+
+    y, p = np.array(actuals), np.array(preds)
+    return {
+        'mape': np.mean(np.abs((y - p) / y)) * 100,
+        'mae':  np.mean(np.abs(y - p)),
+        'n':    len(y)
+    }
+
+order    = best['order']
+seasonal = best['seasonal']
+result   = walk_forward(weekly, train_size=104,
+                        order=order, seasonal_order=seasonal)
+print(f"Walk-forward (n={result['n']} кроків):")
+print(f"  MAPE = {result['mape']:.1f}%")
+print(f"  MAE  = {result['mae']:.1f}")</code></pre>
+          </div>
+        </div>
+
+        <div class="code-panel">
+          <div class="code-panel-hdr">
+            <span class="code-badge">Python</span>
+            <span class="code-fname">m6_diagnostics.py</span>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+              <button class="code-btn" onclick="copyCode(this)">копіювати</button>
+            </div>
+          </div>
+          <div class="code-desc">Залишки в часі, ACF, гістограма з нормаллю, Q-Q plot; тест Льюнга–Бокса</div>
+          <div class="code-wrap">
+            <pre><code>import matplotlib.pyplot as plt
+import numpy as np
+from scipy import stats
+from statsmodels.graphics.tsaplots import plot_acf
+from statsmodels.stats.diagnostic import acorr_ljungbox
+
+res  = best['result']
+resid = res.resid.dropna()
+
+fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+
+# 1. Залишки в часі
+axes[0, 0].plot(resid, linewidth=0.8, color='#f59e0b')
+axes[0, 0].axhline(0, color='#4a5568', linestyle='--')
+axes[0, 0].set_title('Залишки в часі')
+
+# 2. АКФ залишків
+plot_acf(resid, lags=40, ax=axes[0, 1], title='АКФ залишків')
+
+# 3. Гістограма + крива нормального розподілу
+axes[1, 0].hist(resid, bins=30, color='#34d399', alpha=0.75, density=True)
+xr = np.linspace(resid.min(), resid.max(), 200)
+axes[1, 0].plot(xr, stats.norm.pdf(xr, resid.mean(), resid.std()), 'w--')
+axes[1, 0].set_title('Гістограма залишків')
+
+# 4. Q-Q plot
+stats.probplot(resid, plot=axes[1, 1])
+axes[1, 1].set_title('Q-Q plot')
+plt.tight_layout()
+plt.show()
+
+# Ljung-Box (p &gt; 0.05 → залишки схожі на білий шум)
+lb = acorr_ljungbox(resid, lags=[10, 20], return_df=True)
+print(lb[['lb_stat', 'lb_pvalue']])</code></pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPSTONE -->
+<section id="capstone">
+  <div class="container">
+    <div class="section-label">◆ Фінальний проект</div>
+    <h2 class="section-title"><em>RetailPulse</em> Capstone</h2>
+    <p class="section-intro">Три частини курсу — один наскрізний проект. Capstone — це фінальний крок: зібрати все разом у production-ready forecasting pipeline і представити повноцінний аналітичний звіт.</p>
+
+    <div class="capstone-hero">
+      <div class="cp-tag">Module 7 · Тижні 11–12 · Фінал курсу</div>
+      <h3><em>RetailPulse</em> Forecasting Platform</h3>
+      <p>Ви побудували систему прогнозування попиту для мережі українських супермаркетів. За 12 тижнів пройдено шлях від «що таке часовий ряд» до повноцінного аналітичного pipeline — і зараз потрібно скласти все докупи, задокументувати й представити результат.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:36px">
+        <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:20px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Масштаб</div>
+          <p style="font-family:var(--serif);font-size:28px;font-weight:300;color:var(--fg);margin:0">500</p>
+          <p style="font-size:13px;color:var(--fg-muted);margin:4px 0 0">магазинів у проекті</p>
+        </div>
+        <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:20px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Горизонт</div>
+          <p style="font-family:var(--serif);font-size:28px;font-weight:300;color:var(--fg);margin:0">14</p>
+          <p style="font-size:13px;color:var(--fg-muted);margin:4px 0 0">днів прогнозу</p>
+        </div>
+        <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:20px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Ціль точності</div>
+          <p style="font-family:var(--serif);font-size:28px;font-weight:300;color:var(--fg);margin:0">&lt;10%</p>
+          <p style="font-size:13px;color:var(--fg-muted);margin:4px 0 0">MAPE на тестовій вибірці</p>
+        </div>
+        <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:20px">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Методи</div>
+          <p style="font-family:var(--serif);font-size:28px;font-weight:300;color:var(--fg);margin:0">5+</p>
+          <p style="font-size:13px;color:var(--fg-muted);margin:4px 0 0">порівняних моделей</p>
+        </div>
+      </div>
+    </div>
+
+    <h5 style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:48px 0 24px">Deliverables фінального проекту</h5>
+
+    <div class="deliverable-grid">
+      <div class="deliverable-card">
+        <div class="dc-num">01</div>
+        <h6>Jupyter ноутбук</h6>
+        <p>Повний аналіз від EDA до прогнозу. Відтворюваний код, пояснення кожного кроку, висновки після кожного блоку.</p>
+      </div>
+      <div class="deliverable-card">
+        <div class="dc-num">02</div>
+        <h6>Порівняльна таблиця моделей</h6>
+        <p>Naive baseline, Holt-Winters (адитивний + мультиплікативний), SSA + екстраполяція, SARIMA. MAE, RMSE, MAPE — зведено.</p>
+      </div>
+      <div class="deliverable-card">
+        <div class="dc-num">03</div>
+        <h6>Звіт для стейкхолдерів</h6>
+        <p>2–3 сторінки нетехнічного тексту: яка задача, яке рішення, яка точність і що потрібно зробити далі.</p>
+      </div>
+      <div class="deliverable-card">
+        <div class="dc-num">04</div>
+        <h6>Forecasting Pipeline</h6>
+        <p>Python-скрипт (або ноутбук), що автоматично: завантажує нові дані, перенавчає модель, генерує прогноз і зберігає результат у CSV.</p>
+      </div>
+    </div>
+
+    <h5 style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:48px 0 24px">Технічні вимоги</h5>
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead><tr><th>Компонент</th><th>Мінімум</th><th>Плюс</th><th>Бонус</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>EDA</td>
+            <td>Часовий графік, декомпозиція, статистики</td>
+            <td>ACF/PACF, тест стаціонарності</td>
+            <td>Виявлення аномалій, кластеризація SKU за патернами</td>
+          </tr>
+          <tr>
+            <td>Моделювання</td>
+            <td>Naive + Holt-Winters + SARIMA</td>
+            <td>+ SSA + автовибір параметрів</td>
+            <td>Prophet, LightGBM з часовими ознаками</td>
+          </tr>
+          <tr>
+            <td>Оцінка</td>
+            <td>MAE, RMSE, MAPE на hold-out</td>
+            <td>+ інтервали прогнозування, backtest 3 місяці</td>
+            <td>Residual diagnostics, Ljung-Box, нормальність залишків</td>
+          </tr>
+          <tr>
+            <td>Pipeline</td>
+            <td>Відтворюваний ноутбук</td>
+            <td>+ Python скрипт із параметрами</td>
+            <td>Автоматичний запуск, логування, зберігання результатів</td>
+          </tr>
+          <tr>
+            <td>Документація</td>
+            <td>Коментарі у коді + висновок</td>
+            <td>+ README з інструкцією запуску</td>
+            <td>Звіт для стейкхолдерів, слайди</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h5 style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:48px 0 24px">Порівняння MAPE моделей RetailPulse</h5>
+
+    <div class="diagram" style="margin:0 0 32px">
+      <svg viewBox="0 0 660 260" width="100%" style="max-width:660px;display:block;margin:0 auto">
+        <!-- Background grid lines -->
+        <line x1="120" y1="20" x2="120" y2="210" stroke="#1e1e22" stroke-width="1"/>
+        <line x1="240" y1="20" x2="240" y2="210" stroke="#1e1e22" stroke-width="1"/>
+        <line x1="360" y1="20" x2="360" y2="210" stroke="#1e1e22" stroke-width="1"/>
+        <line x1="480" y1="20" x2="480" y2="210" stroke="#1e1e22" stroke-width="1"/>
+        <line x1="600" y1="20" x2="600" y2="210" stroke="#1e1e22" stroke-width="1"/>
+        <!-- X-axis labels -->
+        <text x="120" y="226" text-anchor="middle" fill="#6a6a66" font-family="JetBrains Mono,monospace" font-size="10">5%</text>
+        <text x="240" y="226" text-anchor="middle" fill="#6a6a66" font-family="JetBrains Mono,monospace" font-size="10">10%</text>
+        <text x="360" y="226" text-anchor="middle" fill="#6a6a66" font-family="JetBrains Mono,monospace" font-size="10">15%</text>
+        <text x="480" y="226" text-anchor="middle" fill="#6a6a66" font-family="JetBrains Mono,monospace" font-size="10">20%</text>
+        <text x="600" y="226" text-anchor="middle" fill="#6a6a66" font-family="JetBrains Mono,monospace" font-size="10">25%</text>
+        <!-- MAPE target line at 10% (x=240) -->
+        <line x1="240" y1="15" x2="240" y2="215" stroke="rgba(52,211,153,.5)" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <text x="244" y="14" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="9">ціль &lt;10%</text>
+        <!-- Bar 1: Naive -->
+        <rect x="30" y="28" width="552" height="22" rx="4" fill="rgba(106,106,102,.25)"/>
+        <rect x="30" y="28" width="552" height="22" rx="4" fill="rgba(106,106,102,.15)" stroke="#6a6a66" stroke-width="1"/>
+        <text x="26" y="43" text-anchor="end" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="12">Naive</text>
+        <text x="588" y="43" fill="#9a9a95" font-family="JetBrains Mono,monospace" font-size="11">23%</text>
+        <!-- Bar 2: Mean -->
+        <rect x="30" y="60" width="456" height="22" rx="4" fill="rgba(106,106,102,.25)"/>
+        <rect x="30" y="60" width="456" height="22" rx="4" fill="rgba(106,106,102,.15)" stroke="#6a6a66" stroke-width="1"/>
+        <text x="26" y="75" text-anchor="end" fill="#9a9a95" font-family="Inter Tight,sans-serif" font-size="12">Mean</text>
+        <text x="492" y="75" fill="#9a9a95" font-family="JetBrains Mono,monospace" font-size="11">19%</text>
+        <!-- Bar 3: Holt-Winters Add -->
+        <rect x="30" y="92" width="288" height="22" rx="4" fill="rgba(167,139,250,.3)"/>
+        <text x="26" y="107" text-anchor="end" fill="#f4f4f2" font-family="Inter Tight,sans-serif" font-size="12">Holt-Winters (add.)</text>
+        <text x="324" y="107" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="11">12%</text>
+        <!-- Bar 4: Holt-Winters Mult -->
+        <rect x="30" y="124" width="240" height="22" rx="4" fill="rgba(167,139,250,.4)"/>
+        <text x="26" y="139" text-anchor="end" fill="#f4f4f2" font-family="Inter Tight,sans-serif" font-size="12">Holt-Winters (mult.)</text>
+        <text x="276" y="139" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="11">10%</text>
+        <!-- Bar 5: SARIMA -->
+        <rect x="30" y="156" width="192" height="22" rx="4" fill="rgba(52,211,153,.35)"/>
+        <text x="26" y="171" text-anchor="end" fill="#f4f4f2" font-family="Inter Tight,sans-serif" font-size="12">SARIMA</text>
+        <text x="228" y="171" fill="#34d399" font-family="JetBrains Mono,monospace" font-size="11">8%</text>
+        <!-- Bar 6: Ensemble -->
+        <rect x="30" y="188" width="156" height="22" rx="4" fill="rgba(245,158,11,.4)"/>
+        <text x="26" y="203" text-anchor="end" fill="#f4f4f2" font-family="Inter Tight,sans-serif" font-size="12">Ensemble</text>
+        <text x="192" y="203" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="11">6.5%</text>
+        <!-- X-axis base line -->
+        <line x1="30" y1="214" x2="625" y2="214" stroke="#26262b" stroke-width="1"/>
+        <!-- Caption -->
+        <text x="330" y="246" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="11">MAPE на 14-денному горизонті · Walk-forward validation (52 тижні)</text>
+        <text x="330" y="258" text-anchor="middle" fill="#6a6a66" font-family="Inter Tight,sans-serif" font-size="10">Дані: 500 магазинів × 100 репрезентативних SKU · сезонний ретейл</text>
+      </svg>
+    </div>
+
+    <div class="milestone" style="margin-top:48px">
+      <div class="m-label">Фінальний захист — RetailPulse Capstone</div>
+      <h5>Покрокова інструкція</h5>
+      <ul>
+        <li><strong>Тиждень 11:</strong> Завершити аналіз SARIMA. Провести backtest на трьох різних SKU (швидкий оборот, повільний, сезонний). Зафіксувати результати в таблиці.</li>
+        <li><strong>Тиждень 11:</strong> Написати Pipeline-скрипт: вхідні дані → оновлення моделі → прогноз → CSV-вивід. Перевірити на реальних даних.</li>
+        <li><strong>Тиждень 12:</strong> Написати нетехнічний звіт (2–3 стор.): яку задачу вирішували, що отримали, яку MAPE досягли, які обмеження і що далі.</li>
+        <li><strong>Тиждень 12:</strong> Підготувати 5-хвилинну презентацію (5–7 слайдів): проблема → дані → методи → результати → наступні кроки.</li>
+        <li><strong>Захист:</strong> Представити проект аудиторії. Запитання по методології: чому вибрали саме цю модель? Що покращили б за більше часу?</li>
+      </ul>
+    </div>
+
+    <!-- Architecture diagram for the final system -->
+    <h5 style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:48px 0 20px">Архітектура RetailPulse Forecasting Pipeline</h5>
+
+    <div class="diagram">
+      <svg viewBox="0 0 960 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace">
+        <!-- Layer 1: Data sources -->
+        <text x="480" y="22" text-anchor="middle" fill="#6a6a66" font-size="10" letter-spacing="2">ДЖЕРЕЛА ДАНИХ</text>
+        <rect x="30" y="35" width="130" height="50" rx="8" fill="rgba(52,211,153,.1)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="95" y="58" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700">Транзакційні</text>
+        <text x="95" y="74" text-anchor="middle" fill="#9a9a95" font-size="10">POS-термінали</text>
+
+        <rect x="180" y="35" width="130" height="50" rx="8" fill="rgba(52,211,153,.1)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="245" y="58" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700">Зовнішні</text>
+        <text x="245" y="74" text-anchor="middle" fill="#9a9a95" font-size="10">Свята, погода</text>
+
+        <rect x="330" y="35" width="130" height="50" rx="8" fill="rgba(52,211,153,.1)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="395" y="58" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700">Промоакції</text>
+        <text x="395" y="74" text-anchor="middle" fill="#9a9a95" font-size="10">Знижки, акції</text>
+
+        <!-- arrows down -->
+        <line x1="95" y1="85" x2="95" y2="115" stroke="#6a6a66" stroke-width="1.5" marker-end="url(#a3)"/>
+        <line x1="245" y1="85" x2="245" y2="115" stroke="#6a6a66" stroke-width="1.5" marker-end="url(#a3)"/>
+        <line x1="395" y1="85" x2="395" y2="115" stroke="#6a6a66" stroke-width="1.5" marker-end="url(#a3)"/>
+
+        <!-- Layer 2: Data Processing -->
+        <text x="480" y="112" text-anchor="middle" fill="#6a6a66" font-size="10" letter-spacing="2">ПІДГОТОВКА ДАНИХ</text>
+        <rect x="30" y="122" width="500" height="50" rx="8" fill="rgba(78,205,196,.08)" stroke="#4ecdc4" stroke-width="1.5"/>
+        <text x="280" y="145" text-anchor="middle" fill="#4ecdc4" font-size="12" font-weight="700">Очищення · Агрегація · Декомпозиція · Стаціонаризація</text>
+        <text x="280" y="162" text-anchor="middle" fill="#9a9a95" font-size="10">EDA → ADF тест → диференціювання → seasonal_decompose</text>
+
+        <!-- arrow down -->
+        <line x1="280" y1="172" x2="280" y2="200" stroke="#6a6a66" stroke-width="1.5" marker-end="url(#a3)"/>
+
+        <!-- Layer 3: Modeling -->
+        <text x="480" y="198" text-anchor="middle" fill="#6a6a66" font-size="10" letter-spacing="2">МОДЕЛЮВАННЯ</text>
+        <rect x="30" y="208" width="110" height="50" rx="8" fill="rgba(167,139,250,.08)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="85" y="231" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="700">Naive</text>
+        <text x="85" y="247" text-anchor="middle" fill="#9a9a95" font-size="10">Baseline</text>
+
+        <rect x="155" y="208" width="120" height="50" rx="8" fill="rgba(167,139,250,.08)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="215" y="231" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="700">Holt-Winters</text>
+        <text x="215" y="247" text-anchor="middle" fill="#9a9a95" font-size="10">Тренд + Сезон</text>
+
+        <rect x="290" y="208" width="110" height="50" rx="8" fill="rgba(167,139,250,.08)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="345" y="231" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="700">SSA</text>
+        <text x="345" y="247" text-anchor="middle" fill="#9a9a95" font-size="10">Цикли</text>
+
+        <rect x="415" y="208" width="115" height="50" rx="8" fill="rgba(245,158,11,.15)" stroke="#f59e0b" stroke-width="2"/>
+        <text x="472" y="231" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700">SARIMA</text>
+        <text x="472" y="247" text-anchor="middle" fill="#9a9a95" font-size="10">Стохастична</text>
+
+        <!-- arrow down from winner -->
+        <line x1="472" y1="258" x2="600" y2="285" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a3)"/>
+        <line x1="280" y1="258" x2="600" y2="285" stroke="#6a6a66" stroke-width="1.5" marker-end="url(#a3)"/>
+
+        <!-- Layer 4: Output -->
+        <rect x="540" y="288" width="200" height="22" rx="6" fill="rgba(245,158,11,.12)" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="640" y="303" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700">Прогноз → CSV → Дашборд</text>
+
+        <!-- Evaluation box -->
+        <rect x="680" y="130" width="240" height="100" rx="10" fill="rgba(239,107,107,.07)" stroke="#ef6b6b" stroke-width="1.5"/>
+        <text x="800" y="155" text-anchor="middle" fill="#ef6b6b" font-size="11" font-weight="700" letter-spacing="1">ОЦІНКА</text>
+        <text x="800" y="175" text-anchor="middle" fill="#f4f4f2" font-size="11">MAE · RMSE · MAPE</text>
+        <text x="800" y="193" text-anchor="middle" fill="#9a9a95" font-size="10">Backtest 3 місяці</text>
+        <text x="800" y="210" text-anchor="middle" fill="#9a9a95" font-size="10">Ljung-Box (залишки)</text>
+        <text x="800" y="225" text-anchor="middle" fill="#6a6a66" font-size="9">AIC / BIC для вибору моделі</text>
+
+        <defs>
+          <marker id="a3" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#6a6a66"/>
+          </marker>
+        </defs>
+      </svg>
+      <div class="diagram-caption">RetailPulse — повний forecasting pipeline від сирих даних до прогнозу</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Completion -->
+<section style="padding:96px 0;border-top:1px solid var(--border-soft);text-align:center">
+  <div class="container">
+    <div class="section-label">◆ Курс завершено</div>
+    <h2 class="section-title" style="margin:0 auto 32px;text-align:center">Що ви тепер <em>вмієте.</em></h2>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;max-width:960px;margin:0 auto 56px;text-align:left">
+      <div style="padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card)">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:12px">Частина 1</div>
+        <ul style="list-style:none;margin:0;padding:0">
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0;border-bottom:1px solid var(--border-soft)">✓ Три типи аналітики і CRISP-DM</li>
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0;border-bottom:1px solid var(--border-soft)">✓ MLE та описова статистика</li>
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0;border-bottom:1px solid var(--border-soft)">✓ Декомпозиція часового ряду</li>
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0">✓ MAE, RMSE, MAPE — вибір і інтерпретація</li>
+        </ul>
+      </div>
+      <div style="padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card)">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#34d399;margin-bottom:12px">Частина 2</div>
+        <ul style="list-style:none;margin:0;padding:0">
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0;border-bottom:1px solid var(--border-soft)">✓ Ковзне середнє та ЕЗ</li>
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0;border-bottom:1px solid var(--border-soft)">✓ Holt і Holt-Winters</li>
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0;border-bottom:1px solid var(--border-soft)">✓ SSA та SVD для циклів</li>
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0">✓ Метод «Гусениця»</li>
+        </ul>
+      </div>
+      <div style="padding:24px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card)">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:12px">Частина 3</div>
+        <ul style="list-style:none;margin:0;padding:0">
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0;border-bottom:1px solid var(--border-soft)">✓ Стаціонарність і ADF-тест</li>
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0;border-bottom:1px solid var(--border-soft)">✓ ACF і PACF для діагностики</li>
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0;border-bottom:1px solid var(--border-soft)">✓ AR, MA, ARMA, ARIMA, SARIMA</li>
+          <li style="font-size:14px;color:var(--fg-muted);padding:5px 0">✓ Методологія Бокса–Дженкінса</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <a href="pa_part2_methods.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:100px;background:transparent;border:1px solid var(--border);font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--fg-muted);transition:all .2s;text-decoration:none" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--fg-muted)'">← Частина 2: Тренд &amp; SSA</a>
+      <a href="../index.html" style="display:inline-flex;align-items:center;gap:12px;padding:18px 32px;background:var(--accent);color:#000;font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:100px;transition:all .2s;border-bottom:none">← Повернутися на головну</a>
+    </div>
+  </div>
+</section>
+
+<!-- FORMULA CHEATSHEET -->
+<section style="background:var(--bg-2);border-top:1px solid var(--border-soft);padding:80px 0">
+  <div class="container">
+    <div class="section-label" style="color:var(--accent)">◆ Довідник</div>
+    <h2 style="font-family:var(--serif);font-size:clamp(32px,5vw,56px);font-weight:400;letter-spacing:-.02em;margin-bottom:12px;line-height:1.1">Шпаргалка формул</h2>
+    <p style="color:var(--fg-muted);font-size:15px;margin-bottom:60px;max-width:600px">Ключові формули всього курсу PA &amp; TSA — для швидкого пошуку під час роботи з даними.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px">
+
+      <!-- METRICS -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px">M1–M2 · Метрики точності</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          MAE = (1/n)·Σ|yₜ − ŷₜ|<br>
+          RMSE = √(1/n·Σ(yₜ − ŷₜ)²)<br>
+          MAPE = (100/n)·Σ|eₜ/yₜ|<br>
+          sMAPE = (200/n)·Σ|eₜ|/(|yₜ|+|ŷₜ|)<br>
+          MASE = MAE / (1/(n−1)·Σ|yₜ−yₜ₋₁|)
+        </div>
+      </div>
+
+      <!-- MSE DECOMPOSITION -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px">M1 · Bias–Variance</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          MSE = Bias² + Variance + σ²<br>
+          Bias = E[ŷ] − y<br>
+          Variance = E[(ŷ − E[ŷ])²]<br>
+          MLE: θ̂ = argmax Σ ln p(yₜ|θ)<br>
+          MAP: θ̂ = argmax [ln L + ln p(θ)]
+        </div>
+      </div>
+
+      <!-- DECOMPOSITION -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px">M2 · Декомпозиція ряду</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          Адитивна: yₜ = Tₜ + Sₜ + Cₜ + Rₜ<br>
+          Мульт.: yₜ = Tₜ × Sₜ × Cₜ × Rₜ<br>
+          ACF: ρ(k) = γ(k)/γ(0)<br>
+          γ(k) = Cov(yₜ, yₜ₋ₖ)<br>
+          95% межі: ±1.96/√n
+        </div>
+      </div>
+
+      <!-- SES + HOLT -->
+      <div style="background:var(--bg-card);border:1px solid rgba(52,211,153,.3);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--p2);margin-bottom:16px">M3 · SES та Holt</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          SES: ŷₜ₊₁ = α·yₜ + (1−α)·ŷₜ<br>
+          Holt рівень: lₜ = α·yₜ + (1−α)(lₜ₋₁+bₜ₋₁)<br>
+          Holt тренд: bₜ = β·(lₜ−lₜ₋₁) + (1−β)·bₜ₋₁<br>
+          Прогноз: ŷₜ₊ₕ = lₜ + h·bₜ<br>
+          Damped: ŷₜ₊ₕ = lₜ + (Σᵢ₌₁ʰ φⁱ)·bₜ
+        </div>
+      </div>
+
+      <!-- HOLT-WINTERS -->
+      <div style="background:var(--bg-card);border:1px solid rgba(52,211,153,.3);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--p2);margin-bottom:16px">M3 · Holt–Winters (адитивний)</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          lₜ = α(yₜ − sₜ₋ₘ) + (1−α)(lₜ₋₁ + bₜ₋₁)<br>
+          bₜ = β(lₜ − lₜ₋₁) + (1−β)bₜ₋₁<br>
+          sₜ = γ(yₜ − lₜ₋₁ − bₜ₋₁) + (1−γ)sₜ₋ₘ<br>
+          ŷₜ₊ₕ = lₜ + h·bₜ + sₜ₋ₘ₊ₕₘₒ꜀<br>
+          Box-Cox: y*(λ) = (yλ−1)/λ; ln(y) якщо λ=0
+        </div>
+      </div>
+
+      <!-- SSA -->
+      <div style="background:var(--bg-card);border:1px solid rgba(52,211,153,.3);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--p2);margin-bottom:16px">M4 · SSA (Гусениця)</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          Траєкторна матриця: X (L×K), K=N−L+1<br>
+          SVD: X = U·Σ·Vᵀ = Σᵢ √λᵢ·Uᵢ·VᵢᵀС<br>
+          Реконструкція r-SSA: X̃ = Σᵢ₌₁ʳ √λᵢ·Uᵢ·Vᵢᵀ<br>
+          Рекурент. прогноз: yₙ₊ₕ = Σᵢ₌₁ᴸ⁻¹ aᵢ·yₙ₊ₕ₋ᵢ<br>
+          aᵢ = (Σⱼ₌₁ʳ πⱼ·Uⱼ(i)·Uⱼ(L))/(1−ν²)
+        </div>
+      </div>
+
+      <!-- BACK-SHIFT + DIFFERENCING -->
+      <div style="background:var(--bg-card);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--p3);margin-bottom:16px">M5–M6 · Оператор зсуву</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          Byₜ = yₜ₋₁ ; Bᵏyₜ = yₜ₋ₖ<br>
+          ∇yₜ = (1−B)yₜ = yₜ − yₜ₋₁<br>
+          ∇ᵈyₜ = (1−B)ᵈyₜ<br>
+          Сезонна різниця: ∇ₘyₜ = (1−Bᵐ)yₜ<br>
+          AR-поліном: φ(B) = 1−φ₁B−⋯−φₚBᵖ
+        </div>
+      </div>
+
+      <!-- ACF + PACF + YW -->
+      <div style="background:var(--bg-card);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--p3);margin-bottom:16px">M5 · АКФ, ЧАКФ, Юла–Уокера</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          γ(k) = E[yₜ·yₜ₋ₖ] (стаціонарний)<br>
+          ρ(k) = γ(k)/γ(0)<br>
+          ЧАКФ φₖₖ: проекція yₜ на yₜ₋ₖ\span{yₜ₋₁,…,yₜ₋ₖ₊₁}<br>
+          YW: R·φ = ρ → φ̂ = R⁻¹ρ̂<br>
+          Rᵢⱼ = ρ(|i−j|), ρ = [ρ(1),…,ρ(p)]ᵀ
+        </div>
+      </div>
+
+      <!-- ARMA + ARIMA -->
+      <div style="background:var(--bg-card);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--p3);margin-bottom:16px">M6 · ARMA / ARIMA / SARIMA</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          AR(p): yₜ = φ₁yₜ₋₁+⋯+φₚyₜ₋ₚ + εₜ<br>
+          MA(q): yₜ = εₜ + θ₁εₜ₋₁+⋯+θqεₜ₋q<br>
+          ARMA: φ(B)yₜ = θ(B)εₜ<br>
+          ARIMA: φ(B)∇ᵈyₜ = θ(B)εₜ<br>
+          SARIMA: Φ(Bᵐ)φ(B)∇ᵈ∇ᴰₘyₜ = Θ(Bᵐ)θ(B)εₜ
+        </div>
+      </div>
+
+      <!-- MODEL SELECTION -->
+      <div style="background:var(--bg-card);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--p3);margin-bottom:16px">M6 · Вибір моделі &amp; діагностика</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          AIC = −2ln(L̂) + 2k<br>
+          BIC = −2ln(L̂) + k·ln(n)<br>
+          Ljung-Box: Q = n(n+2)·Σₖρ̂²(k)/(n−k)<br>
+          Pred. interval: ŷₜ₊ₕ ± z·σₕ<br>
+          σ²ₕ(AR1) = σ²·(1−φ²ʰ)/(1−φ²)
+        </div>
+      </div>
+
+      <!-- ACF/PACF PATTERN TABLE -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:28px;grid-column:span 1">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px">Таблиця вибору p, q</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono)">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border)">
+              <th style="padding:8px 6px;text-align:left;color:var(--fg-dim)">Процес</th>
+              <th style="padding:8px 6px;text-align:center;color:var(--fg-dim)">АКФ</th>
+              <th style="padding:8px 6px;text-align:center;color:var(--fg-dim)">ЧАКФ</th>
+            </tr>
+          </thead>
+          <tbody style="color:var(--fg-muted)">
+            <tr style="border-bottom:1px solid var(--border-soft)">
+              <td style="padding:7px 6px">AR(p)</td>
+              <td style="padding:7px 6px;text-align:center">спадає</td>
+              <td style="padding:7px 6px;text-align:center">відсік p</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-soft)">
+              <td style="padding:7px 6px">MA(q)</td>
+              <td style="padding:7px 6px;text-align:center">відсік q</td>
+              <td style="padding:7px 6px;text-align:center">спадає</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-soft)">
+              <td style="padding:7px 6px">ARMA(p,q)</td>
+              <td style="padding:7px 6px;text-align:center">спадає</td>
+              <td style="padding:7px 6px;text-align:center">спадає</td>
+            </tr>
+            <tr>
+              <td style="padding:7px 6px">WN</td>
+              <td style="padding:7px 6px;text-align:center">≈ 0</td>
+              <td style="padding:7px 6px;text-align:center">≈ 0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- STATIONARITY TESTS -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:28px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px">M5 · Тести стаціонарності</div>
+        <div style="font-family:var(--mono);font-size:13px;line-height:2;color:var(--fg-muted)">
+          ADF H₀: є одиничний корінь (нестац.)<br>
+          ADF: τ = φ̂/SE(φ̂) → крит. знач. &lt; −1.96<br>
+          KPSS H₀: ряд стаціонарний<br>
+          KPSS: η = (1/n²σ²)·ΣSₜ², Sₜ=Σᵢ₌₁ᵗ eᵢ<br>
+          Нестац.: ADF не відх., KPSS відх.
+        </div>
+      </div>
+
+    </div><!-- end grid -->
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    PA &amp; TSA Course · Частина 3 · RetailPulse Capstone ·
+    <a href="../index.html" style="border-bottom:none">← Головна</a>
+  </div>
+</footer>
+
+<script>
+window.addEventListener('scroll',()=>{
+  const doc=document.documentElement;
+  const prog=(doc.scrollTop/(doc.scrollHeight-doc.clientHeight))*100;
+  document.getElementById('reading-progress').style.width=prog+'%';
+});
+function toggleQA(el){
+  const item=el.closest('.qa-item');
+  const ans=item.querySelector('.qa-a');
+  item.classList.toggle('open');
+  ans.classList.toggle('open');
+}
+
+function copyCode(btn){
+  const code=btn.closest('.code-panel').querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='скопійовано ✓';
+    btn.classList.add('cp-ok');
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('cp-ok');},2000);
+  });
+}
+function toggleCode(btn){
+  const wrap=btn.closest('.code-panel').querySelector('.code-wrap');
+  const c=wrap.classList.contains('collapsed');
+  wrap.classList.toggle('collapsed',!c);
+  btn.textContent=c?'згорнути':'розгорнути';
+}
+</script>
+</body>
+</html>
